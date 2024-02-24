@@ -1,8 +1,8 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
-const lib = require('./lib.js');
 const fs = require('fs');
 const path = require('path');
+const lib = require('./lib.js');
 
 const {
     lbr,
