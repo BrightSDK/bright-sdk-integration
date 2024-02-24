@@ -1,0 +1,17 @@
+{
+  "name": "brd-sdk-integ-tools",
+  "version": "1.0.0",
+  "description": "BrightSDK Integration Tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "vladislavs@brightdata.com",
+  "license": "ISC",
+  "dependencies": {
+    "follow-redirects": "^1.15.5",
+    "fs-extra": "^11.2.0",
+    "readline": "^1.3.0",
+    "unzipper": "^0.10.14"
+  }
+}
