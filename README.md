@@ -36,7 +36,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 1. Navigate to the installation directory
 
     ```bash
-cd bright-sdk-integration
+    cd bright-sdk-integration
     ```
 1. Install project dependencies using `npm`
     
