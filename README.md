@@ -147,15 +147,17 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
     ```js
     await brd_sdk_gen.process_webos(opt);
     ```
-##### `opt` definition and example:
+    
+##### opt definition and example:
 
-    ```js
-    {
-      appdir: '/path/to/your/app',
-      config_fname": '/path/to/your/config.json',
-      verbose: false, // disable program output
-    }
-    ```
+```js
+{
+  appdir: '/path/to/your/app',
+  config_fname": '/path/to/your/config.json',
+  verbose: false, // disable program output
+}
+```
+
 **NOTE:** Either `appdir` or `config_fname` is required in order for the method to work.
 
 
