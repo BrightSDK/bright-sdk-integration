@@ -82,8 +82,14 @@ if (!prev_config_fname)
         read_config(config, prev_config_fname = fname);
 }
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
-const workdir_root = path.join(path.dirname(__dirname), '.build');
-const workdir = path.join(workdir_root, `${path.basename(appdir)}_${sdk_ver}`);
+let workdir = config.workdir;
+if (!workdir)
+{
+    const workdir_root = path.join(path.dirname(__dirname), '.build');
+    if (!fs.existsSync(workdir_root))
+        fs.mkdirSync(workdir_root);
+    workdir = path.join(workdir_root, `${path.basename(appdir)}_${sdk_ver}`);
+}
 const js_dir = await get_value('Application JS directory',
     await get_js_dir(appdir),
     config.appdir && path.join(config.appdir, config.js_dir||''));
@@ -102,11 +108,8 @@ const sdk_zip_fname = path.join(workdir, sdk_zip);
 const sdk_dir = path.join(workdir, path.basename(sdk_zip, sdk_zip_ext));
 const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
-const sdk_package_fname = path.join(sdk_dir, 'sdk', 'service', 'package.json');
 
 print('Starting...');
-if (!fs.existsSync(workdir_root))
-    fs.mkdirSync(workdir_root);
 if (!fs.existsSync(workdir))
     fs.mkdirSync(workdir);
 
@@ -116,19 +119,9 @@ print(`✔ Downloaded ${sdk_zip}`);
 await unzip(sdk_zip_fname, sdk_dir);
 print(`✔ SDK extracted into ${sdk_dir}`);
 
-const sdk_package = read_json(sdk_package_fname);
-const sdk_service_id = sdk_package.name.replace(/.+(\.brd_sdk)$/, appid+'$1');
 const sdk_service_fname = path.join(sdk_dir, 'sdk', 'service');
-const sdk_services_fname = path.join(sdk_service_fname, 'services.json');
 const brd_api_fname = path.join(sdk_dir, 'sdk', 'consent', brd_api_name);
 const brd_api_dst_fname = path.join(js_dir, brd_api_name);
-
-set_json_props(sdk_package_fname, ['name'], sdk_service_id);
-print(`✔ Processed ${path.basename(sdk_package_fname)}`);
-
-set_json_props(sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
-    sdk_service_id);
-print(`✔ Processed ${path.basename(sdk_services_fname)}`);
 
 if (await replace_file(sdk_service_fname, sdk_service_dir))
     print(`✔ Removed ${sdk_service_dir}`);
@@ -137,6 +130,21 @@ print(`✔ Copied ${sdk_service_fname} to ${sdk_service_dir}`);
 if (await replace_file(brd_api_fname, brd_api_dst_fname))
     print(`✔ Removed ${brd_api_dst_fname}`);
 print(`✔ Copied ${brd_api_fname} to ${brd_api_dst_fname}`);
+
+const sdk_package_fname = path.join(sdk_service_dir, 'package.json');
+const sdk_services_fname = path.join(sdk_service_dir, 'services.json');
+
+const sdk_package = read_json(sdk_package_fname);
+const sdk_service_id = sdk_package.name
+    .replace(/.+(\.brd_sdk)$/, appid+'$1');
+
+set_json_props(sdk_package_fname, ['name'], sdk_service_id);
+print(`✔ Processed ${sdk_package_fname}`);
+
+set_json_props(sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
+    sdk_service_id);
+print(`✔ Processed ${sdk_services_fname}`);
+
 
 if (!opt.interactive)
     return;
