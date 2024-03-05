@@ -30,7 +30,8 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 1. Install the package directly from git:
 
     ```bash
-    git clone https://gitlab.com/brightsdk/bright-sdk-integration
+    git clone https://github.com/vladislavs-luminati/bright-sdk-integration.git
+
     ```
 
 1. Navigate to the installation directory
