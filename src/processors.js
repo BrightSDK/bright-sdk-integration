@@ -22,9 +22,14 @@ const print = (...args)=>{
         print_base(...args);
 };
 
+const read_env = ()=>({
+    js_dir: process.env.JS_DIR,
+    appdir: process.env.APPDIR,
+});
+
 const read_config = (config, fname)=>{
     print(`Reading configuration file ${fname}...`);
-    Object.assign(config, read_json(fname));
+    Object.assign(config, read_json(fname), read_env());
 };
 
 const get_value = async(question, def_answer, config_value)=>{
@@ -62,7 +67,10 @@ let prev_config_fname, appdir;
 if (opt.interactive)
     process_init();
 if (opt.config_fname)
+{
     read_config(config, prev_config_fname = opt.config_fname);
+    appdir = config.app_dir;
+}
 else if (opt.appdir)
     appdir = opt.appdir;
 
