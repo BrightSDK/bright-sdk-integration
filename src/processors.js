@@ -11,11 +11,13 @@ const {
     download_from_url, unzip, set_json_props, replace_file,
 } = lib;
 
-const brd_api_name = 'brd_api.js';
+const js_ext = '.js';
+const brd_api_base = 'brd_api';
+const brd_api_name = `${brd_api_base}${js_ext}`;
 
 const get_config_fname = appdir=>path.join(appdir, 'brd_sdk.config.json');
 
-const process_webos =  async(opt={})=>{
+const process_webos = async(opt={})=>{
 
 const print = (...args)=>{
     if (opt.interactive || opt.verbose)
@@ -25,6 +27,7 @@ const print = (...args)=>{
 const read_env = ()=>({
     js_dir: process.env.JS_DIR,
     appdir: process.env.APPDIR,
+    index: process.env.INDEX,
 });
 
 const read_config = (config, fname)=>{
@@ -60,6 +63,19 @@ const get_js_dir = async appdir=>{
     }
     def_value = def_value || path.join(appdir);
     return def_value;
+};
+
+const update_index_ref = (fname, ref)=>{
+    if (!fs.existsSync(fname))
+        throw new Error(`index.html not found at ${fname}`);
+    let data = fs.readFileSync(fname).toString();
+    const regex = new RegExp(`${brd_api_base}.*${js_ext}`);
+    const [prev] = data.match(regex)||[];
+    if (!prev) // @TODO: initial sdk injection
+        throw new Error('BrightSDK not found, configuration unsupported.');
+    data = data.replace(prev, ref);
+    fs.writeFileSync(fname, data);
+    return prev;
 };
 
 const config = {};
@@ -116,6 +132,11 @@ const sdk_zip_fname = path.join(workdir, sdk_zip);
 const sdk_dir = path.join(workdir, path.basename(sdk_zip, sdk_zip_ext));
 const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
+const is_web_hosted = !js_dir.startsWith(appdir);
+const index_def = path.join(is_web_hosted ? path.dirname(js_dir) : appdir,
+    'index.html');
+const index_fname = await get_value('index.html location', index_def,
+    config.index && path.join(config.appdir, config.index));
 
 print('Starting...');
 if (!fs.existsSync(workdir))
@@ -129,7 +150,9 @@ print(`✔ SDK extracted into ${sdk_dir}`);
 
 const sdk_service_fname = path.join(sdk_dir, 'sdk', 'service');
 const brd_api_fname = path.join(sdk_dir, 'sdk', 'consent', brd_api_name);
-const brd_api_dst_fname = path.join(js_dir, brd_api_name);
+const brd_api_dst_name = brd_api_name.replace(js_ext,
+    `_v${sdk_ver}${js_ext}`);
+const brd_api_dst_fname = path.join(js_dir, brd_api_dst_name);
 
 if (await replace_file(sdk_service_fname, sdk_service_dir))
     print(`✔ Removed ${sdk_service_dir}`);
@@ -153,6 +176,18 @@ set_json_props(sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
     sdk_service_id);
 print(`✔ Processed ${sdk_services_fname}`);
 
+const brd_api_name_prev = update_index_ref(index_fname, brd_api_dst_fname);
+let brd_api_fname_prev = 'none';
+if (brd_api_name_prev)
+{
+    brd_api_fname_prev = path.join(js_dir, brd_api_name_prev);
+    if (!is_web_hosted)
+    {
+        if (fs.existsSync(brd_api_fname_prev))
+            fs.unlinkSync(brd_api_fname_prev);
+    }
+}
+print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
 if (!opt.interactive)
     return;
@@ -163,6 +198,7 @@ if (!prev_config_fname)
     for (const [prop, val] of [
         ['js_dir', js_dir],
         ['sdk_service_dir', sdk_service_dir],
+        ['index', index_fname],
     ])
     {
         const value = val.replace(appdir, '').slice(1)||'';
