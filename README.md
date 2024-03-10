@@ -73,13 +73,16 @@ Path to application directory: /path/to/my/app
 SDK Version (1.438.821): 
 1.438.821
 
-Application JS directory (/path/to/my/app/js): 
-/path/to/my/app/js
+Application JS directory (js):
+/js
 
-SDK Service dir (/path/to/my/app/service): 
-/path/to/my/app/service
+index.html Location (index.html):
+/js
 
-SDK URL mask (https://path/to/sdk_SDK_VER.zip): 
+SDK Service dir (/path/to/my/app/service):
+/service
+
+SDK URL mask (https://path/to/sdk_SDK_VER.zip):
 https://path/to/sdk_SDK_VER.zip
 
 ```
@@ -91,10 +94,12 @@ The interactive prompts include:
 | Path to the app directory | `/path/to/your/app`                 |
 | Path to config file       | `/path/to/your/config.json` (optional)|
 | SDK Version               | `1.438.821`                         |
-| Application JS directory  | `/path/to/your/app/js`              |
-| SDK Service directory     | `/path/to/your/app/service`         |
+| Application JS directory  | `js`              |
+| index.html Location       | `index.html`                        |
+| SDK Service directory     | `service`         |
 | SDK URL mask              | `https://example.com/sdk_SDK_VER.zip` |
 
+Note that file paths are provided relative to your app folder.
 
 Follow the prompts to provide the required information, and the script will proceed with the integration based on your inputs. 
 
@@ -122,8 +127,9 @@ Reading configuration file /path/to/your/app/brd_sdk.config.json...
   "appdir": "/path/to/your/app",
   "config_fname": "/path/to/your/config.json",
   "sdk_ver": "1.438.821",
-  "js_dir": "/path/to/your/app/js",
-  "sdk_service_dir": "/path/to/your/app/service",
+  "js_dir": "js",
+  "index": "index.html",
+  "sdk_service_dir": "service",
   "sdk_url": "https://example.com/sdk_SDK_VER.zip"
 }
 ```
@@ -148,7 +154,7 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
     ```js
     await brd_sdk_gen.process_webos(opt);
     ```
-    
+
 ##### opt definition and example:
 
 ```js
