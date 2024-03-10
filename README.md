@@ -77,7 +77,7 @@ Application JS directory (js):
 /js
 
 index.html Location (index.html):
-/js
+/index.html
 
 SDK Service dir (/path/to/my/app/service):
 /service
