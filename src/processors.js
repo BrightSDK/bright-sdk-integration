@@ -176,7 +176,7 @@ set_json_props(sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
     sdk_service_id);
 print(`✔ Processed ${sdk_services_fname}`);
 
-const brd_api_name_prev = update_index_ref(index_fname, brd_api_dst_fname);
+const brd_api_name_prev = update_index_ref(index_fname, brd_api_dst_name);
 let brd_api_fname_prev = 'none';
 if (brd_api_name_prev)
 {
