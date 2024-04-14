@@ -32,7 +32,8 @@ const read_env = ()=>({
 
 const read_config = (config, fname)=>{
     print(`Reading configuration file ${fname}...`);
-    Object.assign(config, read_json(fname), read_env());
+    const overrides = read_json(fname);
+    Object.assign(config, overrides);
 };
 
 const get_value = async(question, def_answer, config_value)=>{
@@ -79,12 +80,28 @@ const update_index_ref = (fname, ref)=>{
 };
 
 const config = {};
+const env = read_env();
 let prev_config_fname, appdir;
 if (opt.interactive)
     process_init();
-if (opt.config_fname)
+if (opt.config_fnames)
+{
+    for (let i=0; i<opt.config_fnames.length; i++)
+    {
+        const config_fname = opt.config_fnames[i];
+        if (fs.existsSync(config_fname))
+            read_config(config, config_fname);
+        if (!i)
+        {
+            Object.assign(config, env);
+            prev_config_fname = config_fname;
+        }
+    }
+}
+else if (opt.config_fname)
 {
     read_config(config, prev_config_fname = opt.config_fname);
+    Object.assign(config, env);
     appdir = config.app_dir;
 }
 else if (opt.appdir)
@@ -105,6 +122,7 @@ if (!prev_config_fname)
     if (fs.existsSync(fname))
         read_config(config, prev_config_fname = fname);
 }
+
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
 let workdir = config.workdir;
 if (!workdir)
