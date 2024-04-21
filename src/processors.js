@@ -66,6 +66,27 @@ const get_js_dir = async appdir=>{
     return def_value;
 };
 
+const get_service_dir = async (workdir, appdir)=>{
+    let def_value;
+    const existing = await search_filename(workdir, 'services.json');
+    if (existing)
+        def_value = path.dirname(existing);
+    else
+    {
+        for (const name of ['service', 'bright_sdk_service'])
+        {
+            const dir = path.join(workdir, name);
+            if (fs.existsSync(dir))
+            {
+                def_value = dir;
+                break;
+            }
+        }
+    }
+    def_value = def_value || path.join(appdir, 'service');
+    return def_value;
+};
+
 const update_index_ref = (fname, ref)=>{
     if (!fs.existsSync(fname))
         throw new Error(`index.html not found at ${fname}`);
@@ -81,10 +102,13 @@ const update_index_ref = (fname, ref)=>{
 
 const config = {};
 const env = read_env();
-let prev_config_fname, appdir;
+let prev_config_fname;
 if (opt.interactive)
     process_init();
-if (opt.config_fnames)
+const config_fnames = opt.config_fnames
+    || opt.config_fname && [opt.config_fname];
+let workdir, appdir;
+if (config_fnames?.length)
 {
     for (let i=0; i<opt.config_fnames.length; i++)
     {
@@ -101,16 +125,14 @@ if (opt.config_fnames)
             prev_config_fname = config_fname;
         }
     }
-    appdir = config.app_dir;
+    workdir = config.workdir
+        || path.dirname(config_fnames[config_fnames.length-1]);
+    appdir = path.join(workdir, config.app_dir || '');
 }
-else if (opt.config_fname)
-{
-    read_config(config, prev_config_fname = opt.config_fname);
-    Object.assign(config, env);
-    appdir = config.app_dir;
-}
-else if (opt.app_dir)
-    appdir = opt.app_dir;
+else if (opt.workdir)
+    workdir = opt.workdir;
+else
+    workdir = process.cwd();
 
 const greeting = `Welcome to BrightSDK Integration Code Generator for WebOS!`;
 
@@ -121,6 +143,7 @@ NOTE: remember to save your uncommited changes first.
 print(greeting+lbr+instructions);
 appdir = appdir || await get_value('Path to application directory', '',
     config.app_dir);
+
 if (!prev_config_fname)
 {
     const fname = get_config_fname(appdir);
@@ -129,22 +152,20 @@ if (!prev_config_fname)
 }
 
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
-let build_dir = config.build_dir;
-if (!build_dir)
-{
-    const build_dir_root = path.join(path.dirname(__dirname), '.build');
-    if (!fs.existsSync(build_dir_root))
-        fs.mkdirSync(build_dir_root);
-    build_dir = path.join(build_dir_root, `${path.basename(appdir)}_${sdk_ver}`);
-};
+
+const build_dir_root = path.join(path.dirname(__dirname), '.build');
+if (!fs.existsSync(build_dir_root))
+    fs.mkdirSync(build_dir_root);
+const build_dir = path.join(build_dir_root,
+    `${path.basename(appdir)}_${sdk_ver}`);
+
 const js_dir = await get_value('Application JS directory',
     await get_js_dir(appdir),
     config.app_dir && path.join(config.app_dir, config.js_dir||''));
 const js_name = js_dir == appdir ? '' : path.basename(js_dir);
-const sdk_service_dir_def = path.join(appdir, 'service');
+const sdk_service_dir_def = await get_service_dir(workdir, appdir);
 const sdk_service_dir = await get_value('SDK Service dir', sdk_service_dir_def,
-    config.sdk_service_dir && path.join(config.app_dir,
-        config.sdk_service_dir));
+    config.sdk_service_dir && path.join(workdir, config.sdk_service_dir));
 
 const sdk_url_mask = await get_value('SDK URL mask',
     'https://path/to/sdk_SDK_VER.zip', config.sdk_url);
@@ -224,7 +245,7 @@ if (!prev_config_fname)
         ['index', index_fname],
     ])
     {
-        const value = val.replace(appdir, '').slice(1)||'';
+        const value = val.replace(workdir, '').slice(1)||'';
         if (value)
             next_config[prop] = value;
     }
