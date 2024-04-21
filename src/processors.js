@@ -26,7 +26,7 @@ const print = (...args)=>{
 
 const read_env = ()=>({
     js_dir: process.env.JS_DIR,
-    appdir: process.env.APPDIR,
+    app_dir: process.env.APP_DIR,
     index: process.env.INDEX,
 });
 
@@ -106,7 +106,7 @@ else if (opt.config_fname)
 {
     read_config(config, prev_config_fname = opt.config_fname);
     Object.assign(config, env);
-    appdir = config.appdir;
+    appdir = config.app_dir;
 }
 else if (opt.appdir)
     appdir = opt.appdir;
@@ -119,7 +119,7 @@ NOTE: remember to save your uncommited changes first.
 
 print(greeting+lbr+instructions);
 appdir = appdir || await get_value('Path to application directory', '',
-    config.appdir);
+    config.app_dir);
 if (!prev_config_fname)
 {
     const fname = get_config_fname(appdir);
@@ -138,11 +138,11 @@ if (!workdir)
 }
 const js_dir = await get_value('Application JS directory',
     await get_js_dir(appdir),
-    config.appdir && path.join(config.appdir, config.js_dir||''));
+    config.app_dir && path.join(config.app_dir, config.js_dir||''));
 const js_name = js_dir == appdir ? '' : path.basename(js_dir);
 const sdk_service_dir_def = path.join(appdir, 'service');
 const sdk_service_dir = await get_value('SDK Service dir', sdk_service_dir_def,
-    config.sdk_service_dir && path.join(config.appdir,
+    config.sdk_service_dir && path.join(config.app_dir,
         config.sdk_service_dir));
 
 const sdk_url_mask = await get_value('SDK URL mask',
@@ -158,7 +158,7 @@ const is_web_hosted = !js_dir.startsWith(appdir);
 const index_def = path.join(is_web_hosted ? path.dirname(js_dir) : appdir,
     'index.html');
 const index_fname = await get_value('index.html location', index_def,
-    config.index && path.join(config.appdir, config.index));
+    config.index && path.join(config.app_dir, config.index));
 
 print('Starting...');
 if (!fs.existsSync(workdir))
