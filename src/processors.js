@@ -108,8 +108,8 @@ else if (opt.config_fname)
     Object.assign(config, env);
     appdir = config.app_dir;
 }
-else if (opt.appdir)
-    appdir = opt.appdir;
+else if (opt.app_dir)
+    appdir = opt.app_dir;
 
 const greeting = `Welcome to BrightSDK Integration Code Generator for WebOS!`;
 
