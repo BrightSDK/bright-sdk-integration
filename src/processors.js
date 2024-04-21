@@ -128,14 +128,14 @@ if (!prev_config_fname)
 }
 
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
-let workdir = config.workdir;
-if (!workdir)
+let build_dir = config.build_dir;
+if (!build_dir)
 {
-    const workdir_root = path.join(path.dirname(__dirname), '.build');
-    if (!fs.existsSync(workdir_root))
-        fs.mkdirSync(workdir_root);
-    workdir = path.join(workdir_root, `${path.basename(appdir)}_${sdk_ver}`);
-}
+    const build_dir_root = path.join(path.dirname(__dirname), '.build');
+    if (!fs.existsSync(build_dir_root))
+        fs.mkdirSync(build_dir_root);
+    build_dir = path.join(build_dir_root, `${path.basename(appdir)}_${sdk_ver}`);
+};
 const js_dir = await get_value('Application JS directory',
     await get_js_dir(appdir),
     config.app_dir && path.join(config.app_dir, config.js_dir||''));
@@ -150,8 +150,8 @@ const sdk_url_mask = await get_value('SDK URL mask',
 const sdk_url = sdk_url_mask.replace(/SDK_VER/, sdk_ver);
 const sdk_zip = path.basename(sdk_url);
 const sdk_zip_ext = path.extname(sdk_zip);
-const sdk_zip_fname = path.join(workdir, sdk_zip);
-const sdk_dir = path.join(workdir, path.basename(sdk_zip, sdk_zip_ext));
+const sdk_zip_fname = path.join(build_dir, sdk_zip);
+const sdk_dir = path.join(build_dir, path.basename(sdk_zip, sdk_zip_ext));
 const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
 const is_web_hosted = !js_dir.startsWith(appdir);
@@ -161,8 +161,8 @@ const index_fname = await get_value('index.html location', index_def,
     config.index && path.join(config.app_dir, config.index));
 
 print('Starting...');
-if (!fs.existsSync(workdir))
-    fs.mkdirSync(workdir);
+if (!fs.existsSync(build_dir))
+    fs.mkdirSync(build_dir);
 
 await download_from_url(sdk_url, sdk_zip_fname);
 print(`✔ Downloaded ${sdk_zip}`);
