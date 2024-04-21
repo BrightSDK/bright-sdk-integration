@@ -101,6 +101,7 @@ if (opt.config_fnames)
             prev_config_fname = config_fname;
         }
     }
+    appdir = config.app_dir;
 }
 else if (opt.config_fname)
 {
