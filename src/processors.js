@@ -106,7 +106,7 @@ else if (opt.config_fname)
 {
     read_config(config, prev_config_fname = opt.config_fname);
     Object.assign(config, env);
-    appdir = config.app_dir;
+    appdir = config.appdir;
 }
 else if (opt.appdir)
     appdir = opt.appdir;
