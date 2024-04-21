@@ -93,7 +93,11 @@ if (opt.config_fnames)
             read_config(config, config_fname);
         if (!i)
         {
-            Object.assign(config, env);
+            for (const name in env)
+            {
+                if (env[name])
+                    config[name] = env[name];
+            }
             prev_config_fname = config_fname;
         }
     }
