@@ -45,9 +45,9 @@ const get_value = async(question, def_answer, config_value)=>{
     return await prompt(question, def_answer);
 };
 
-const get_js_dir = async appdir=>{
+const get_js_dir = async (workdir, appdir)=>{
     let def_value;
-    const existing = await search_filename(appdir, brd_api_name);
+    const existing = await search_filename(workdir, brd_api_name);
     if (existing)
         def_value = path.dirname(existing);
     else
@@ -62,7 +62,7 @@ const get_js_dir = async appdir=>{
             }
         }
     }
-    def_value = def_value || path.join(appdir);
+    def_value = def_value || path.join(workdir);
     return def_value;
 };
 
@@ -160,8 +160,7 @@ const build_dir = path.join(build_dir_root,
     `${path.basename(appdir)}_${sdk_ver}`);
 
 const js_dir = await get_value('Application JS directory',
-    await get_js_dir(appdir),
-    config.app_dir && path.join(config.app_dir, config.js_dir||''));
+    await get_js_dir(workdir, appdir), path.join(workdir, config.js_dir||''));
 const js_name = js_dir == appdir ? '' : path.basename(js_dir);
 const sdk_service_dir_def = await get_service_dir(workdir, appdir);
 const sdk_service_dir = await get_value('SDK Service dir', sdk_service_dir_def,
@@ -178,7 +177,7 @@ const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
 const is_web_hosted = !js_dir.startsWith(appdir);
 const index_def = path.join(is_web_hosted ? path.dirname(js_dir) : appdir,
-    'index.html');
+    path.join(workdir, 'index.html'));
 const index_fname = await get_value('index.html location', index_def,
     config.index && path.join(config.app_dir, config.index));
 
