@@ -224,7 +224,7 @@ let brd_api_fname_prev = 'none';
 if (brd_api_name_prev)
 {
     brd_api_fname_prev = path.join(js_dir, brd_api_name_prev);
-    if (!is_web_hosted)
+    if (!is_web_hosted && brd_api_fname_prev != brd_api_dst_fname)
     {
         if (fs.existsSync(brd_api_fname_prev))
             fs.unlinkSync(brd_api_fname_prev);
