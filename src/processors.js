@@ -3,13 +3,16 @@
 const fs = require('fs');
 const path = require('path');
 const lib = require('./lib.js');
+const navigation = require('./navigation.js');
 
 const {
     lbr,
-    print: print_base, process_init, prompt, process_close,
-    read_json, write_json, search_filename,
+    print: print_base, process_init, process_close,
+    read_json, write_json, search_directory,
     download_from_url, unzip, set_json_props, replace_file,
 } = lib;
+
+const {clear_screen, prompt} = navigation;
 
 const js_ext = '.js';
 const brd_api_base = 'brd_api';
@@ -19,9 +22,12 @@ const get_config_fname = appdir=>path.join(appdir, 'brd_sdk.config.json');
 
 const process_webos = async(opt={})=>{
 
-const print = (...args)=>{
-    if (opt.interactive || opt.verbose)
-        print_base(...args);
+let buffer = '';
+const print = (s, _opt)=>{
+    if (!opt.interactive && !opt.verbose)
+        return;
+    const printed = print_base(s, _opt);
+    buffer += printed;
 };
 
 const read_env = ()=>({
@@ -36,18 +42,27 @@ const read_config = (config, fname)=>{
     Object.assign(config, overrides);
 };
 
-const get_value = async(question, def_answer, config_value)=>{
+const get_value = async(question, def_answer, config_value, _opt={})=>{
+    let value;
     if (!opt.interactive || config_value)
+        value = config_value;
+    else
     {
-        print(`${question}: ${config_value}`);
-        return config_value;
+        _opt.buffer = buffer;
+        value = await prompt(question, def_answer, _opt);
+        if (value.startsWith(workdir))
+            value = path.relative(workdir, value);
     }
-    return await prompt(question, def_answer);
+    clear_screen();
+    print_base(buffer);
+    print(`${question}: ${value}`);
+    return value;
 };
 
-const get_js_dir = async (workdir, appdir)=>{
+const get_js_dir = async (workdir, appdir, _opt)=>{
     let def_value;
-    const existing = await search_filename(workdir, brd_api_name);
+    const existing = await search_workdir(
+        `^${brd_api_base}(_.+)?\.${js_ext}$`);
     if (existing)
         def_value = path.dirname(existing);
     else
@@ -63,12 +78,12 @@ const get_js_dir = async (workdir, appdir)=>{
         }
     }
     def_value = def_value || path.join(workdir);
-    return def_value;
+    return path.relative(workdir, def_value);
 };
 
 const get_service_dir = async (workdir, appdir)=>{
     let def_value;
-    const existing = await search_filename(workdir, 'services.json');
+    const existing = await search_workdir('^services.json$');
     if (existing)
         def_value = path.dirname(existing);
     else
@@ -84,7 +99,7 @@ const get_service_dir = async (workdir, appdir)=>{
         }
     }
     def_value = def_value || path.join(appdir, 'service');
-    return def_value;
+    return path.relative(workdir, def_value);
 };
 
 const update_index_ref = (fname, ref)=>{
@@ -134,33 +149,54 @@ else if (opt.workdir)
 else
     workdir = process.cwd();
 
+config.workdir = workdir;
+
 const greeting = `Welcome to BrightSDK Integration Code Generator for WebOS!`;
 
 const instructions = `Press CTRL+C at any time to break execution.
 NOTE: remember to save your uncommited changes first.
 `;
 
+clear_screen();
 print(greeting+lbr+instructions);
 appdir = appdir || await get_value('Path to application directory', '',
-    config.app_dir);
+    config.app_dir, {selectable: true});
 
 if (!prev_config_fname)
 {
     const fname = get_config_fname(appdir);
     if (fs.existsSync(fname))
+    {
         read_config(config, prev_config_fname = fname);
+        print(`Loaded configuration: ${fname}`);
+    }
 }
 
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
 
-const build_dir_root = path.join(path.dirname(__dirname), '.build');
+const root_dir = path.dirname(__dirname);
+const build_dir_root = path.join(root_dir, '.build');
+const search_workdir = async name=>{
+    return await search_directory(workdir, new RegExp(name), {exclude: [
+        '.git',
+        '.build',
+        '.vscode',
+        '.idea',
+        'node_modules',
+    ].map(p=>path.join(workdir, p))});
+};
+
 if (!fs.existsSync(build_dir_root))
     fs.mkdirSync(build_dir_root);
+
 const build_dir = path.join(build_dir_root,
     `${path.basename(appdir)}_${sdk_ver}`);
 
 const js_dir = await get_value('Application JS directory',
-    await get_js_dir(workdir, appdir), path.join(workdir, config.js_dir||''));
+    await get_js_dir(workdir, appdir),
+    config.js_dir && path.join(workdir, config.js_dir||''),
+    {selectable: true}
+);
 const js_name = js_dir == appdir ? '' : path.basename(js_dir);
 const sdk_service_dir_def = await get_service_dir(workdir, appdir);
 const sdk_service_dir = await get_value('SDK Service dir', sdk_service_dir_def,
@@ -176,10 +212,12 @@ const sdk_dir = path.join(build_dir, path.basename(sdk_zip, sdk_zip_ext));
 const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
 const is_web_hosted = !js_dir.startsWith(appdir);
-const index_def = path.join(is_web_hosted ? path.dirname(js_dir) : appdir,
-    path.join(workdir, 'index.html'));
+const index_def = path.relative(workdir, path.join(
+    is_web_hosted ? path.dirname(js_dir) : appdir, 'index.html'));
 const index_fname = await get_value('index.html location', index_def,
-    config.index && path.join(config.app_dir, config.index));
+    config.index && path.join(config.workdir, config.index),
+    {selectable: true}
+);
 
 print('Starting...');
 if (!fs.existsSync(build_dir))
@@ -237,17 +275,15 @@ if (!opt.interactive)
 
 if (!prev_config_fname)
 {
-    const next_config = {appdir, sdk_ver, sdk_url: sdk_url_mask};
-    for (const [prop, val] of [
-        ['js_dir', js_dir],
-        ['sdk_service_dir', sdk_service_dir],
-        ['index', index_fname],
-    ])
-    {
-        const value = val.replace(workdir, '').slice(1)||'';
-        if (value)
-            next_config[prop] = value;
-    }
+    const next_config = {
+        workdir,
+        appdir,
+        js_dir,
+        index: index_fname,
+        sdk_service_dir,
+        sdk_ver,
+        sdk_url: sdk_url_mask,
+    };
     print(`Generated config:
 ${JSON.stringify(next_config, null, 2)}
     `);

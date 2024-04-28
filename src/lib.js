@@ -1,6 +1,5 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
-const readline = require('readline');
 const os = require('os');
 const https = require('follow-redirects').https;
 const path = require('path');
@@ -9,7 +8,13 @@ const fs = require('fs-extra');
 
 const lbr = os.EOL;
 
-const print = s=>process.stdout.write(s+lbr);
+const print = (s, opt={})=>{
+    let output = s+lbr;
+    if (opt.bold)
+        output = `\x1b[1m${output}\x1b[0m`;
+    process.stdout.write(output);
+    return output;
+};
 const exit = (s, code=1)=>{
     print(s);
     process.exit(code);
@@ -31,44 +36,26 @@ const process_close = ()=>{
     exit('Goodbye.', 0);
 };
 
-const prompt = async(question, def_answer)=>{
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    const full_question = def_answer
-        ? `${question} (${def_answer}): `
-        : `${question}: `;
-    return new Promise(resolve=>{
-        rl.question(full_question, answer=>{
-            rl.close();
-            const res = answer||def_answer;
-            if (!res)
-                exit('Value required!');
-            print(res);
-            resolve(res);
-        });
-    });
-};
-
 const read_text= fname=>fs.readFileSync(fname)?.toString();
 const read_json = fname=>JSON.parse(read_text(fname));
 const write_text = (fname, data)=>fs.writeFileSync(fname, data, {encoding: 'utf-8'});
 const write_json = (fname, data)=>write_text(fname, JSON.stringify(data, null, 2));
 
-const search_filename = async (dir, name)=>{
-    const fnames = await fs.promises.readdir(dir);
-    for (const file of fnames) {
-        const filePath = path.join(dir, file);
-        const stats = await fs.promises.stat(filePath);
-        if (stats.isDirectory()) {
-            const result = await search_filename(filePath, name);
-            if (result) {
+const search_directory = async(dir, pattern, opt)=>{
+    const files = await fs.promises.readdir(dir);
+    for (const f of files) {
+        const filename = path.join(dir, f);
+        if (opt?.exclude.includes(filename))
+            continue;
+        const stats = await fs.promises.stat(filename);
+        if (stats.isDirectory())
+        {
+            const result = await search_directory(filename, pattern, opt);
+            if (result)
                 return result;
-            }
-        } else if (file === name) {
-            return filePath;
         }
+        else if (pattern.test(f))
+            return filename;
     }
 };
 
@@ -123,7 +110,7 @@ const replace_file = async(src, dst)=>{
 
 module.exports = {
     lbr,
-    print, process_init, prompt, process_close,
-    read_json, write_json, search_filename,
-    download_from_url, unzip, set_json_props, replace_file,
+    print, process_init, process_close,
+    read_json, write_json, search_directory,
+    download_from_url, unzip, set_json_props, replace_file, exit,
 };
