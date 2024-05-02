@@ -50,8 +50,11 @@ const get_value = async(question, def_answer, config_value, _opt={})=>{
     {
         _opt.buffer = buffer;
         value = await prompt(question, def_answer, _opt);
-        if (value.startsWith(workdir))
-            value = path.relative(workdir, value);
+        for (const parent of [workdir, _opt.strip])
+        {
+            if (parent && value.startsWith(parent))
+                value = path.relative(parent, value);
+        }
     }
     clear_screen();
     print_base(buffer);
@@ -160,7 +163,9 @@ NOTE: remember to save your uncommited changes first.
 clear_screen();
 print(greeting+lbr+instructions);
 appdir = appdir || await get_value('Path to application directory', '',
-    config.app_dir, {selectable: true});
+    config.app_dir, {selectable: true, dir: workdir});
+if (!fs.existsSync(path.join(workdir, appdir)))
+    workdir = path.dirname(appdir);
 
 if (!prev_config_fname)
 {
@@ -172,62 +177,88 @@ if (!prev_config_fname)
     }
 }
 
-const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver);
-
 const root_dir = path.dirname(__dirname);
-const build_dir_root = path.join(root_dir, '.build');
+const sdk_dir_root = path.join(root_dir, '.sdk');
+
+const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver, {
+    selectable: fs.existsSync(sdk_dir_root),
+    lock_dir: true,
+    dir: sdk_dir_root,
+    strip: sdk_dir_root,
+});
+
 const search_workdir = async name=>{
     return await search_directory(workdir, new RegExp(name), {exclude: [
         '.git',
-        '.build',
+        '.sdk',
         '.vscode',
         '.idea',
         'node_modules',
     ].map(p=>path.join(workdir, p))});
 };
 
-if (!fs.existsSync(build_dir_root))
-    fs.mkdirSync(build_dir_root);
-
-const build_dir = path.join(build_dir_root,
-    `${path.basename(appdir)}_${sdk_ver}`);
-
-const js_dir = await get_value('Application JS directory',
-    await get_js_dir(workdir, appdir),
+const js_dir_def = await get_js_dir(workdir, appdir);
+const js_dir = await get_value('Application JS directory', js_dir_def,
     config.js_dir && path.join(workdir, config.js_dir||''),
-    {selectable: true}
+    {selectable: true, dir: js_dir_def ? path.dirname(js_dir_def) : workdir}
 );
 const js_name = js_dir == appdir ? '' : path.basename(js_dir);
 const sdk_service_dir_def = await get_service_dir(workdir, appdir);
 const sdk_service_dir = await get_value('SDK Service dir', sdk_service_dir_def,
-    config.sdk_service_dir && path.join(workdir, config.sdk_service_dir));
+    config.sdk_service_dir && path.join(workdir, config.sdk_service_dir), {
+        selectable: true,
+        dir: sdk_service_dir_def
+            ? path.dirname(sdk_service_dir_def)
+            : workdir,
+    });
 
 const sdk_url_mask = await get_value('SDK URL mask',
     'https://path/to/sdk_SDK_VER.zip', config.sdk_url);
-const sdk_url = sdk_url_mask.replace(/SDK_VER/, sdk_ver);
+const sdk_url = sdk_url_mask.replace(/SDK_VER/g, sdk_ver);
 const sdk_zip = path.basename(sdk_url);
-const sdk_zip_ext = path.extname(sdk_zip);
-const sdk_zip_fname = path.join(build_dir, sdk_zip);
-const sdk_dir = path.join(build_dir, path.basename(sdk_zip, sdk_zip_ext));
+const sdk_zip_fname = path.join(sdk_dir_root, sdk_zip);
+const sdk_dir = path.join(sdk_dir_root, sdk_ver);
 const appinfo = read_json(path.join(appdir, 'appinfo.json'));
 const {id: appid} = appinfo;
 const is_web_hosted = !js_dir.startsWith(appdir);
 const index_def = path.relative(workdir, path.join(
     is_web_hosted ? path.dirname(js_dir) : appdir, 'index.html'));
+const index_fname_def = config.index && path.join(workdir, config.index);
 const index_fname = await get_value('index.html location', index_def,
-    config.index && path.join(config.workdir, config.index),
-    {selectable: true}
+    index_fname_def, {
+        selectable: true,
+        dir: index_fname_def ? path.dirname(index_fname_def) : appdir,
+    }
 );
 
 print('Starting...');
-if (!fs.existsSync(build_dir))
-    fs.mkdirSync(build_dir);
 
-await download_from_url(sdk_url, sdk_zip_fname);
-print(`✔ Downloaded ${sdk_zip}`);
+for (const dir of [sdk_dir_root, sdk_dir])
+{
+    if (!fs.existsSync(dir))
+        fs.mkdirSync(dir);
+}
 
-await unzip(sdk_zip_fname, sdk_dir);
-print(`✔ SDK extracted into ${sdk_dir}`);
+const sdk_versions_fname = path.join(sdk_dir_root, 'versions.json');
+const sdk_versions = fs.existsSync(sdk_versions_fname)
+    ? read_json(sdk_versions_fname) : {};
+if (fs.existsSync(sdk_dir))
+{
+    print(`✔ Using cached SDK version ${
+        sdk_ver} downloaded on ${sdk_versions[sdk_ver].date}`);
+}
+else
+{
+    await download_from_url(sdk_url, sdk_zip_fname);
+    print(`✔ Downloaded ${sdk_zip}`);
+    sdk_versions[sdk_ver] = {
+        url: sdk_url,
+        date: new Date().toISOString(),
+    };
+    write_json(sdk_versions_fname, sdk_versions);
+    await unzip(sdk_zip_fname, sdk_dir);
+    print(`✔ SDK extracted into ${sdk_dir}`);
+}
 
 const sdk_service_fname = path.join(sdk_dir, 'sdk', 'service');
 const brd_api_fname = path.join(sdk_dir, 'sdk', 'consent', brd_api_name);

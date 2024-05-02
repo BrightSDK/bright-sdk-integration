@@ -24,17 +24,15 @@ const clear_screen = rl=>{
 
 const prompt = async(question, def_answer, opt={})=>{
     const rl = create_readline_interface();
-    let instructions = '';
+    let full_question = question;
+    if (def_answer)
+        full_question += ` (${def_answer})`;
     if (opt.selectable)
-        instructions = `↑/↓ to navigate`;
-    const full_question = def_answer
-        ? `${question} (${def_answer}): `
-        : instructions
-            ? `${question} (${instructions}): `
-            : `${question}: `;
+        full_question += ' (↑/↓ to navigate)';
+    full_question += ': ';
     let selected, resolved;
-    const select_file = (cwd, opt={})=>new Promise((resolve, reject)=>{
-        let current_dir = cwd || process.cwd();
+    const select_file = ()=>new Promise((resolve, reject)=>{
+        let current_dir = opt.dir || process.cwd();
         let current_index = 0;
         let files = [];
 
@@ -56,37 +54,40 @@ const prompt = async(question, def_answer, opt={})=>{
 
         const refresh_screen = ()=>{
             clear_screen(rl);
-            if (opt.header)
-                print(opt.header);
+            if (opt.buffer)
+                print(opt.buffer);
         };
         rl.input.on('keypress', async (str, key)=>{
-            if (key.name === 'up')
+            if (key.name=='up')
             {
                 select(Math.max(current_index-1, 0));
             }
-            else if (key.name === 'down')
+            else if (key.name=='down')
             {
                 select(Math.min(current_index+1, files.length-1));
             }
-            else if (key.name === 'right'
-                && fs.lstatSync(path.join(current_dir, files[current_index]))
-                    .isDirectory())
+            else if (!opt.lock_dir)
             {
-                current_dir = path.join(current_dir, files[current_index]);
-                select(0);
-                await read_dir();
-            }
-            else if (key.name === 'left')
-            {
-                current_dir = path.dirname(current_dir);
-                select(0);
-                await read_dir();
-            }
-            else if (key.name === 'escape')
-            {
-                current_dir = cwd;
-                select(0);
-                await read_dir();
+                if (key.name=='right'
+                    && fs.lstatSync(path.join(current_dir,
+                        files[current_index])).isDirectory())
+                {
+                    current_dir = path.join(current_dir, files[current_index]);
+                    select(0);
+                    await read_dir();
+                }
+                else if (key.name=='left')
+                {
+                    current_dir = path.dirname(current_dir);
+                    select(0);
+                    await read_dir();
+                }
+                else if (key.name=='escape')
+                {
+                    current_dir = cwd;
+                    select(0);
+                    await read_dir();
+                }
             }
             refresh_screen();
             print_files();
@@ -102,7 +103,7 @@ const prompt = async(question, def_answer, opt={})=>{
             resolved = true;
         });
 
-        async function read_dir() {
+        const read_dir = async()=>{
             try {
                 let f = await readdir(current_dir);
                 files = f;
@@ -111,7 +112,8 @@ const prompt = async(question, def_answer, opt={})=>{
                     files = files.filter(file=>
                         fs.lstatSync(path.join(current_dir, file)).isDirectory());
                 }
-                files.unshift('..');
+                if (!opt.lock_dir)
+                    files.unshift('..');
                 if (opt.selected)
                 {
                     select(files.indexOf(opt.selected));
@@ -124,8 +126,8 @@ const prompt = async(question, def_answer, opt={})=>{
         function print_files() {
             if (resolved)
                 return;
-            if (opt.question)
-                print(opt.question, {bold: true});
+            if (question)
+                print(question, {bold: true});
             print(`Select ${opt.file ? 'File' : 'Directory'} in ${current_dir}`,
                 {bold: true});
             files.forEach((file, index) => {
@@ -138,9 +140,12 @@ const prompt = async(question, def_answer, opt={})=>{
             });
             print('');
             print('↑/↓: navigate');
-            print('←: go up');
-            print('→: go in');
-            print('ESC: reset to initial directory');
+            if (!opt.lock_dir)
+            {
+                print('←: go up');
+                print('→: go in');
+                print('ESC: reset to initial directory');
+            }
             if (selected)
             {
                 print('');
@@ -155,14 +160,12 @@ const prompt = async(question, def_answer, opt={})=>{
     });
     return new Promise(resolve=>{
         let selection_started = false;
-        rl.input.on('keypress', (str, key)=>{
+        rl.input.once('keypress', (str, key)=>{
             if (!opt.selectable || key.name != 'up' && key.name != 'down')
                 return;
-            if (selection_started)
-                return;
             selection_started = true;
-            select_file(process.cwd(),
-                {question, header: opt.buffer, file: false});
+            opt.file = false;
+            select_file();
         });
         rl.question(full_question, answer=>{
             if (selection_started && selected)
