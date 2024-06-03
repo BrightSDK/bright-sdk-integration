@@ -1,3 +1,5 @@
+// LICENSE_CODE ZON
+'use strict'; /*jslint node:true es9:true*/
 const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
@@ -6,11 +8,15 @@ const {print, exit} = require('./lib.js');
 
 const readdir = util.promisify(fs.readdir);
 
+// Profiles `prompt` function to choose a file or ask a question
+
+// Interactive interface
 const create_readline_interface = ()=>readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
+// Cleans console screen
 const clear_screen = rl=>{
     const auto_close = !rl;
     rl = rl || create_readline_interface();
@@ -22,6 +28,7 @@ const clear_screen = rl=>{
         rl.close();
 };
 
+// Asks the question with default answer
 const prompt = async(question, def_answer, opt={})=>{
     const rl = create_readline_interface();
     let full_question = question;
@@ -160,6 +167,7 @@ const prompt = async(question, def_answer, opt={})=>{
     });
     return new Promise(resolve=>{
         let selection_started = false;
+        // Key up/down handler. Selects a file.
         rl.input.once('keypress', (str, key)=>{
             if (!opt.selectable || key.name != 'up' && key.name != 'down')
                 return;
