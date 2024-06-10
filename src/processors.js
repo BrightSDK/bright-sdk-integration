@@ -242,7 +242,7 @@ for (const dir of [sdk_dir_root, sdk_dir])
 const sdk_versions_fname = path.join(sdk_dir_root, 'versions.json');
 const sdk_versions = fs.existsSync(sdk_versions_fname)
     ? read_json(sdk_versions_fname) : {};
-if (fs.existsSync(sdk_dir))
+if (fs.existsSync(sdk_dir) && sdk_versions[sdk_ver])
 {
     print(`✔ Using cached SDK version ${
         sdk_ver} downloaded on ${sdk_versions[sdk_ver].date}`);
