@@ -37,7 +37,7 @@ if (require.main == module)
     (async function(){
         const platform_parameter_keys = ['--platform', '-p'];
         const supported_platforms = ['roku', 'webos'];
-        let platform = 'roku';
+        let platform = 'webos';
         const opt = {interactive: false, verbose: true, config_fnames: []};
         for (let i=2; i<process.argv.length; i++)
         {
