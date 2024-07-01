@@ -14,7 +14,7 @@ const {
 } = lib;
 
 const {
-    get_config_fname, print: print_base, printS: printS_base, read_env,
+    get_config_fname, print: print_base, read_env,
     read_config_and_merge: read_config_and_merge_base,
     get_value: get_value_base, search_workdir: search_workdir_base
 } = base_processor;
@@ -27,8 +27,7 @@ const js_ext = '.js';
 const brd_api_base = 'brd_api';
 const brd_api_name = `${brd_api_base}${js_ext}`;
 
-const print = (s, _opt)=>{ print_base(opt, s, _opt); };
-const printS = (string)=>{ printS_base(opt, string); }
+const print_opt = (s, _opt)=>{ print_base(opt, s, _opt); };
 const read_config_and_merge = (config, fname)=>{
     read_config_and_merge_base(opt, config, fname);
 };
@@ -135,7 +134,7 @@ NOTE: remember to save your uncommited changes first.
 `;
 
 clear_screen();
-print(greeting+lbr+instructions);
+print_opt(greeting+lbr+instructions);
 appdir = appdir || await get_value('Path to application directory', '',
     config.app_dir, {selectable: true, dir: workdir});
 if (!fs.existsSync(path.join(workdir, appdir)))
@@ -147,7 +146,7 @@ if (!prev_config_fname)
     if (fs.existsSync(fname))
     {
         read_config_and_merge(config, prev_config_fname = fname);
-        print(`Loaded configuration: ${fname}`);
+        print_opt(`Loaded configuration: ${fname}`);
     }
 }
 
@@ -199,7 +198,7 @@ const index_fname = await get_value('index.html location', index_def,
     }
 );
 
-print('Starting...');
+print_opt('Starting...');
 
 for (const dir of [sdk_dir_root, sdk_dir])
 {
@@ -212,20 +211,20 @@ const sdk_versions = fs.existsSync(sdk_versions_fname)
     ? read_json(sdk_versions_fname) : {};
 if (fs.existsSync(sdk_dir) && sdk_versions[sdk_ver])
 {
-    print(`✔ Using cached SDK version ${
+    print_opt(`✔ Using cached SDK version ${
         sdk_ver} downloaded on ${sdk_versions[sdk_ver].date}`);
 }
 else
 {
     await download_from_url(sdk_url, sdk_zip_fname);
-    print(`✔ Downloaded ${sdk_zip}`);
+    print_opt(`✔ Downloaded ${sdk_zip}`);
     sdk_versions[sdk_ver] = {
         url: sdk_url,
         date: new Date().toISOString(),
     };
     write_json(sdk_versions_fname, sdk_versions);
     await unzip(sdk_zip_fname, sdk_dir);
-    print(`✔ SDK extracted into ${sdk_dir}`);
+    print_opt(`✔ SDK extracted into ${sdk_dir}`);
 }
 
 const sdk_service_fname = path.join(sdk_dir, 'sdk', 'service');
@@ -235,12 +234,12 @@ const brd_api_dst_name = brd_api_name.replace(js_ext,
 const brd_api_dst_fname = path.join(js_dir, brd_api_dst_name);
 
 if (await replace_file(sdk_service_fname, sdk_service_dir))
-    print(`✔ Removed ${sdk_service_dir}`);
-print(`✔ Copied ${sdk_service_fname} to ${sdk_service_dir}`);
+    print_opt(`✔ Removed ${sdk_service_dir}`);
+print_opt(`✔ Copied ${sdk_service_fname} to ${sdk_service_dir}`);
 
 if (await replace_file(brd_api_fname, brd_api_dst_fname))
-    print(`✔ Removed ${brd_api_dst_fname}`);
-print(`✔ Copied ${brd_api_fname} to ${brd_api_dst_fname}`);
+    print_opt(`✔ Removed ${brd_api_dst_fname}`);
+print_opt(`✔ Copied ${brd_api_fname} to ${brd_api_dst_fname}`);
 
 const sdk_package_fname = path.join(sdk_service_dir, 'package.json');
 const sdk_services_fname = path.join(sdk_service_dir, 'services.json');
@@ -250,11 +249,11 @@ const sdk_service_id = sdk_package.name
     .replace(/.+(\.brd_sdk)$/, appid+'$1');
 
 set_json_props(sdk_package_fname, ['name'], sdk_service_id);
-print(`✔ Processed ${sdk_package_fname}`);
+print_opt(`✔ Processed ${sdk_package_fname}`);
 
 set_json_props(sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
     sdk_service_id);
-print(`✔ Processed ${sdk_services_fname}`);
+print_opt(`✔ Processed ${sdk_services_fname}`);
 
 const brd_api_name_prev = update_index_ref(index_fname, brd_api_dst_name);
 let brd_api_fname_prev = 'none';
@@ -267,7 +266,7 @@ if (brd_api_name_prev)
             fs.unlinkSync(brd_api_fname_prev);
     }
 }
-print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
+print_opt(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
 if (!opt.interactive)
     return;
@@ -283,15 +282,15 @@ if (!prev_config_fname)
         sdk_ver,
         sdk_url: sdk_url_mask,
     };
-    print(`Generated config:
+    print_opt(`Generated config:
 ${JSON.stringify(next_config, null, 2)}
     `);
     const next_config_fname = get_config_fname(appdir);
     write_json(next_config_fname, next_config);
-    print(`✔ Saved config into ${next_config_fname}`);
+    print_opt(`✔ Saved config into ${next_config_fname}`);
 }
 
-print(`
+print_opt(`
 Thank you for using our products!
 To commit your changes, run:
 

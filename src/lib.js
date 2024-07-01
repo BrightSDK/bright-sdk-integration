@@ -12,6 +12,8 @@ const print = (s, opt={})=>{
     let output = s+lbr;
     if (opt.bold)
         output = `\x1b[1m${output}\x1b[0m`;
+    if (opt.colored)
+        output = `\x1b[1;91m${output}\x1b[0m`;
     process.stdout.write(output);
     return output;
 };

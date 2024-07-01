@@ -1,15 +1,17 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
 const path = require('path');
+const lib = require('./src/lib.js');
 const utils = require('./src/processors.js');
 const processor_roku = require('./src/processor_roku.js');
 const processor_webos = require('./src/processor_webos.js');
 
+const {print} = lib;
 const {get_config_fname} = utils;
 const {process_roku} = processor_roku;
 const {process_webos} = processor_webos;
 
-module.exports = {process_roku};
+module.exports = {process_roku, processor_webos};
 
 /**
 - The apps must be in a directory inside a working directory.
@@ -40,8 +42,8 @@ if (require.main == module)
         for (let i=2; i<process.argv.length; i++)
         {
             const arg = process.argv[i];
-            console.log('arg[' + i + ']: ' + arg);
-            console.log(get_config_fname(path.dirname(arg)));
+            print('arg[' + i + ']: ' + arg);
+            print(get_config_fname(path.dirname(arg)));
             if (platform_parameter_keys.includes(arg))
             {
                 i += 1;
@@ -50,18 +52,18 @@ if (require.main == module)
                     platform = platform_param;
                 else
                 {
-                    console.log('\u001b[1;91mUnsupported platform: '
+                    print('\u001b[1;91mUnsupported platform: '
                         + platform_param + '\u001b[0m');
                 }
             }
             else if (arg == get_config_fname(path.dirname(arg)))
             {
-                console.log('Using configuration file: ' + arg);
+                print('Using configuration file: ' + arg);
                 opt.config_fnames.push(arg);
             }
             else
             {
-                console.log('Using appdir: ' + arg);
+                print('Using appdir: ' + arg);
                 opt.appdir = arg;
                 break;
             }

@@ -12,7 +12,7 @@ const {
 } = lib;
 
 const {
-    get_config_fname, print: print_base, printS: print_s_base, read_env,
+    get_config_fname, print: print_base, print_colored: print_colored_base, read_env,
     read_config_and_merge: read_config_and_merge_base,
     get_value: get_value_base, search_workdir
 } = base_processor;
@@ -35,11 +35,11 @@ config {
 */
 const process_roku = async(opt={})=>{
 
-const js_ext = '.js'; // dodo remove
+const js_ext = '.js'; // TODO remove because where is no js code in Roku
 const brd_api_base = 'BrightData';
 
-const print = (s, _opt)=>{ print_base(opt, s, _opt); };
-const printS = string=>print_s_base(opt, string);
+const print_opt = (s, _opt)=>{ print_base(opt, s, _opt); };
+const print_colored = string=>print_colored_base(opt, string);
 const read_config_and_merge = (config, fname)=>{
     read_config_and_merge_base(opt, config, fname);
 };
@@ -51,7 +51,7 @@ const get_components_dir = async(workdir, appdir, _opt)=>{
     let def_value;
     const existing = await search_workdir(appdir,
         `^(_.+)?${brd_api_base}$`);
-    printS(`\t${brd_api_base} -> ${existing}`);
+    print_colored(`\t${brd_api_base} -> ${existing}`);
     if (existing)
         def_value = path.dirname(existing);
     else
@@ -131,12 +131,12 @@ else
 
 config.workdir = workdir;
 
-print(`\tconfig.workdir: ${config.workdir}`);
+print_opt(`\tconfig.workdir: ${config.workdir}`);
 // Print welcome message
 if (opt.interactive)
 {
     clear_screen();
-    print(
+    print_opt(
       `Welcome to BrightSDK Integration Code Generator for WebOS!
     Press CTRL+C at any time to break execution.
     NOTE: remember to save your uncommited changes first.
@@ -146,7 +146,7 @@ if (opt.interactive)
 // Step 1: input `appdir` if it's not defined in `config.app_dir` or not exists
 appdir = appdir || await get_value('Path to application directory', '',
     config.app_dir, {selectable: true, dir: workdir});
-print(`\tappdir: ${appdir}`);
+print_opt(`\tappdir: ${appdir}`);
 if (!fs.existsSync(path.join(workdir, appdir)))
     workdir = path.dirname(appdir);
 
@@ -157,15 +157,15 @@ if (!prev_config_fname)
     if (fs.existsSync(fname))
     {
         read_config_and_merge(config, prev_config_fname = fname);
-        print(`Loaded configuration: ${fname}`);
+        print_opt(`Loaded configuration: ${fname}`);
     }
 }
 
 // Define SDK path (why? /.sdk)
 const root_dir = path.dirname(__dirname);
 const sdk_dir_root = path.join(root_dir, '.sdk'); // output for SDK
-printS(`\troot_dir: ${root_dir}`);
-printS(`\tsdk_dir_root: ${sdk_dir_root}`);
+print_colored(`\troot_dir: ${root_dir}`);
+print_colored(`\tsdk_dir_root: ${sdk_dir_root}`);
 
 // Step 2: input version and define output SDK dir
 const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver, {
@@ -176,7 +176,7 @@ const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver, {
 });
 
 const default_components_dir = await get_components_dir(workdir, appdir);
-printS(`default_components_dir: ${default_components_dir}`);
+print_colored(`default_components_dir: ${default_components_dir}`);
 const components_dir = await get_value('Application `components` directory',
     default_components_dir,
     config.components_dir && path.join(appdir, config.components_dir||''),
@@ -225,11 +225,11 @@ const is_web_hosted = !components_dir.startsWith(appdir);
 //    }
 // );
 
-print('Starting...');
+print_opt('Starting...');
 
-print('Making directories...');
-printS(`\tsdk_dir_root: ${sdk_dir_root}`);
-printS(`\tsdk_dir: ${sdk_dir}`);
+print_opt('Making directories...');
+print_colored(`\tsdk_dir_root: ${sdk_dir_root}`);
+print_colored(`\tsdk_dir: ${sdk_dir}`);
 
 for (const dir of [sdk_dir_root]) // diff sdk_dir
 {
@@ -243,37 +243,37 @@ const sdk_versions_fpath = path.join(sdk_dir_root, 'versions.json');
 const sdk_versions = read_json(sdk_versions_fpath);
 if (fs.existsSync(sdk_dir))
 {
-    printS(`${JSON.stringify(sdk_versions)}`);
-    print(`✔ Using cached SDK version
+    print_colored(`${JSON.stringify(sdk_versions)}`);
+    print_opt(`✔ Using cached SDK version
         ${sdk_ver} downloaded on ${sdk_versions[sdk_ver].date}`);
 }
 else
 {
-    print('Download SDK:');
+    print_opt('Download SDK:');
     await download_from_url(sdk_url, sdk_zip_fpath);
-    print(`✔ Downloaded ${sdk_zip}`);
+    print_opt(`✔ Downloaded ${sdk_zip}`);
     sdk_versions[sdk_ver] = {
         url: sdk_url,
         date: new Date().toISOString(),
     };
     write_json(sdk_versions_fpath, sdk_versions);
     await unzip(sdk_zip_fpath, sdk_dir);
-    print(`✔ SDK extracted into ${sdk_dir}`);
+    print_opt(`✔ SDK extracted into ${sdk_dir}`);
 }
 
 // Copy SDK
 const sdk_components_dir = path.join(sdk_dir, 'sdk_wrapper', 'components');
 const sdk_sdk_dir = path.join(sdk_components_dir, `${brd_api_base}`);
 const dst_sdk_dir = path.join(components_dir, `${brd_api_base}`);
-printS(`\tsdk_sdk_dir: ${sdk_sdk_dir}`);
+print_colored(`\tsdk_sdk_dir: ${sdk_sdk_dir}`);
 
 if (await replace_file(sdk_sdk_dir, dst_sdk_dir))
-    print(`✔ Removed ${dst_sdk_dir}`);
-print(`✔ Copied ${sdk_sdk_dir} to ${dst_sdk_dir}`);
+    print_opt(`✔ Removed ${dst_sdk_dir}`);
+print_opt(`✔ Copied ${sdk_sdk_dir} to ${dst_sdk_dir}`);
 
 if (!opt.interactive)
 {
-    printS(`Sources updated: ${appdir}`);
+    print_colored(`Sources updated: ${appdir}`);
     return;
 }
 
@@ -287,17 +287,17 @@ if (!prev_config_fname)
         sdk_ver,
         sdk_url: sdk_url_mask,
     };
-    print(`Generated config:
+    print_opt(`Generated config:
 ${JSON.stringify(next_config, null, 2)}
     `);
     const next_config_fname = get_config_fname(appdir);
     write_json(next_config_fname, next_config);
-    print(`✔ Saved config into ${next_config_fname}`);
+    print_opt(`✔ Saved config into ${next_config_fname}`);
 }
 
 if (opt.interactive)
 {
-    print(`
+    print_opt(`
 Thank you for using our products!
 To commit your changes, run:
 

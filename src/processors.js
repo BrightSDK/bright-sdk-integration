@@ -8,7 +8,7 @@ const navigation = require('./navigation.js');
 /**
 Defines base functions for the processors:
 - print
-- printS
+- print_colored
 - read_env
 - read_config_and_merge
 - get_value
@@ -39,10 +39,8 @@ const print = (opt, s, _opt)=>{
     const printed = print_base(s, _opt);
     buffer += printed;
 };
-const CS = `\u001b[1;91m`;
-const CE = `\u001b[0m`;
-const printS = (opt, string)=>{
-    print(opt, `${CS}${string}${CE}`)
+const print_colored = (opt, string)=>{
+    print(opt, string, {colored: true});
 }
 
 // Defines the env variables
@@ -83,7 +81,6 @@ const get_value = async(opt, question, def_answer, config_value, _opt={})=>{
 };
 
 // Searches for given filename
-// diff
 const search_workdir = async (dir, name)=>{
     return await search_directory(dir, new RegExp(name), {exclude: [
         '.git',
@@ -94,5 +91,5 @@ const search_workdir = async (dir, name)=>{
     ].map(p=>path.join(dir, p))});
 };
 
-module.exports = {get_config_fname, print, printS, read_env,
+module.exports = {get_config_fname, print, print_colored, read_env,
    read_config_and_merge, get_value, search_workdir};
