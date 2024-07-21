@@ -215,7 +215,7 @@ const sdk_ver = await get_sdk_ver();
 if (config.sdk_ver_prev)
 {
     print('SDK is already of the latest version.');
-    const force = await get_value('Force update? (y/n)', 'n');
+    const force = opt.interactive && await get_value('Force update? (y/n)', 'n');
     if (force != 'y')
         return;
 }
