@@ -330,7 +330,7 @@ if (brd_api_name_prev)
 }
 print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
-const simplify = s=>s.replace(workdir, '');
+const simplify = s=>s.replace(workdir, '') || '.';
 const next_config = {
     workdir: simplify(workdir),
     app_dir: simplify(appdir),
