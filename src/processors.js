@@ -330,12 +330,13 @@ if (brd_api_name_prev)
 }
 print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
+const simplify = s=>s.replace(workdir, '');
 const next_config = {
-    workdir,
-    app_dir: appdir,
-    js_dir,
-    index: index_fname,
-    sdk_service_dir,
+    workdir: simplify(workdir),
+    app_dir: simplify(appdir),
+    js_dir: simplify(js_dir),
+    index: simplify(index_fname),
+    sdk_service_dir: simplify(sdk_service_dir),
     sdk_ver: config?.sdk_ver || sdk_ver,
     sdk_ver_prev: sdk_ver,
     sdk_url: sdk_url_mask,
