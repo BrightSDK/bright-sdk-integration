@@ -18,7 +18,7 @@ const js_ext = '.js';
 const brd_api_base = 'brd_api';
 const brd_api_name = `${brd_api_base}${js_ext}`;
 
-const get_config_fname = appdir=>path.join(appdir, 'brd_sdk.config.json');
+const get_config_fname = workdir=>path.join(workdir, 'brd_sdk.config.json');
 
 const process_webos = async(opt={})=>{
 
@@ -169,7 +169,7 @@ if (!fs.existsSync(path.join(workdir, appdir)))
 
 if (!prev_config_fname)
 {
-    const fname = get_config_fname(appdir);
+    const fname = get_config_fname(workdir);
     if (fs.existsSync(fname))
     {
         read_config(config, prev_config_fname = fname);
@@ -345,7 +345,7 @@ const next_config = {
 print(`Generated config:
 ${JSON.stringify(next_config, null, 2)}
 `);
-const next_config_fname = get_config_fname(appdir);
+const next_config_fname = get_config_fname(workdir);
 write_json(next_config_fname, next_config);
 print(`✔ Saved config into ${next_config_fname}`);
 
