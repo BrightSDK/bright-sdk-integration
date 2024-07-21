@@ -61,9 +61,25 @@ const search_directory = async(dir, pattern, opt)=>{
 
 const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
     const request = https.get(url, response=>{
-        const fileStream = fs.createWriteStream(fname);
-        response.pipe(fileStream);
-        response.on('end', resolve);
+        if (response.headers['content-type'].includes('application/json'))
+        {
+            let data = '';
+            response.on('data', chunk=>{ data+=chunk; });
+            response.on('end', ()=>{
+                fs.writeFile(fname, data, 'utf8', err=>{
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
+            });
+        }
+        else
+        {
+            const fileStream = fs.createWriteStream(fname);
+            response.pipe(fileStream);
+            response.on('end', resolve);
+        }
     });
     request.on('error', reject);
 });

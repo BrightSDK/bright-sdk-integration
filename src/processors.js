@@ -180,12 +180,43 @@ if (!prev_config_fname)
 const root_dir = path.dirname(__dirname);
 const sdk_dir_root = path.join(root_dir, '.sdk');
 
-const sdk_ver = await get_value('SDK Version', '1.438.821', config.sdk_ver, {
-    selectable: fs.existsSync(sdk_dir_root),
-    lock_dir: true,
-    dir: sdk_dir_root,
-    strip: sdk_dir_root,
-});
+const get_sdk_ver = async()=>{
+    let ver = await get_value('SDK Version', 'latest', config.sdk_ver, {
+        selectable: fs.existsSync(sdk_dir_root),
+        lock_dir: true,
+        dir: sdk_dir_root,
+        strip: sdk_dir_root,
+    });
+    if (ver == 'latest')
+    {
+        const latest_fname = path.join(sdk_dir_root, 'latest.json');
+        try {
+            await download_from_url('https://bright-sdk.com/sdk_api/sdk/versions', latest_fname);
+        } catch(e){
+            print('Failed to download latest version info');
+            if (fs.existsSync(latest_fname))
+                print('Falling back to cached version info');
+            else
+            {
+                throw new Error('Please check your internet connection and'
+                    +' try again or provide cached sdk version name');
+            }
+        }
+        const latest = read_json(latest_fname).webos;
+        if (latest)
+            ver = latest;
+    }
+    return ver;
+};
+
+const sdk_ver = await get_sdk_ver();
+if (config.sdk_ver_prev)
+{
+    print('SDK is already of the latest version.');
+    const force = await get_value('Force update? (y/n)', 'n');
+    if (force != 'y')
+        return;
+}
 
 const search_workdir = async name=>{
     return await search_directory(workdir, new RegExp(name), {exclude: [
@@ -301,36 +332,40 @@ if (brd_api_name_prev)
 }
 print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
-if (!opt.interactive)
-    return;
-
-if (!prev_config_fname)
-{
-    const next_config = {
-        workdir,
-        appdir,
-        js_dir,
-        index: index_fname,
-        sdk_service_dir,
-        sdk_ver,
-        sdk_url: sdk_url_mask,
-    };
-    print(`Generated config:
+const next_config = {
+    workdir,
+    appdir,
+    js_dir,
+    index: index_fname,
+    sdk_service_dir,
+    sdk_ver: config?.sdk_ver || sdk_ver,
+    sdk_ver_prev: sdk_ver,
+    sdk_url: sdk_url_mask,
+};
+print(`Generated config:
 ${JSON.stringify(next_config, null, 2)}
-    `);
-    const next_config_fname = get_config_fname(appdir);
-    write_json(next_config_fname, next_config);
-    print(`✔ Saved config into ${next_config_fname}`);
-}
+`);
+const next_config_fname = get_config_fname(appdir);
+write_json(next_config_fname, next_config);
+print(`✔ Saved config into ${next_config_fname}`);
+
+const sdk_ver_from = config.sdk_ver_prev && config.sdk_ver_prev != sdk_ver
+    ? `from v${config.sdk_ver_prev} ` : '';
+const commands = [];
+if (path.resolve(appdir) != process.cwd())
+    commands.push(`cd ${appdir}`);
+commands.push(...[
+    `git add ${path.join(js_name, brd_api_dst_name)}`,
+    `git add ${sdk_service_dir}`,
+    `git add ${next_config_fname}`,
+    `git commit -m 'update brd_sdk ${sdk_ver_from}to v${sdk_ver}'`,
+]);
 
 print(`
 Thank you for using our products!
 To commit your changes, run:
 
-cd ${appdir} && \\
-git add ${path.basename(sdk_service_dir)} && \\
-git add ${path.join(js_name, brd_api_name)} && \\
-git commit -m 'update brd_sdk to v${sdk_ver}'
+${commands.join(' && \\ \n')}
 
 To start over, run
 
