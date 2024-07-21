@@ -334,7 +334,7 @@ print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
 const next_config = {
     workdir,
-    appdir,
+    app_dir: appdir,
     js_dir,
     index: index_fname,
     sdk_service_dir,
