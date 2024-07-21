@@ -209,6 +209,8 @@ const get_sdk_ver = async()=>{
     return ver;
 };
 
+if (!fs.existsSync(sdk_dir_root))
+    fs.mkdirSync(sdk_dir_root);
 const sdk_ver = await get_sdk_ver();
 if (config.sdk_ver_prev)
 {
@@ -263,12 +265,8 @@ const index_fname = await get_value('index.html location', index_def,
 );
 
 print('Starting...');
-
-for (const dir of [sdk_dir_root, sdk_dir])
-{
-    if (!fs.existsSync(dir))
-        fs.mkdirSync(dir);
-}
+if (!fs.existsSync(sdk_dir))
+    fs.mkdirSync(sdk_dir);
 
 const sdk_versions_fname = path.join(sdk_dir_root, 'versions.json');
 const sdk_versions = fs.existsSync(sdk_versions_fname)
