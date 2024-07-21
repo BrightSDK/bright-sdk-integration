@@ -335,7 +335,7 @@ const next_config = {
     workdir: simplify(workdir),
     app_dir: simplify(appdir),
     js_dir: simplify(js_dir),
-    index: simplify(index_fname),
+    index: index_fname,
     sdk_service_dir: simplify(sdk_service_dir),
     sdk_ver: config?.sdk_ver || sdk_ver,
     sdk_ver_prev: sdk_ver,
