@@ -126,33 +126,41 @@ if (opt.interactive)
 const config_fnames = opt.config_fnames
     || opt.config_fname && [opt.config_fname];
 let workdir, appdir;
-if (config_fnames?.length)
+if (opt.config)
 {
-    for (let i=0; i<opt.config_fnames.length; i++)
-    {
-        const config_fname = opt.config_fnames[i];
-        if (fs.existsSync(config_fname))
-            read_config(config, config_fname);
-        if (!i)
-        {
-            for (const name in env)
-            {
-                if (env[name])
-                    config[name] = env[name];
-            }
-            prev_config_fname = config_fname;
-        }
-    }
-    workdir = config.workdir
-        || path.dirname(config_fnames[config_fnames.length-1]);
-    appdir = path.join(workdir, config.app_dir || '');
+    Object.assign(config, opt.config);
+    workdir = config.workdir;
+    appdir = path.join(workdir, config.app_dir);
 }
-else if (opt.workdir)
-    workdir = opt.workdir;
 else
-    workdir = process.cwd();
-
-config.workdir = workdir;
+{
+    if (config_fnames?.length)
+    {
+        for (let i=0; i<opt.config_fnames.length; i++)
+        {
+            const config_fname = opt.config_fnames[i];
+            if (fs.existsSync(config_fname))
+                read_config(config, config_fname);
+            if (!i)
+            {
+                for (const name in env)
+                {
+                    if (env[name])
+                        config[name] = env[name];
+                }
+                prev_config_fname = config_fname;
+            }
+        }
+        workdir = config.workdir
+            || path.dirname(config_fnames[config_fnames.length-1]);
+        appdir = path.join(workdir, config.app_dir || '');
+    }
+    else if (opt.workdir)
+        workdir = opt.workdir;
+    else
+        workdir = process.cwd();
+    config.workdir = workdir;
+}
 
 const greeting = `Welcome to BrightSDK Integration Code Generator for WebOS!`;
 
@@ -162,12 +170,15 @@ NOTE: remember to save your uncommited changes first.
 
 clear_screen();
 print(greeting+lbr+instructions);
-appdir = appdir || await get_value('Path to application directory', '',
-    config.app_dir, {selectable: true, dir: workdir});
-if (!fs.existsSync(path.join(workdir, appdir)))
-    workdir = path.dirname(appdir);
+if (!appdir)
+{
+    appdir = await get_value('Path to application directory', '',
+        config.app_dir, {selectable: true, dir: workdir});
+    if (!fs.existsSync(path.join(workdir, appdir)))
+        workdir = path.dirname(appdir);
+}
 
-if (!prev_config_fname)
+if (!opt.config && !prev_config_fname)
 {
     const fname = get_config_fname(workdir);
     if (fs.existsSync(fname))
@@ -330,47 +341,49 @@ if (brd_api_name_prev)
 }
 print(`✔ Processed ${brd_api_fname_prev} -> ${brd_api_dst_fname}`);
 
-const simplify = s=>s.replace(workdir, '') || '.';
-const next_config = {
-    workdir: simplify(workdir),
-    app_dir: simplify(appdir),
-    js_dir: simplify(js_dir),
-    index: index_fname,
-    sdk_service_dir: simplify(sdk_service_dir),
-    sdk_ver: config?.sdk_ver || sdk_ver,
-    sdk_ver_prev: sdk_ver,
-    sdk_url: sdk_url_mask,
-};
-print(`Generated config:
-${JSON.stringify(next_config, null, 2)}
-`);
-const next_config_fname = get_config_fname(workdir);
-write_json(next_config_fname, next_config);
-print(`✔ Saved config into ${next_config_fname}`);
+if (!opt.config)
+{
+    const simplify = s=>s.replace(workdir, '') || '.';
+    const next_config = {
+        workdir: simplify(workdir),
+        app_dir: simplify(appdir),
+        js_dir: simplify(js_dir),
+        index: index_fname,
+        sdk_service_dir: simplify(sdk_service_dir),
+        sdk_ver: config?.sdk_ver || sdk_ver,
+        sdk_ver_prev: sdk_ver,
+        sdk_url: sdk_url_mask,
+    };
+    print(`Generated config:
+    ${JSON.stringify(next_config, null, 2)}
+    `);
+    const next_config_fname = get_config_fname(workdir);
+    write_json(next_config_fname, next_config);
+    print(`✔ Saved config into ${next_config_fname}`);
+    const sdk_ver_from = config.sdk_ver_prev && config.sdk_ver_prev != sdk_ver
+        ? `from v${config.sdk_ver_prev} ` : '';
+    const commands = [];
+    if (path.resolve(appdir) != process.cwd())
+        commands.push(`cd ${appdir}`);
+    commands.push(...[
+        `git add ${path.join(js_name, brd_api_dst_name)}`,
+        `git add ${sdk_service_dir}`,
+        `git add ${next_config_fname}`,
+        `git commit -m 'update brd_sdk ${sdk_ver_from}to v${sdk_ver}'`,
+    ]);
 
-const sdk_ver_from = config.sdk_ver_prev && config.sdk_ver_prev != sdk_ver
-    ? `from v${config.sdk_ver_prev} ` : '';
-const commands = [];
-if (path.resolve(appdir) != process.cwd())
-    commands.push(`cd ${appdir}`);
-commands.push(...[
-    `git add ${path.join(js_name, brd_api_dst_name)}`,
-    `git add ${sdk_service_dir}`,
-    `git add ${next_config_fname}`,
-    `git commit -m 'update brd_sdk ${sdk_ver_from}to v${sdk_ver}'`,
-]);
+    print(`
+    Thank you for using our products!
+    To commit your changes, run:
 
-print(`
-Thank you for using our products!
-To commit your changes, run:
+    ${commands.join(' && \\ \n')}
 
-${commands.join(' && \\ \n')}
+    To start over, run
 
-To start over, run
+    cd ${appdir} && git checkout . && cd -
 
-cd ${appdir} && git checkout . && cd -
-
-`);
+    `);
+}
 
 if (opt.interactive)
     process_close();
