@@ -109,16 +109,22 @@ class BrightSdkUpdateWeb {
         def_value = def_value || path.join(workdir);
         return path.relative(workdir, def_value);
     }
-    async get_service_dir(workdir, appdir){
+    async find_service_dir(){
+        return await this.search_workdir('^services.json$');
+    }
+    get_service_dir_default(){
+        return path.join(this.appdir, 'service');
+    }
+    async get_service_dir(){
         let def_value;
-        const existing = await this.search_workdir('^services.json$');
+        const existing = await this.find_service_dir();
         if (existing)
             def_value = path.dirname(existing);
         else
         {
             for (const name of ['service', 'bright_sdk_service'])
             {
-                const dir = path.join(workdir, name);
+                const dir = path.join(this.workdir, name);
                 if (fs.existsSync(dir))
                 {
                     def_value = dir;
@@ -126,8 +132,8 @@ class BrightSdkUpdateWeb {
                 }
             }
         }
-        def_value = def_value || path.join(appdir, 'service');
-        return path.relative(workdir, def_value);
+        def_value = def_value || this.get_service_dir_default();
+        return path.relative(this.workdir, def_value);
     }
     update_index_ref(fname, ref){
         if (!fs.existsSync(fname))
@@ -278,7 +284,7 @@ class BrightSdkUpdateWeb {
         this.js_name = this.js_dir == this.appdir ? '' : path.basename(this.js_dir);
     }
     async assign_sdk_service_dir(){
-        const sdk_service_dir_def = await this.get_service_dir(this.workdir, this.appdir);
+        const sdk_service_dir_def = await this.get_service_dir();
         this.sdk_service_dir = await this.get_value('SDK Service dir', sdk_service_dir_def,
             this.config.sdk_service_dir && path.join(this.workdir, this.config.sdk_service_dir),
             {
@@ -362,12 +368,12 @@ class BrightSdkUpdateWeb {
         else
         {
             await download_from_url(this.sdk_url, this.sdk_zip_fname);
-            this.print(`✔ Downloaded ${sdk_zip}`);
+            this.print(`✔ Downloaded ${this.sdk_zip}`);
             this.sdk_versions[this.sdk_ver] = {
                 url: this.sdk_url,
                 date: new Date().toISOString(),
             };
-            write_json(this.this.sdk_versions_fname, this.sdk_versions);
+            write_json(this.sdk_versions_fname, this.sdk_versions);
             await unzip(this.sdk_zip_fname, this.sdk_dir);
             this.print(`✔ SDK extracted into ${this.sdk_dir}`);
         }
@@ -471,7 +477,6 @@ ${reset}
         await this.assign_sdk_url();
         this.assign_sdk_zip_names();
         this.assign_sdk_dir();
-        this.assign_appid();
         this.assign_web_hosted();
         await this.assign_index_filename();
         await this.assign_use_helper();
@@ -530,6 +535,7 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
     }
     async prepare(){
         await super.prepare();
+        this.assign_appid();
         this.assign_sdk_package_filename();
         this.assign_sdk_services_filename();
     }
@@ -540,10 +546,16 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
     }
 }
 
+class BrightSdkUpdateTizen extends BrightSdkUpdateWeb {
+    async find_service_dir(){
+        return await this.search_workdir('^ver_conf.js$');
+    }
+}
+
 const process_web = async(opt={})=>{
     const platforms = {
         webos: {name: 'WebOS', Implementation: BrightSdkUpdateWebos},
-        tizen: {name: 'Tizen', Implementation: BrightSdkUpdateWeb},
+        tizen: {name: 'Tizen', Implementation: BrightSdkUpdateTizen},
     };
     const platform = platforms[opt.platform];
     new platform.Implementation({...opt, name: platform.name}).run();

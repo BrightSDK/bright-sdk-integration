@@ -17,9 +17,8 @@ if (require.main == module)
             .argv;
 
         const opt = {interactive: true, config_fnames: [], platform: argv.platform};
-        for (let i=2; i<process.argv.length; i++)
+        for (const arg of argv._)
         {
-            const arg = process.argv[i];
             if (arg == get_config_fname(path.dirname(arg)))
                 opt.config_fnames.push(arg);
             else
