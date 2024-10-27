@@ -1,0 +1,10 @@
+{
+  "id": "com.brightsdk.sample.app",
+  "version": "1.0.0",
+  "vendor": "BrightSDK",
+  "type": "web",
+  "main": "index.html",
+  "title": "Sample App for BrightSDK Integration",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png"
+}

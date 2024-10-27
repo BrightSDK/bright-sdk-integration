@@ -1,0 +1,66 @@
+<!--
+Copyright (c) 2024 LG Electronics Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Sample App for BrightSDK Integration</title>
+	<style type="text/css">
+	 	body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+			color: white;
+			background-color: black;
+        }
+        .container {
+            text-align: center;
+		}
+	</style>
+</head>
+
+<script src="webOSTVjs-1.2.10/webOSTV.js" charset="utf-8"></script>
+<script src="webOSTVjs-1.2.10/webOSTV-dev.js" charset="utf-8"></script>
+<script src="js/brd_api.js" charset="utf-8"></script>
+<script src="js/brd_api.helper.js" charset="utf-8"></script>
+<script type="text/javascript">
+	BrightSDK.init({
+        lang: 'en',
+        agree_btn: 'Accept',
+        disagree_btn: 'Decline',
+        opt_out_instructions: 'Press Opt-out button to opt-out',
+        app_name: 'Sample App',
+        app_logo: 'icon.png',
+        benefit: 'to provide you with the best experience',
+        skip_consent: false,
+        on_dialog_shown: function(){},
+        on_dialog_closed: function(){},
+        iframe: false,
+        debug: true,
+        verbose: true,
+    });
+    document.findElementById('displayConsent').addEventListener('click', function() {
+        BrightSDK.displayConsent();
+    });
+    document.findElementById('optOut').addEventListener('click', function() {
+        BrightSDK.optOut();
+    });
+</script>
+
+<body>
+	<div class="container">
+        <h1>Welcome to BrightSDK Sample App for WebOS</h1>
+        <p>BrightSDK status is: <span>N/A</span></p>
+		<button id="displayConsent">Display Consent</button>
+		<button id="optOut">Opt out</button>
+    </div>
+</body>
+
+</html>
