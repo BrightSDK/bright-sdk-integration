@@ -5,5 +5,6 @@
   "index": "app/index.html",
   "sdk_service_dir": "app/service",
   "sdk_ver": "latest",
+  "use_helper": true,
   "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tizen-SDK_VER.zip"
 }
