@@ -36,6 +36,7 @@ class BrightSdkUpdateWeb {
         this.appid = null;
         this.opt = opt;
         this.index_fname = null;
+        this.use_helper = null;
         this.sdk_versions_fname = null;
         this.sdk_versions = {};
         this.sdk_ver = null;
@@ -46,6 +47,9 @@ class BrightSdkUpdateWeb {
         this.brd_api_fname = null;
         this.brd_api_dst_name = null;
         this.brd_api_dst_fname = null;
+        this.brd_api_helper_name = null;
+        this.brd_api_helper_fname = null;
+        this.brd_api_helper_dst_fname = null;
     }
     print(s, opt={}){
         if (!this.opt.interactive && !this.opt.verbose)
@@ -315,6 +319,11 @@ class BrightSdkUpdateWeb {
             }
         );
     }
+    async assign_use_helper(){
+        const use_helper_yes_no = await this.get_value('Use BrightSDK Integration Helper? (y/n)',
+            'y', this.config.use_helper && 'y');
+        this.use_helper = use_helper_yes_no == 'y';
+    }
     assign_sdk_versions_filename(){
         this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
     }
@@ -334,6 +343,15 @@ class BrightSdkUpdateWeb {
     }
     async assign_brd_api_dest_filename(){
         this.brd_api_dst_fname = path.join(this.js_dir, this.brd_api_dst_name);
+    }
+    async assign_brd_api_helper_name(){
+        this.brd_api_helper_name = 'brd_api.helper.js';
+    }
+    async assign_brd_api_helper_filename(){
+        this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+    }
+    async assign_brd_api_helper_dest_filename(){
+        this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
     }
     async download_sdk(){
         if (fs.existsSync(this.sdk_dir) && this.sdk_versions[this.sdk_ver])
@@ -359,6 +377,13 @@ class BrightSdkUpdateWeb {
             [this.sdk_service_fname, this.sdk_service_dir],
             [this.brd_api_fname, this.brd_api_dst_fname],
         ];
+        if (this.use_helper)
+        {
+            files.push([
+                this.brd_api_helper_fname,
+                this.brd_api_helper_dst_fname
+            ]);
+        }
         return files;
     }
     async replace_sdk_files(){
@@ -449,12 +474,19 @@ ${reset}
         this.assign_appid();
         this.assign_web_hosted();
         await this.assign_index_filename();
+        await this.assign_use_helper();
         this.assign_sdk_versions_filename();
         await this.assign_sdk_versions();
         this.assign_sdk_service_filename();
         this.assign_brd_api_filename();
         this.assign_brd_api_dest_name();
         this.assign_brd_api_dest_filename();
+        if (this.use_helper)
+        {
+            this.assign_brd_api_helper_name();
+            this.assign_brd_api_helper_filename();
+            this.assign_brd_api_helper_dest_filename();
+        }
     }
     async run(){
         await this.prepare();
