@@ -428,6 +428,7 @@ class BrightSdkUpdateWeb {
                 sdk_ver: this.config?.sdk_ver || this.sdk_ver,
                 sdk_ver_prev: this.sdk_ver,
                 sdk_url: this.sdk_url_mask,
+                use_helper: this.use_helper,
             };
             this.print(`Generated config:\n${JSON.stringify(next_config, null, 2)}\n`);
             const next_config_fname = get_config_fname(this.workdir);
