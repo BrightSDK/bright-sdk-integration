@@ -1,0 +1,3 @@
+service
+app/brd_api*
+*.ipk

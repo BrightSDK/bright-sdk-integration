@@ -1,0 +1,9 @@
+{
+  "workdir": ".",
+  "app_dir": "app",
+  "js_dir": "app/js",
+  "index": "app/index.html",
+  "sdk_service_dir": "app/service",
+  "sdk_ver": "latest",
+  "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tizen-SDK_VER.zip"
+}

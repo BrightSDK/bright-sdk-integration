@@ -1,0 +1,1 @@
+node ../../index.js brd_sdk.config.json
