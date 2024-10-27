@@ -20,6 +20,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 ## Supported Platforms (Work in Progress)
 
 - [x] WebOS
+- [x] Tizen
 - [ ] Android
 - [ ] iOS
 - [ ] Windows
