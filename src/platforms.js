@@ -162,9 +162,9 @@ class BrightSdkUpdateWeb {
             || this.opt.config_fname && [this.opt.config_fname];
         if (this.opt.config)
         {
-            Object.assign(this.config, opt.config);
-            this.workdir = config.workdir;
-            this.appdir = path.join(workdir, this.config.app_dir);
+            Object.assign(this.config, this.opt.config);
+            this.workdir = this.config.workdir;
+            this.appdir = path.join(this.workdir, this.config.app_dir);
         }
         else
         {
