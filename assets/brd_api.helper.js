@@ -25,6 +25,7 @@
                 try {
                     var status = brd_api.get_status();
                     var value = status && status.consent;
+                    window.BrightSDK.onStatusChangeFn(value);
                     window.BrightSDK.onceStatusChangeFn(value);
                     if (on_status_change)
                         on_status_change();
@@ -61,11 +62,13 @@
         onceStatusChange: function(fn){
             window.BrightSDK.onceStatusChangeFn = function(value){
                 window.BrightSDK.onceStatusChangeFn = ()=>{};
-                print("BRD status changed ----- ", value);
-                status = value ? "enabled" : "disabled";
-                localStorage.setItem(status_key, sdk_status);
                 fn(value);
             };
+        },
+        onStatusChangeFn: function(value){
+            print("BRD status changed ----- ", value);
+            status = value ? "enabled" : "disabled";
+            localStorage.setItem(status_key, status);
         },
         onceStatusChangeFn: function(){},
         getStatus: function(){ return status; },
