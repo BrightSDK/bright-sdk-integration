@@ -18,6 +18,8 @@
     };
     window.BrightSDK = {
         init: function(settings){
+            debug = settings.debug;
+            verbose = settings.debug || settings.verbose;
             print('init with settings: %o', settings);
             var on_status_change = settings.on_status_change;
             status = localStorage.getItem(status_key);
