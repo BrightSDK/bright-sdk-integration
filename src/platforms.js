@@ -230,7 +230,7 @@ class BrightSdkUpdateWeb {
     }
     create_sdk_dir_root(){
         if (!fs.existsSync(this.sdk_dir_root))
-            fs.mkdirSync(this.sdk_dir_root);
+            fs.mkdirSync(this.sdk_dir_root, {recursive: true});
     }
     create_sdk_dir(){
         if (!fs.existsSync(this.sdk_dir))
