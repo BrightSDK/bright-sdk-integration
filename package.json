@@ -1,6 +1,6 @@
 {
   "name": "brd-sdk-integ-tools",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "BrightSDK Integration Tools",
   "main": "index.js",
   "scripts": {
