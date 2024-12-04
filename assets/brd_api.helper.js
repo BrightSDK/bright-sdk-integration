@@ -57,10 +57,10 @@
         },     
         showConsent: function(){
             if (!brd_api.show_consent)
-                {
-                    print_err("show_consent not available, retry in 1 sec...");
-                    return setTimeout(window.BrightSDK.showConsent, 1000);
-                }
+            {
+                print_err("show_consent not available, retry in 1 sec...");
+                return setTimeout(window.BrightSDK.showConsent, 1000);
+            }
             brd_api.show_consent({
                 on_failure: function(){ print_err('show_consent failure'); },
                 on_success: function(){ print('show_consent success'); },
