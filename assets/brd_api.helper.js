@@ -40,7 +40,10 @@
                     settings.on_status_change = function(){
                         try {
                             var status = brd_api.get_status();
-                            var value = status && status.consent;
+                            var value = status
+                                ? status.value
+                                    ? status.value.consent : status.consent
+                                : null;
                             window.BrightSDK.onStatusChangeFn(value);
                             window.BrightSDK.onceStatusChangeFn(value);
                             if (on_status_change)
