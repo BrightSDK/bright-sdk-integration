@@ -16,10 +16,21 @@
         if (verbose)
             console.error(...args);
     };
+    var start_tizen_service = function(){
+        return new Promise(function(resolve, reject){
+            var PICK = 'http://tizen.org/appcontrol/operation/pick';
+            var pkg_id = tizen.application.getCurrentApplication().appInfo.packageId;
+            var service_id = pkg_id + '.Service';
+            var app_control_data = new tizen.ApplicationControlData('caller', ['ForegroundApp']);
+            var app_control = new tizen.ApplicationControl(PICK, null, null, null, [app_control_data]);
+            brd_api.set_alarm(service_id);
+            tizen.application.launchAppControl(app_control, service_id, resolve, reject);
+        });
+    };
     var inited = false;
     window.BrightSDK = {
         init: function(settings){
-            return Promise.resolve().then(()=>{
+            return window.BrightSDK.startService().then(()=>{
                 debug = settings.debug;
                 verbose = settings.debug || settings.verbose;
                 return new Promise(function(resolve, reject){
@@ -92,5 +103,13 @@
         onceStatusChangeFn: function(){},
         getStatus: function(){ return status; },
         isEnabled: function(){ return status == 'enabled'; },
+        startService: function(){
+            if (window.tizen)
+            {
+                print('detected OS: Tizen');
+                return start_tizen_service();
+            }
+            return Promise.resolve();
+        },
     };
 })();
