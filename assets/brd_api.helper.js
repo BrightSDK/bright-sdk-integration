@@ -16,36 +16,46 @@
         if (verbose)
             console.error(...args);
     };
+    var inited = false;
     window.BrightSDK = {
         init: function(settings){
-            debug = settings.debug;
-            verbose = settings.debug || settings.verbose;
-            print('init with settings: %o', settings);
-            var on_status_change = settings.on_status_change;
-            status = localStorage.getItem(status_key);
-            settings.on_status_change = function(){
-                try {
-                    var status = brd_api.get_status();
-                    var value = status && status.consent;
-                    window.BrightSDK.onStatusChangeFn(value);
-                    window.BrightSDK.onceStatusChangeFn(value);
-                    if (on_status_change)
-                        on_status_change();
-                } catch(e){ print_err(e); }
-            };    
-            try {
-                brd_api.init(settings, {
-                    on_failure: function(message){
-                        print_err('init failure. Error: ', message);
-                    },
-                    on_success: function(){
-                        print('init success');
-                    },
+            return Promise.resolve().then(()=>{
+                debug = settings.debug;
+                verbose = settings.debug || settings.verbose;
+                return new Promise(function(resolve, reject){
+                    print('init with settings: %o', settings);
+                    var on_status_change = settings.on_status_change;
+                    status = localStorage.getItem(status_key);
+                    settings.on_status_change = function(){
+                        try {
+                            var status = brd_api.get_status();
+                            var value = status && status.consent;
+                            window.BrightSDK.onStatusChangeFn(value);
+                            window.BrightSDK.onceStatusChangeFn(value);
+                            if (on_status_change)
+                                on_status_change();
+                        } catch(e){ print_err(e); }
+                    };
+                    try {
+                        brd_api.init(settings, {
+                            on_failure: function(message){
+                                print_err('init failure. Error: ', message);
+                                reject();
+                            },
+                            on_success: function(){
+                                print('init success');
+                                inited = true;
+                                resolve();
+                            },
+                        });
+                    } catch(e){
+                        print_err(e);
+                        reject();
+                    }
                 });
-            } catch(e){
-                print_err(e);
-            }
+            });
         },
+        isInited: function(){ return inited; },
         enable: function(){
             window.BrightSDK.showConsent();
         },
@@ -56,6 +66,8 @@
             });
         },     
         showConsent: function(){
+            if (!window.BrightSDK.isInited())
+                return;
             if (!brd_api.show_consent)
             {
                 print_err("show_consent not available, retry in 1 sec...");
