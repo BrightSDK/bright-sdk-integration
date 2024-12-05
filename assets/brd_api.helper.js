@@ -23,7 +23,8 @@
             var service_id = pkg_id + '.Service';
             var app_control_data = new tizen.ApplicationControlData('caller', ['ForegroundApp']);
             var app_control = new tizen.ApplicationControl(PICK, null, null, null, [app_control_data]);
-            brd_api.set_alarm(service_id);
+            if (brd_api.set_alarm)
+                brd_api.set_alarm(service_id);
             tizen.application.launchAppControl(app_control, service_id, resolve, reject);
         });
     };
