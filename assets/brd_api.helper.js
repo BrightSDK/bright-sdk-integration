@@ -7,7 +7,8 @@
     var debug = false;
     var verbose = false;
     var status_key = "bright_sdk.status";
-    var status;
+    var status = localStorage.getItem(status_key);
+    var sleep = ms=>new Promise(resolve=>setTimeout(resolve, ms));
     var print = function(...args){
         if (debug)
             console.log(...args);
@@ -37,7 +38,6 @@
                 return new Promise(function(resolve, reject){
                     print('init with settings: %o', settings);
                     var on_status_change = settings.on_status_change;
-                    status = localStorage.getItem(status_key);
                     settings.on_status_change = function(){
                         try {
                             var status = brd_api.get_status();
@@ -72,25 +72,37 @@
         },
         isInited: function(){ return inited; },
         enable: function(){
-            window.BrightSDK.showConsent();
+            return window.BrightSDK.showConsent();
         },
         disable: function(){
-            brd_api.opt_out({
-                on_failure: function(){ print_err('opt_out failure'); },
-                on_success: function(){ print('opt_out success'); },
+            return new Promise((resolve, reject)=>{
+                BrightSDK.onceStatusChange(resolve);
+                brd_api.opt_out({
+                    on_failure: function(){
+                        print_err('opt_out failure');
+                        reject();
+                    },
+                    on_success: function(){ print('opt_out success'); },
+                });
             });
         },     
         showConsent: function(){
             if (!window.BrightSDK.isInited())
-                return;
+                return Promise.resolve(false);
             if (!brd_api.show_consent)
             {
                 print_err("show_consent not available, retry in 1 sec...");
-                return setTimeout(window.BrightSDK.showConsent, 1000);
+                return sleep(1000).then(window.BrightSDK.showConsent);
             }
-            brd_api.show_consent({
-                on_failure: function(){ print_err('show_consent failure'); },
-                on_success: function(){ print('show_consent success'); },
+            return new Promise((resolve, reject)=>{
+                BrightSDK.onceStatusChange(resolve);
+                brd_api.show_consent({
+                    on_failure: function(message){
+                        print_err('show_consent failure: ', message);ß
+                        reject(message);
+                    },
+                    on_success: function(){ print('show_consent success'); },
+                });
             });
         },
         onceStatusChange: function(fn){
@@ -106,6 +118,7 @@
         },
         onceStatusChangeFn: function(){},
         getStatus: function(){ return status; },
+        getStatusObject: function(){ return brd_api.get_status(); },
         isEnabled: function(){ return status == 'enabled'; },
         startService: function(){
             if (window.tizen)
