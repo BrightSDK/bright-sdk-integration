@@ -51,7 +51,7 @@
                                 onceStatusChangeCallbacks[i](value);
                             onceStatusChangeCallbacks = [];
                             if (on_status_change)
-                                on_status_change();
+                                on_status_change(value);
                         } catch(e){ print_err(e); }
                     };
                     try {
