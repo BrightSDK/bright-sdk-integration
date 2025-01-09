@@ -17,6 +17,7 @@
         if (verbose)
             console.error(...args);
     };
+    var onceStatusChangeCallbacks = [];
     var start_tizen_service = function(){
         return new Promise(function(resolve, reject){
             var PICK = 'http://tizen.org/appcontrol/operation/pick';
@@ -46,7 +47,9 @@
                                     ? status.value.consent : status.consent
                                 : null;
                             window.BrightSDK.onStatusChangeFn(value);
-                            window.BrightSDK.onceStatusChangeFn(value);
+                            for (var i=0; i<onceStatusChangeCallbacks.length; i++)
+                                onceStatusChangeCallbacks[i](value);
+                            onceStatusChangeCallbacks = [];
                             if (on_status_change)
                                 on_status_change();
                         } catch(e){ print_err(e); }
@@ -76,7 +79,7 @@
         },
         disable: function(){
             return new Promise((resolve, reject)=>{
-                BrightSDK.onceStatusChange(resolve);
+                BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
                 brd_api.opt_out({
                     on_failure: function(){
                         print_err('opt_out failure');
@@ -95,7 +98,7 @@
                 return sleep(1000).then(window.BrightSDK.showConsent);
             }
             return new Promise((resolve, reject)=>{
-                BrightSDK.onceStatusChange(resolve);
+                BrightSDK.onceStatusChange(resolve, 'showConsentResolve', true);
                 brd_api.show_consent({
                     on_failure: function(message){
                         print_err('show_consent failure: ', message);ß
@@ -105,18 +108,20 @@
                 });
             });
         },
-        onceStatusChange: function(fn){
-            window.BrightSDK.onceStatusChangeFn = function(value){
-                window.BrightSDK.onceStatusChangeFn = ()=>{};
+        onceStatusChange: function(fn, label, append){
+            if (!append)
+                onceStatusChangeCallbacks = [];
+            var index = onceStatusChangeCallbacks.length;
+            onceStatusChangeCallbacks.push(function(value){
+                print('calling once hook %d: %s', index, label);
                 fn(value);
-            };
+            });
         },
         onStatusChangeFn: function(value){
             print("BRD status changed ----- ", value);
             status = value ? "enabled" : "disabled";
             localStorage.setItem(status_key, status);
         },
-        onceStatusChangeFn: function(){},
         getStatus: function(){ return status; },
         getStatusObject: function(){ return brd_api.get_status(); },
         isEnabled: function(){ return status == 'enabled'; },
