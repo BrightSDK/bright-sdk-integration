@@ -82,8 +82,8 @@
             return new Promise((resolve, reject)=>{
                 BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
                 brd_api.opt_out({
-                    on_failure: function(){
-                        print_err('opt_out failure');
+                    on_failure: function(e){
+                        print_err('opt_out failure', e);
                         reject();
                     },
                     on_success: function(){ print('opt_out success'); },
