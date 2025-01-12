@@ -76,7 +76,10 @@
         },
         isInited: function(){ return inited; },
         enable: function(){
-            return window.BrightSDK.showConsent();
+            return new Promise((resolve, reject)=>{
+                BrightSDK.onceStatusChange(resolve, 'enableResolve', true);
+                return window.BrightSDK.showConsent().catch(reject);
+            });
         },
         disable: function(){
             return new Promise((resolve, reject)=>{
@@ -97,13 +100,15 @@
                 return sleep(1000).then(window.BrightSDK.showConsent);
             }
             return new Promise((resolve, reject)=>{
-                BrightSDK.onceStatusChange(resolve, 'showConsentResolve', true);
                 brd_api.show_consent({
                     on_failure: function(message){
                         print_err('show_consent failure: ', message);ß
                         reject(message);
                     },
-                    on_success: function(){ print('show_consent success'); },
+                    on_success: function(){
+                        print('show_consent success');
+                        resolve();
+                    },
                 });
             });
         },
