@@ -89,11 +89,9 @@
                     on_success: function(){ print('opt_out success'); },
                 });
             });
-        },     
+        },
         showConsent: function(){
-            if (!window.BrightSDK.isInited())
-                return Promise.resolve(false);
-            if (!brd_api.show_consent)
+            if (!window.BrightSDK.isInited() || !brd_api.show_consent)
             {
                 print_err("show_consent not available, retry in 1 sec...");
                 return sleep(1000).then(window.BrightSDK.showConsent);
