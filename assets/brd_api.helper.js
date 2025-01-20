@@ -14,7 +14,6 @@
             console.log(...args);
     };
     var print_err = function(...args){
-        debugger;
         if (verbose)
             console.error(...args);
     };
