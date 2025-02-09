@@ -274,9 +274,9 @@ class BrightSdkUpdateWeb {
         }
     }
     async assign_js_dir(){
-        const js_dir_def = await this.get_js_dir(this.workdir, this.appdir);
-        this.js_dir = await this.get_value('Application JS directory', js_dir_def,
-            this.config.js_dir && path.join(this.workdir, this.config.js_dir||''),
+        const js_dir_config = this.config.js_dir && path.join(this.workdir, this.config.js_dir);
+        const js_dir_def = js_dir_config || await this.get_js_dir(this.workdir, this.appdir);
+        this.js_dir = await this.get_value('Application JS directory', js_dir_def, js_dir_config,
             {selectable: true, dir: js_dir_def ? path.dirname(js_dir_def) : this.workdir}
         );
     }
