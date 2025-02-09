@@ -40,6 +40,7 @@ if (require.main == module)
 }
 
 module.exports = {
+    process_web,
     process_webos: opt=>process_web({...opt, platform: 'webos'}),
     process_tizen: opt=>process_web({...opt, platform: 'tizen'}),
 };
