@@ -38,6 +38,7 @@
         });
     };
     var inited = false;
+    var dialog;
     window.BrightSDK = {
         init: function(settings) {
             return window.BrightSDK.startService().then(function() {
@@ -46,6 +47,12 @@
                 return new Promise(function(resolve, reject) {
                     print('init with settings: %o', settings);
                     var on_status_change = settings.on_status_change;
+                    if (settings.external_consent_options)
+                    {
+                        window.BrightSDK.createDialog(settings);
+                        settings.external_consent_options = undefined;
+                        settings.skip_consent = true;
+                    }
                     settings.on_status_change = function() {
                         try {
                             var status = brd_api.get_status();
@@ -87,18 +94,41 @@
         isInited: function() {
             return inited;
         },
-        enable: function() {
+        enable: function(skipConsent) {
+            if (skipConsent)
+            {
+                if (!window.BrightSDK.isInited() || !brd_api.external_opt_in) {
+                    print_err("external_opt_in not available, retry in 1 sec...");
+                    return sleep(1000).then(function(){
+                        return window.BrightSDK.enable(true);
+                    });
+                }
+                return new Promise(function (resolve, reject) {
+                    brd_api.external_opt_in({
+                        on_failure: function(e) {
+                            print_err('external_opt_in failure', e);
+                            reject();
+                        },
+                        on_success: function() {
+                            print('external_opt_in success');
+                            resolve();
+                        },
+                    });
+                });
+            }
             return new Promise(function(resolve, reject) {
                 BrightSDK.onceStatusChange(resolve, 'enableResolve', true);
                 return window.BrightSDK.showConsent().catch(reject);
             });
         },
         disable: function() {
+            status = 'disabled';
             return new Promise(function(resolve, reject) {
                 BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
                 brd_api.opt_out({
                     on_failure: function(e) {
                         print_err('opt_out failure', e);
+                        status = 'enabled';
                         reject();
                     },
                     on_success: function() {
@@ -112,6 +142,8 @@
                 print_err("show_consent not available, retry in 1 sec...");
                 return sleep(1000).then(window.BrightSDK.showConsent);
             }
+            if (dialog)
+                return dialog.show();
             return new Promise(function(resolve, reject) {
                 brd_api.show_consent({
                     on_failure: function(message) {
@@ -124,6 +156,33 @@
                     },
                 });
             });
+        },
+        createDialog: function(settings) {
+            if (!window.ConsentModule)
+            {
+                print_err("ConsentModule not found, have you included it?");
+                return;
+            }
+            var [targetId, options] = settings.external_consent_options;
+            var onShow = options.onShow;
+            var onAccept = options.onAccept;
+            var onDecline = options.onDecline;
+            options.onAccept = function () {
+                window.BrightSDK.enable(true);
+                if (onAccept)
+                    onAccept();
+            };
+            options.onDecline = function() {
+                window.BrightSDK.disable();
+                if (onDecline)
+                    onDecline();
+            };
+            options.onShow = function() {
+                brd_api.consent_shown();
+                if (onShow)
+                    onShow();
+            };
+            dialog = ConsentModule.create(targetId, options);
         },
         onceStatusChange: function(fn, label, append) {
             if (!append) {
