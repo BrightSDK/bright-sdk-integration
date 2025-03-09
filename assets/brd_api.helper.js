@@ -144,7 +144,7 @@
                 return sleep(1000).then(window.BrightSDK.showConsent);
             }
             if (dialog)
-                return dialog.show();
+                return dialog.show(status);
             return new Promise(function(resolve, reject) {
                 brd_api.show_consent({
                     on_failure: function(message) {
