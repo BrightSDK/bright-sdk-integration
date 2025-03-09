@@ -75,7 +75,7 @@
                         brd_api.init(settings, {
                             on_failure: function(message) {
                                 print_err('init failure. Error: ', message);
-                                reject();
+                                reject(new Error(message));
                             },
                             on_success: function() {
                                 print('init success');
