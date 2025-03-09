@@ -51,7 +51,6 @@
                     {
                         window.BrightSDK.createDialog(settings);
                         settings.external_consent_options = undefined;
-                        settings.skip_consent = true;
                     }
                     settings.on_status_change = function() {
                         try {
@@ -82,6 +81,8 @@
                                 print('init success');
                                 inited = true;
                                 resolve();
+                                if (!settings.skip_consent && !status)
+                                    window.BrightSDK.showConsent();
                             },
                         });
                     } catch (e) {
