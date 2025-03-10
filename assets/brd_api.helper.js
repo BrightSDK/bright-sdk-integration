@@ -229,6 +229,8 @@
         },
         onStatusChangeFn: function(value) {
             print("BRD status changed ----- ", value);
+            if (value == null)
+                return;
             status = value ? "enabled" : "disabled";
             localStorage.setItem(status_key, status);
         },
