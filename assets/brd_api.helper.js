@@ -52,7 +52,6 @@
                     {
                         window.BrightSDK.createDialog(settings);
                         settings.external_consent_options = undefined;
-                        settings.simple_opt_out = undefined;
                         settings.skip_consent = true; // initial display is handled by helper
                     }
                     settings.on_status_change = function() {
