@@ -52,6 +52,7 @@
                     {
                         window.BrightSDK.createDialog(settings);
                         settings.external_consent_options = undefined;
+                        settings.simple_opt_out = undefined;
                         settings.skip_consent = true; // initial display is handled by helper
                     }
                     settings.on_status_change = function() {
@@ -166,10 +167,33 @@
                 print_err("ConsentModule not found, have you included it?");
                 return;
             }
+            if (dialog) // avoid creating multiple dialogs
+                return;
             var [targetId, options] = settings.external_consent_options;
+            if (settings.simple_opt_out)
+                options.simpleOptOut = true;
             var onShow = options.onShow;
             var onAccept = options.onAccept;
             var onDecline = options.onDecline;
+            var onClose = options.onClose;
+            var simpleOptOutKeyboardHandler;
+            function registerSimpleOptOutKeyboardHandler() {
+                if (!options.simpleOptOut)
+                    return;
+                simpleOptOutKeyboardHandler = function (e) {
+                    if (e.keyCode == 53)
+                    {
+                        // handle iframe/parent focus
+                        document.body.focus();
+                        window.BrightSDK.showConsent();
+                    }
+                };
+                document.addEventListener(
+                    'keydown',
+                    simpleOptOutKeyboardHandler,
+                    {capture: true, once: true}
+                );
+            }
             options.onAccept = function () {
                 window.BrightSDK.enable(true);
                 if (onAccept)
@@ -185,7 +209,13 @@
                 if (onShow)
                     onShow();
             };
+            options.onClose = function() {
+                registerSimpleOptOutKeyboardHandler();
+                if (onClose)
+                    onClose();
+            };
             dialog = ConsentModule.create(targetId, options);
+            registerSimpleOptOutKeyboardHandler();
         },
         onceStatusChange: function(fn, label, append) {
             if (!append) {
