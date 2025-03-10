@@ -47,10 +47,12 @@
                 return new Promise(function(resolve, reject) {
                     print('init with settings: %o', settings);
                     var on_status_change = settings.on_status_change;
+                    var skip_consent = settings.skip_consent;
                     if (settings.external_consent_options)
                     {
                         window.BrightSDK.createDialog(settings);
                         settings.external_consent_options = undefined;
+                        settings.skip_consent = true; // initial display is handled by helper
                     }
                     settings.on_status_change = function() {
                         try {
@@ -81,7 +83,7 @@
                                 print('init success');
                                 inited = true;
                                 resolve();
-                                if (!settings.skip_consent && !status)
+                                if (!skip_consent && !status)
                                     window.BrightSDK.showConsent();
                             },
                         });
