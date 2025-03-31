@@ -186,8 +186,6 @@
                     {
                         e.preventDefault();
                         e.stopPropagation();
-                        // handle iframe/parent focus
-                        document.body.focus();
                         window.BrightSDK.showConsent();
                     }
                 };
