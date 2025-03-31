@@ -53,6 +53,7 @@
                         window.BrightSDK.createDialog(settings);
                         settings.external_consent_options = undefined;
                         settings.skip_consent = true; // initial display is handled by helper
+                        settings.simple_opt_out = undefined; // handled by dialog
                     }
                     settings.on_status_change = function() {
                         try {
@@ -85,6 +86,7 @@
                                 resolve();
                                 if (!skip_consent && !status)
                                     window.BrightSDK.showConsent();
+                                window.BrightSDK.showNotification(10000);
                             },
                         });
                     } catch (e) {
@@ -182,6 +184,8 @@
                 simpleOptOutKeyboardHandler = function (e) {
                     if (e.keyCode == 53)
                     {
+                        e.preventDefault();
+                        e.stopPropagation();
                         // handle iframe/parent focus
                         document.body.focus();
                         window.BrightSDK.showConsent();
@@ -248,6 +252,10 @@
                 return start_tizen_service();
             }
             return Promise.resolve();
+        },
+        showNotification: function(ms) {
+            if (dialog)
+                dialog.showNotification(ms);
         },
     };
 })();
