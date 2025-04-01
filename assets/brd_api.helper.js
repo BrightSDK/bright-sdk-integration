@@ -206,7 +206,7 @@
                     onDecline();
             };
             options.onShow = function() {
-                brd_api.consent_shown();
+                window.BrightSDK.reportConsentShown();
                 if (onShow)
                     onShow();
             };
@@ -255,5 +255,8 @@
             if (dialog)
                 dialog.showNotification(ms);
         },
+        reportConsentShown: function() {
+            brd_api.consent_shown();
+        }
     };
 })();
