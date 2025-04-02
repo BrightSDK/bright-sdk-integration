@@ -256,6 +256,10 @@
                 dialog.showNotification(ms);
         },
         reportConsentShown: function() {
+            if (!window.BrightSDK.isInited() || !brd_api.consent_shown) {
+                print_err("consent_shown not available, retry in 1 sec...");
+                return sleep(1000).then(window.BrightSDK.reportConsentShown);
+            }
             brd_api.consent_shown();
         }
     };
