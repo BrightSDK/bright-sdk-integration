@@ -24,11 +24,12 @@
         }
     };
     var onceStatusChangeCallbacks = [];
+    var tizenServiceName = 'Service';
     var start_tizen_service = function() {
         return new Promise(function(resolve, reject) {
             var PICK = 'http://tizen.org/appcontrol/operation/pick';
             var pkg_id = tizen.application.getCurrentApplication().appInfo.packageId;
-            var service_id = pkg_id + '.Service';
+            var service_id = pkg_id + '.' + tizenServiceName;
             var app_control_data = new tizen.ApplicationControlData('caller', ['ForegroundApp']);
             var app_control = new tizen.ApplicationControl(PICK, null, null, null, [app_control_data]);
             return BrightSDK.getBrightApi().then(function(brd_api) {
@@ -48,6 +49,7 @@
                 debug = settings.debug;
                 verbose = settings.debug || settings.verbose;
                 simpleOptOut = settings.simple_opt_out;
+                tizenServiceName = settings.tizen_service_name || tizenServiceName;
                 return new Promise(function(resolve, reject) {
                     BrightSDK.getBrightApi(false).then(function(brd_api) {
                         print('init with settings: %o', settings);
