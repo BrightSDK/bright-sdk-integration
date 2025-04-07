@@ -45,11 +45,11 @@
     var simpleOptOut = false;
     var BrightSDK = {
         init: function(settings) {
+            debug = settings.debug;
+            verbose = settings.debug || settings.verbose;
+            simpleOptOut = settings.simple_opt_out;
+            tizenServiceName = settings.tizen_service_name || tizenServiceName;
             return BrightSDK.startService().then(function() {
-                debug = settings.debug;
-                verbose = settings.debug || settings.verbose;
-                simpleOptOut = settings.simple_opt_out;
-                tizenServiceName = settings.tizen_service_name || tizenServiceName;
                 return new Promise(function(resolve, reject) {
                     BrightSDK.getBrightApi(false).then(function(brd_api) {
                         print('init with settings: %o', settings);
