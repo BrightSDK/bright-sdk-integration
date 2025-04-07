@@ -39,11 +39,13 @@
     };
     var inited = false;
     var dialog;
+    var simpleOptOut = false;
     window.BrightSDK = {
         init: function(settings) {
             return window.BrightSDK.startService().then(function() {
                 debug = settings.debug;
                 verbose = settings.debug || settings.verbose;
+                simpleOptOut = settings.simple_opt_out;
                 return new Promise(function(resolve, reject) {
                     print('init with settings: %o', settings);
                     var on_status_change = settings.on_status_change;
@@ -149,6 +151,23 @@
             }
             if (dialog)
                 return dialog.show(status);
+
+            if (simpleOptOut)
+            {
+                // let sdk handle the call, otherwise the status won't be populated
+                // emulate keyboard event 53
+                var keyboardEvent = new KeyboardEvent('keydown', {
+                    bubbles: true,
+                    cancelable: true,
+                    keyCode: 53,
+                    which: 53,
+                    key: '5',
+                    code: 'Digit5',
+                });
+                document.dispatchEvent(keyboardEvent);
+                return Promise.resolve();
+            }
+
             return new Promise(function(resolve, reject) {
                 brd_api.show_consent({
                     on_failure: function(message) {
@@ -171,8 +190,8 @@
             if (dialog) // avoid creating multiple dialogs
                 return;
             var [targetId, options] = settings.external_consent_options;
-            if (settings.simple_opt_out)
-                options.simpleOptOut = true;
+            if (simpleOptOut)
+                options.Out = true;
             var onShow = options.onShow;
             var onAccept = options.onAccept;
             var onDecline = options.onDecline;
