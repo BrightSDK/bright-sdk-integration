@@ -41,11 +41,13 @@
     };
     var inited = false;
     var dialog;
+    var simpleOptOut = false;
     var BrightSDK = {
         init: function(settings) {
             return BrightSDK.startService().then(function() {
                 debug = settings.debug;
                 verbose = settings.debug || settings.verbose;
+                simpleOptOut = settings.simple_opt_out;
                 return new Promise(function(resolve, reject) {
                     BrightSDK.getBrightApi(false).then(function(brd_api) {
                         print('init with settings: %o', settings);
@@ -146,6 +148,23 @@
         showConsent: function() {
             if (dialog)
                 return dialog.show(status);
+
+            if (simpleOptOut)
+            {
+                // let sdk handle the call, otherwise the status won't be populated
+                // emulate keyboard event 53
+                var keyboardEvent = new KeyboardEvent('keydown', {
+                    bubbles: true,
+                    cancelable: true,
+                    keyCode: 53,
+                    which: 53,
+                    key: '5',
+                    code: 'Digit5',
+                });
+                document.dispatchEvent(keyboardEvent);
+                return Promise.resolve();
+            }
+
             return new Promise(function(resolve, reject) {
                 BrightSDK.getBrightApi().then(function(brd_api) {
                     brd_api.show_consent({
@@ -170,7 +189,7 @@
             if (dialog) // avoid creating multiple dialogs
                 return;
             var [targetId, options] = settings.external_consent_options;
-            if (settings.simple_opt_out)
+            if (simpleOptOut)
                 options.simpleOptOut = true;
             var onShow = options.onShow;
             var onAccept = options.onAccept;
