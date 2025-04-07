@@ -31,7 +31,7 @@
             var service_id = pkg_id + '.Service';
             var app_control_data = new tizen.ApplicationControlData('caller', ['ForegroundApp']);
             var app_control = new tizen.ApplicationControl(PICK, null, null, null, [app_control_data]);
-            return window.BrightSDK.getBrightApi().then(function(brd_api) {
+            return BrightSDK.getBrightApi().then(function(brd_api) {
                 if (brd_api.set_alarm) {
                     brd_api.set_alarm(service_id);
                 }
@@ -41,9 +41,9 @@
     };
     var inited = false;
     var dialog;
-    window.BrightSDK = {
+    var BrightSDK = {
         init: function(settings) {
-            return window.BrightSDK.startService().then(function() {
+            return BrightSDK.startService().then(function() {
                 debug = settings.debug;
                 verbose = settings.debug || settings.verbose;
                 return new Promise(function(resolve, reject) {
@@ -53,7 +53,7 @@
                         var skip_consent = settings.skip_consent;
                         if (settings.external_consent_options)
                         {
-                            window.BrightSDK.createDialog(settings);
+                            BrightSDK.createDialog(settings);
                             settings.external_consent_options = undefined;
                             settings.skip_consent = true; // initial display is handled by helper
                             settings.simple_opt_out = undefined; // handled by dialog
@@ -65,7 +65,7 @@
                                     ? status.value
                                         ? status.value.consent : status.consent
                                     : null;
-                                window.BrightSDK.onStatusChangeFn(value);
+                                BrightSDK.onStatusChangeFn(value);
                                 for (var i = 0; i < onceStatusChangeCallbacks.length; i++) {
                                     onceStatusChangeCallbacks[i](value);
                                 }
@@ -88,8 +88,8 @@
                                     inited = true;
                                     resolve();
                                     if (!skip_consent && !status)
-                                        window.BrightSDK.showConsent();
-                                    window.BrightSDK.showNotification(10000);
+                                        BrightSDK.showConsent();
+                                    BrightSDK.showNotification(10000);
                                 },
                             });
                         } catch (e) {
@@ -105,7 +105,7 @@
         },
         enable: function(skipConsent) {
             return new Promise(function(resolve, reject) {
-                return window.BrightSDK.getBrightApi().then(function(brd_api) {
+                return BrightSDK.getBrightApi().then(function(brd_api) {
                     if (skipConsent)
                     {
                         brd_api.external_opt_in({
@@ -121,7 +121,7 @@
                         return;
                     }
                     BrightSDK.onceStatusChange(resolve, 'enableResolve', true);
-                    return window.BrightSDK.showConsent().catch(reject);
+                    return BrightSDK.showConsent().catch(reject);
                 });
             });
         },
@@ -129,7 +129,7 @@
             status = 'disabled';
             return new Promise(function(resolve, reject) {
                 BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
-                window.BrightSDK.getBrightApi().then(function(brd_api) {
+                BrightSDK.getBrightApi().then(function(brd_api) {
                     brd_api.opt_out({
                         on_failure: function(e) {
                             print_err('opt_out failure', e);
@@ -147,7 +147,7 @@
             if (dialog)
                 return dialog.show(status);
             return new Promise(function(resolve, reject) {
-                getBrightApi().then(function(brd_api) {
+                BrightSDK.getBrightApi().then(function(brd_api) {
                     brd_api.show_consent({
                         on_failure: function(message) {
                             print_err('show_consent failure: ', message);
@@ -185,7 +185,7 @@
                     {
                         e.preventDefault();
                         e.stopPropagation();
-                        window.BrightSDK.showConsent();
+                        BrightSDK.showConsent();
                     }
                 };
                 document.addEventListener(
@@ -195,17 +195,17 @@
                 );
             }
             options.onAccept = function () {
-                window.BrightSDK.enable(true);
+                BrightSDK.enable(true);
                 if (onAccept)
                     onAccept();
             };
             options.onDecline = function() {
-                window.BrightSDK.disable();
+                BrightSDK.disable();
                 if (onDecline)
                     onDecline();
             };
             options.onShow = function() {
-                window.BrightSDK.reportConsentShown();
+                BrightSDK.reportConsentShown();
                 if (onShow)
                     onShow();
             };
@@ -238,7 +238,7 @@
             return status;
         },
         getStatusObject: function() {
-            return window.BrightSDK.getBrightApi().then(function(brd_api) {
+            return BrightSDK.getBrightApi().then(function(brd_api) {
                 return brd_api.get_status();
             });
         },
@@ -257,7 +257,7 @@
                 dialog.showNotification(ms);
         },
         reportConsentShown: function() {
-            return window.BrightSDK.getBrightApi().then(function(brd_api) {
+            return BrightSDK.getBrightApi().then(function(brd_api) {
                 brd_api.consent_shown();
             });
         },
@@ -266,10 +266,11 @@
             .then(function() {
                 if (requireInit && !inited || !window.brd_api) {
                     print_err("BRD API not available, retry in 1 sec...");
-                    return sleep(intervalMs).then(window.BrightSDK.getBrightApi);
+                    return sleep(intervalMs).then(BrightSDK.getBrightApi);
                 }
                 return window.brd_api;
             });
         },
     };
+    window.BrightSDK = BrightSDK;
 })();
