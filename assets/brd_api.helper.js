@@ -212,8 +212,18 @@
                 document.addEventListener(
                     'keydown',
                     simpleOptOutKeyboardHandler,
-                    {capture: true, once: true}
+                    {capture: true}
                 );
+            }
+            function unregisterSimpleOptOutKeyboardHandler() {
+                if (!simpleOptOutKeyboardHandler)
+                    return;
+                document.removeEventListener(
+                    'keydown',
+                    simpleOptOutKeyboardHandler,
+                    {capture: true}
+                );
+                simpleOptOutKeyboardHandler = undefined;
             }
             options.onAccept = function () {
                 BrightSDK.enable(true);
@@ -226,6 +236,7 @@
                     onDecline();
             };
             options.onShow = function() {
+                unregisterSimpleOptOutKeyboardHandler();
                 BrightSDK.reportConsentShown();
                 if (onShow)
                     onShow();
