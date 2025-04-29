@@ -1,6 +1,6 @@
 {
   "name": "bright-sdk-integration",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "BrightSDK Integration Tools",
   "main": "index.js",
   "scripts": {

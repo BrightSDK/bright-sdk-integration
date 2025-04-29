@@ -190,7 +190,8 @@
             }
             if (dialog) // avoid creating multiple dialogs
                 return;
-            var [targetId, options] = settings.external_consent_options;
+            var targetId = settings.external_consent_options[0];
+            var options = settings.external_consent_options[1];
             if (simpleOptOut)
                 options.Out = true;
             var onShow = options.onShow;
@@ -293,12 +294,16 @@
                 brd_api.consent_shown();
             });
         },
-        getBrightApi: function(requireInit = true, intervalMs = 1000) {
+        getBrightApi: function(requireInit, intervalMs) {
+            if (requireInit === undefined) requireInit = true;
+            if (intervalMs === undefined) intervalMs = 1000;
             return Promise.resolve()
             .then(function() {
                 if (requireInit && !inited || !window.brd_api) {
                     print_err("BRD API not available, retry in 1 sec...");
-                    return sleep(intervalMs).then(BrightSDK.getBrightApi);
+                    return sleep(intervalMs).then(function() {
+                        BrightSDK.getBrightApi(requireInit, intervalMs);
+                    });
                 }
                 return window.brd_api;
             });
