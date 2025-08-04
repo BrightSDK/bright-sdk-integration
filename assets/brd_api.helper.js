@@ -302,7 +302,7 @@
                 if (requireInit && !inited || !window.brd_api) {
                     print_err("BRD API not available, retry in 1 sec...");
                     return sleep(intervalMs).then(function() {
-                        BrightSDK.getBrightApi(requireInit, intervalMs);
+                        return BrightSDK.getBrightApi(requireInit, intervalMs);
                     });
                 }
                 return window.brd_api;
