@@ -23,6 +23,7 @@
             console.error.apply(console, arguments);
         }
     };
+    var status_change_promise;
     var onceStatusChangeCallbacks = [];
     var tizenServiceName = 'Service';
     var start_tizen_service = function() {
@@ -107,42 +108,52 @@
         isInited: function() {
             return inited;
         },
+        waitForStatusChange: function() {
+            return Promise.resolve().then(function() {
+                if (status_change_promise)
+                    return status_change_promise;
+            });
+        },
         enable: function(skipConsent) {
-            return new Promise(function(resolve, reject) {
-                return BrightSDK.getBrightApi().then(function(brd_api) {
-                    if (skipConsent)
-                    {
-                        brd_api.external_opt_in({
-                            on_failure: function(e) {
-                                print_err('external_opt_in failure', e);
-                                reject();
-                            },
-                            on_success: function() {
-                                print('external_opt_in success');
-                                resolve();
-                            },
-                        });
-                        return;
-                    }
-                    BrightSDK.onceStatusChange(resolve, 'enableResolve', true);
-                    return BrightSDK.showConsent().catch(reject);
+            return BrightSDK.waitForStatusChange().then(function() {
+                return status_change_promise = new Promise(function(resolve, reject) {
+                    return BrightSDK.getBrightApi().then(function(brd_api) {
+                        if (skipConsent)
+                        {
+                            brd_api.external_opt_in({
+                                on_failure: function(e) {
+                                    print_err('external_opt_in failure', e);
+                                    reject();
+                                },
+                                on_success: function() {
+                                    print('external_opt_in success');
+                                    resolve();
+                                },
+                            });
+                            return;
+                        }
+                        BrightSDK.onceStatusChange(resolve, 'enableResolve', true);
+                        return BrightSDK.showConsent().catch(reject);
+                    });
                 });
             });
         },
         disable: function() {
             status = 'disabled';
-            return new Promise(function(resolve, reject) {
-                BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
-                BrightSDK.getBrightApi().then(function(brd_api) {
-                    brd_api.opt_out({
-                        on_failure: function(e) {
-                            print_err('opt_out failure', e);
-                            status = 'enabled';
-                            reject();
-                        },
-                        on_success: function() {
-                            print('opt_out success');
-                        },
+            return BrightSDK.waitForStatusChange().then(function() {
+                return status_change_promise = new Promise(function(resolve, reject) {
+                    BrightSDK.onceStatusChange(resolve, 'disableResolve', true);
+                    BrightSDK.getBrightApi().then(function(brd_api) {
+                        brd_api.opt_out({
+                            on_failure: function(e) {
+                                print_err('opt_out failure', e);
+                                status = 'enabled';
+                                reject();
+                            },
+                            on_success: function() {
+                                print('opt_out success');
+                            },
+                        });
                     });
                 });
             });
