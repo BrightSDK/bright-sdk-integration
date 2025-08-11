@@ -14,9 +14,17 @@ const {
 
 const {clear_screen, prompt} = navigation;
 
+// Load configuration
+const config_path = path.join(__dirname, '..', 'config.json');
+const app_config = fs.existsSync(config_path) ? read_json(config_path) : {};
+
 const js_ext = '.js';
 const brd_api_base = 'brd_api';
-const brd_api_name = `${brd_api_base}${js_ext}`;
+const brd_api_name = app_config.files?.api_name;
+
+if (!brd_api_name && fs.existsSync(config_path)) {
+    throw new Error('API filename not configured. Please add files.api_name to config.json');
+}
 
 const get_config_fname = workdir=>path.join(workdir, 'brd_sdk.config.json');
 
@@ -68,7 +76,7 @@ class BrightSdkUpdateWeb {
         this.print(`Reading configuration file ${fname}...`);
         const overrides = read_json(fname);
         Object.assign(config, overrides);
-    }    
+    }
     async get_value(question, def_answer, config_value, _opt={}){
         let value;
         if (!this.opt.interactive || config_value)
@@ -202,7 +210,7 @@ class BrightSdkUpdateWeb {
         NOTE: remember to save your uncommited changes first.
         `;
         clear_screen();
-        this.print(greeting+lbr+instructions);        
+        this.print(greeting+lbr+instructions);
     }
     async assign_appdir(){
         if (!this.appdir)
@@ -226,7 +234,7 @@ class BrightSdkUpdateWeb {
     }
     assign_sdk_dir_root(){
         const root_dir = path.dirname(__dirname);
-        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);        
+        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);
     }
     create_sdk_dir_root(){
         if (!fs.existsSync(this.sdk_dir_root))
@@ -234,7 +242,7 @@ class BrightSdkUpdateWeb {
     }
     create_sdk_dir(){
         if (!fs.existsSync(this.sdk_dir))
-            fs.mkdirSync(this.sdk_dir);        
+            fs.mkdirSync(this.sdk_dir);
     }
     async assign_sdk_ver(){
         let ver = await this.get_value('SDK Version', 'latest', this.config.sdk_ver, {
@@ -246,8 +254,12 @@ class BrightSdkUpdateWeb {
         if (ver == 'latest')
         {
             const latest_fname = path.join(this.sdk_dir_root, 'latest.json');
+            const versions_url = app_config.urls?.sdk_versions;
+            if (!versions_url) {
+                throw new Error('SDK versions URL not configured. Please add urls.sdk_versions to config.json');
+            }
             try {
-                await download_from_url('https://bright-sdk.com/sdk_api/sdk/versions', latest_fname);
+                await download_from_url(versions_url, latest_fname);
             } catch(e){
                 this.print('Failed to download latest version info');
                 if (fs.existsSync(latest_fname))
@@ -296,8 +308,12 @@ class BrightSdkUpdateWeb {
         );
     }
     async assign_sdk_url(){
+        const default_sdk_url = app_config.defaults?.sdk_url_mask;
+        if (!default_sdk_url) {
+            throw new Error('SDK URL mask not configured. Please add defaults.sdk_url_mask to config.json');
+        }
         this.sdk_url_mask = await this.get_value('SDK URL mask',
-            'https://path/to/sdk_SDK_VER.zip', this.config.sdk_url);
+            default_sdk_url, this.config.sdk_url);
         this.sdk_url = this.sdk_url_mask.replace(/SDK_VER/g, this.sdk_ver);
     }
     assign_sdk_zip_names(){
@@ -345,16 +361,45 @@ class BrightSdkUpdateWeb {
     }
     async assign_brd_api_dest_name(){
         this.brd_api_dst_name = brd_api_name.replace(js_ext,
-            `_v${this.sdk_ver}${js_ext}`);        
+            `_v${this.sdk_ver}${js_ext}`);
     }
     async assign_brd_api_dest_filename(){
         this.brd_api_dst_fname = path.join(this.js_dir, this.brd_api_dst_name);
     }
     async assign_brd_api_helper_name(){
-        this.brd_api_helper_name = 'brd_api.helper.js';
+        this.brd_api_helper_name = app_config.files?.helper_name;
+        if (!this.brd_api_helper_name) {
+            throw new Error('Helper filename not configured. Please add files.helper_name to config.json');
+        }
     }
     async assign_brd_api_helper_filename(){
-        this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+        // Download the helper from GitHub instead of using local assets
+        const helper_url = app_config.urls?.helper_latest;
+        if (!helper_url) {
+            throw new Error('Helper URL not configured. Please add urls.helper_latest to config.json');
+        }
+        const temp_dir = path.join(this.workdir, 'temp');
+
+        // Ensure temp directory exists
+        if (!fs.existsSync(temp_dir)) {
+            fs.mkdirSync(temp_dir, { recursive: true });
+        }
+
+        this.brd_api_helper_fname = path.join(temp_dir, this.brd_api_helper_name);
+
+        try {
+            this.print('Downloading BrightSDK Integration Helper...');
+            await download_from_url(helper_url, this.brd_api_helper_fname);
+            this.print('✔ Downloaded BrightSDK Integration Helper');
+        } catch (err) {
+            this.print(`✗ Failed to download helper: ${err.message}`);
+            // Fall back to local file if download fails
+            this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+            if (!fs.existsSync(this.brd_api_helper_fname)) {
+                throw new Error('Helper file not available locally or from remote source');
+            }
+            this.print('Using local helper file as fallback');
+        }
     }
     async assign_brd_api_helper_dest_filename(){
         this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
@@ -448,7 +493,7 @@ class BrightSdkUpdateWeb {
             const reset = 'git checkout .';
             if (path.resolve(this.workdir) != process.cwd())
                 reset = `cd ${this.workdir} && ${reset} && cd -`;
-        
+
             this.print(`
 Thank you for using our products!
 To commit your changes, run:
@@ -527,12 +572,12 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
     }
     update_sdk_package(){
         set_json_props(this.sdk_package_fname, ['name'], this.sdk_service_id);
-        this.print(`✔ Processed ${this.sdk_package_fname}`);        
+        this.print(`✔ Processed ${this.sdk_package_fname}`);
     }
     update_sdk_services(){
         set_json_props(this.sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
             this.sdk_service_id);
-        this.print(`✔ Processed ${this.sdk_services_fname}`);   
+        this.print(`✔ Processed ${this.sdk_services_fname}`);
     }
     async prepare(){
         await super.prepare();
