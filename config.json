@@ -1,6 +1,6 @@
 {
   "urls": {
-    "helper_latest": "https://raw.githubusercontent.com/BrightSDK/bright-sdk-integration-helper/refs/heads/main/releases/brd_api.helper-latest.min.js",
+    "helper_latest": "https://raw.githubusercontent.com/BrightSDK/bright-sdk-integration-helper/refs/heads/main/releases/latest/brd_api.helper.min.js",
     "helper_base": "https://raw.githubusercontent.com/BrightSDK/bright-sdk-integration-helper/refs/heads/main/releases/",
     "sdk_versions": "https://bright-sdk.com/sdk_api/sdk/versions"
   },
