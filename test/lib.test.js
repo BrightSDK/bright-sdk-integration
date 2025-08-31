@@ -184,7 +184,8 @@ describe('lib utilities', () => {
                 on: jest.fn(),
                 pipe: jest.fn(),
             };
-            https.get.mockImplementation((url, callback) => {
+            https.get.mockImplementation((url, optionsOrCallback, maybeCallback) => {
+                const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
                 callback(mockResponse);
                 return mockRequest;
             });
@@ -207,13 +208,13 @@ describe('lib utilities', () => {
 
             await lib.download_from_url('https://test.com/data.json', 'output.json');
 
-            expect(https.get).toHaveBeenCalledWith('https://test.com/data.json', expect.any(Function));
+            expect(https.get).toHaveBeenCalledWith('https://test.com/data.json', expect.any(Object), expect.any(Function));
             expect(fs.writeFile).toHaveBeenCalledWith('output.json', '{"test": "data"}', 'utf8', expect.any(Function));
         });
 
         test('should download binary content using streams', async () => {
             mockResponse.headers['content-type'] = 'application/octet-stream';
-            const mockFileStream = { pipe: jest.fn() };
+            const mockFileStream = { pipe: jest.fn(), on: jest.fn() };
             fs.createWriteStream.mockReturnValue(mockFileStream);
 
             // Mock response end event
@@ -231,12 +232,12 @@ describe('lib utilities', () => {
 
         test('should handle request errors', async () => {
             // Mock request error instead of response error
-            https.get.mockImplementation((url, callback) => {
+            https.get.mockImplementation((url, options, callback) => {
                 const mockRequest = {
                     on: jest.fn((event, handler) => {
                         if (event === 'error') {
                             // Simulate error after a short delay
-                            setTimeout(() => handler(new Error('Network error')), 0);
+                            handler(new Error('Network error'));
                         }
                     }),
                 };
@@ -244,7 +245,7 @@ describe('lib utilities', () => {
                 return mockRequest;
             });
 
-            await expect(lib.download_from_url('https://test.com/fail', 'output')).rejects.toThrow('Network error');
+            await expect(lib.download_from_url('https://test.com/fail', {}, 'output')).rejects.toThrow('Network error');
         });
 
         test('should handle file write errors for JSON', async () => {

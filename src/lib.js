@@ -60,7 +60,9 @@ const search_directory = async(dir, pattern, opt)=>{
 };
 
 const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
-    const request = https.get(url, response=>{
+    const request = https.get(url, {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15'
+    }, response=>{
         if (response.headers['content-type'].includes('application/json'))
         {
             let data = '';
@@ -77,11 +79,22 @@ const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
         else
         {
             const fileStream = fs.createWriteStream(fname);
+            fileStream.on('error', err => {
+                console.error('File stream error:', err);
+                reject(err);
+            });
             response.pipe(fileStream);
             response.on('end', resolve);
         }
     });
-    request.on('error', reject);
+    request.on('error', reason=>{
+        console.error('Request failed:', reason);
+        reject(reason);
+    });
+    request.setTimeout(10000, () => {
+        console.error('Request timed out');
+        request.destroy();
+    });
 });
 
 const unzip = (fname, dst)=>new Promise((resolve, reject)=>{
