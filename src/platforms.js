@@ -535,7 +535,7 @@ ${reset}
         if (this.use_helper)
         {
             this.assign_brd_api_helper_name();
-            this.assign_brd_api_helper_filename();
+            await this.assign_brd_api_helper_filename();
             this.assign_brd_api_helper_dest_filename();
         }
     }
