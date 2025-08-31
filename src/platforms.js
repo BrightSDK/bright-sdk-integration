@@ -373,11 +373,7 @@ class BrightSdkUpdateWeb {
         }
     }
     async assign_brd_api_helper_filename(){
-        // Download the helper from GitHub instead of using local assets
         const helper_url = app_config.urls?.helper_latest;
-        if (!helper_url) {
-            throw new Error('Helper URL not configured. Please add urls.helper_latest to config.json');
-        }
         const temp_dir = path.join(this.workdir, 'temp');
 
         // Ensure temp directory exists
@@ -387,19 +383,27 @@ class BrightSdkUpdateWeb {
 
         this.brd_api_helper_fname = path.join(temp_dir, this.brd_api_helper_name);
 
-        try {
-            this.print('Downloading BrightSDK Integration Helper...');
-            await download_from_url(helper_url, this.brd_api_helper_fname);
-            this.print('✔ Downloaded BrightSDK Integration Helper');
-        } catch (err) {
-            this.print(`✗ Failed to download helper: ${err.message}`);
-            // Fall back to local file if download fails
-            this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
-            if (!fs.existsSync(this.brd_api_helper_fname)) {
-                throw new Error('Helper file not available locally or from remote source');
+        if (helper_url) {
+            try {
+                this.print('Downloading BrightSDK Integration Helper...');
+                await download_from_url(helper_url, this.brd_api_helper_fname);
+                this.print('✔ Downloaded BrightSDK Integration Helper');
+                return;
+            } catch (err) {
+                this.print(`✗ Failed to download helper: ${err.message}`);
+                // Continue to fallback below
             }
-            this.print('Using local helper file as fallback');
         }
+        // Fall back to local file if download fails or helper_url is missing
+        if (app_config.files?.helper_name_local) {
+            this.brd_api_helper_fname = path.join(__dirname, app_config.files.helper_name_local);
+        } else {
+            this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+        }
+        if (!fs.existsSync(this.brd_api_helper_fname)) {
+            throw new Error('Helper file not available locally or from remote source');
+        }
+        this.print('Using local helper file as fallback');
     }
     async assign_brd_api_helper_dest_filename(){
         this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
@@ -607,4 +611,4 @@ const process_web = async(opt={})=>{
     new platform.Implementation({...opt, name: platform.name}).run();
 };
 
-module.exports = {get_config_fname, process_web};
+module.exports = {get_config_fname, process_web, BrightSdkUpdateWeb};

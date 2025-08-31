@@ -188,6 +188,39 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
 
             // The fallback logic would be tested in the context of the platform class
             expect(true).toBe(true); // Placeholder for actual fallback test
+            });
+
+            test('should use helper_name_local as fallback if remote download fails', async () => {
+                // Setup config with helper_name_local
+                const configWithLocal = {
+                    ...testConfig,
+                    files: {
+                        ...testConfig.files,
+                        helper_name_local: '../bright-sdk-integration-helper/releases/latest/brd_api.helper.js'
+                    }
+                };
+                lib.read_json.mockImplementation((filePath) => {
+                    if (filePath.includes('config.json')) return configWithLocal;
+                    return {};
+                });
+                lib.download_from_url.mockRejectedValue(new Error('Network error'));
+                fs.existsSync.mockImplementation((filePath) => {
+                    // Simulate local helper file exists for any path containing 'brd_api.helper.js'
+                    if (filePath && filePath.includes('brd_api.helper.js')) return true;
+                    return false;
+                });
+                const { BrightSdkUpdateWeb } = require('../src/platforms.js');
+                const instance = new BrightSdkUpdateWeb({ workdir: testWorkdir });
+                instance.print = jest.fn();
+                instance.workdir = testWorkdir;
+                instance.brd_api_helper_name = configWithLocal.files.helper_name;
+                // Should not throw if local fallback exists
+                await expect(instance.assign_brd_api_helper_filename()).resolves.not.toThrow();
+                expect(
+                    instance.brd_api_helper_fname.includes('bright-sdk-integration-helper/releases/latest/brd_api.helper.js') ||
+                    instance.brd_api_helper_fname.includes('assets/brd_api.helper.js')
+                ).toBe(true);
+                expect(instance.print).toHaveBeenCalledWith('Using local helper file as fallback');
         });
     });
 
