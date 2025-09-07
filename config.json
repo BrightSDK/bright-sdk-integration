@@ -5,7 +5,7 @@
     "sdk_versions": "https://bright-sdk.com/sdk_api/sdk/versions"
   },
   "files": {
-    "helper_name": "brd_api.helper.js",
+    "helper_name": "brd_api.helper.min.js",
     "api_name": "brd_api.js"
   },
   "defaults": {
