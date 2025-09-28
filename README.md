@@ -6,7 +6,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Features
 
-- Download and extract the BrightSDK SDK for different platforms.
+- Download and extract the BrightSDK for different platforms.
 - Modify package information in the SDK.
 - Copy necessary files to your application directory.
 - Generate a configuration file for future use.
@@ -28,37 +28,36 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Installation
 
-1. Install the package directly from git:
+Recommended: install globally from the official tarball and then execute with npx. This installs a known release and lets you run it via npx:
 
-    ```bash
-    git clone https://github.com/vladislavs-luminati/bright-sdk-integration.git
+```bash
+# install globally from the release tarball
+npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
 
-    ```
-
-1. Navigate to the installation directory
-
-    ```bash
-    cd bright-sdk-integration
-    ```
-1. Install project dependencies using `npm`
-    
-    ```bash
-    npm install
-    
-    ```
+# run with npx after install
+npx bright-sdk-integration
+```
 
 ## Use as command line tool
 
 Follow the next steps to use the generator as command line tool to integrate the new application or manually update the Bright SDK distribution in existing app.
 
-Script is executed from it's directory using `node` command with or without arguments. The following options are supported:
+You can run the script via the globally installed package (recommended) using npx, or with node from a local checkout. The following options are supported:
 
 #### Interactive mode
 
-Execute script without command line arguments to make the tool ask you for the configuration values. 
+Execute the script without command line arguments to make the tool ask you for the configuration values.
+
+After global install, run with npx:
 
 ```bash
-node index.js 
+npx bright-sdk-integration
+```
+
+Or, from a local checkout:
+
+```bash
+node index.js
 ```
 
 The script will prompt you for the necessary information interactively, allowing you to provide the path to the configuration file, the path to the application directory, or configure all parameters interactively.
@@ -71,7 +70,7 @@ NOTE: remember to save your uncommited changes first.
 Path to application directory: /path/to/my/app
 /path/to/my/app
 
-SDK Version (1.438.821): 
+SDK Version (1.438.821):
 1.438.821
 
 Application JS directory (js):
@@ -110,10 +109,18 @@ Feel free to customize the prompts and parameters based on your project's specif
 
 #### Config file mode
 
-Execute script, adding path to the JSON configuration file as the command line argument. 
+Execute the script, adding path to the JSON configuration file as the command line argument.
+
+After global install, run with npx:
 
 ```bash
-node index.js /path/to/your/app/brd_sdk.config.json 
+npx bright-sdk-integration /path/to/your/app/brd_sdk.config.json
+```
+
+Or, from a local checkout:
+
+```bash
+node index.js /path/to/your/app/brd_sdk.config.json
 ```
 Once the file is readed successfully, the program will provide the respected output:
 
@@ -148,7 +155,7 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
 1. Require the library from the local directory:
 
     ```js
-    const brd_sdk_gen = require('/path/to/local/installation');
+    const brd_sdk_gen = require('bright-sdk-integration');
     ```
 1. Invoke `process_webos` method to update the Bright SDK distribution in the existing app.
     
@@ -209,3 +216,58 @@ The tool may prompt the user to acknowledge the completion and, if running inter
 - The tool aims to streamline the integration process by providing an interactive and automated way to set up BrightSDK within a project, taking into account user input and project structure.
 
 - Users can customize the integration based on their specific project requirements, and the tool provides flexibility in both interactive and automated modes.
+
+## Development mode
+
+Follow these steps when you're developing changes to this tool.
+
+1. Clone the repo (if you don't already have it) and create a feature branch:
+
+```bash
+git clone https://github.com/BrightSDK/bright-sdk-integration.git
+cd bright-sdk-integration
+git checkout -b feat/describe-change
+```
+
+2. Install dependencies and run locally (fast iterative loop):
+
+```bash
+npm install
+# run in interactive mode
+node index.js
+# or run against a config file
+node index.js /path/to/your/app/brd_sdk.config.json
+```
+
+If you want to test the global install workflow locally (what users will do), install from the checkout and run via npx:
+
+```bash
+npm install -g .
+npx bright-sdk-integration
+```
+
+3. Make small commits with clear messages:
+
+```bash
+git add -A
+git commit -m "feat: short description of change"
+```
+
+4. Push your branch and open a pull request:
+
+```bash
+git push -u origin HEAD
+# Using GitHub CLI (recommended):
+gh pr create --title "feat: short description" --body "Describe the change and rationale." --base main
+
+# Or open a PR in the browser (replace USER and BRANCH):
+# https://github.com/BrightSDK/bright-sdk-integration/compare/main...USER:BRANCH?expand=1
+```
+
+5. After CI review and approvals, merge and, if needed, publish a release (maintainers only).
+
+Notes:
+
+- Keep changes small and focused. Include example input (config.json) when relevant so reviewers can reproduce.
+- If you change public behavior, update the README and bump the package version in `package.json`.
+- Use `npm uninstall -g bright-sdk-integration` to remove a local global install.
