@@ -1,8 +1,11 @@
 {
   "name": "bright-sdk-integration",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "BrightSDK Integration Tools",
   "main": "index.js",
+  "bin": {
+    "bright-sdk-integration": "index.js"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",

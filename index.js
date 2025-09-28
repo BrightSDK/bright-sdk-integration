@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
 const path = require('path');
