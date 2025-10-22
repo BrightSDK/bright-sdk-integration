@@ -33,7 +33,7 @@ describe('Configuration Loading', () => {
   test('should have reasonable default values', () => {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-    expect(config.files.helper_name).toBe('brd_api.helper.js');
+    expect(config.files.helper_name).toBe('brd_api.helper.min.js');
     expect(config.files.api_name).toBe('brd_api.js');
     expect(config.defaults.use_helper).toBe(true);
   });
