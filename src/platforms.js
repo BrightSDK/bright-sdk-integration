@@ -28,54 +28,28 @@ if (!brd_api_name && fs.existsSync(config_path)) {
 
 const get_config_fname = workdir=>path.join(workdir, 'brd_sdk.config.json');
 
-class BrightSdkUpdateWeb {
-    constructor(opt){
+class BrightSdkUpdateBase {
+    constructor(opt) {
+        this.opt = opt;
         this.buffer = '';
-        this.opt = {};
-        this.env = {};
+        this.workdir = null;
         this.config = {};
         this.prev_config_fname = null;
-        this.config_fnames = [];
-        this.workdir = null;
-        this.appdir = null;
         this.sdk_dir_root = null;
-        this.js_dir = null;
-        this.js_name = null;
-        this.appid = null;
-        this.opt = opt;
-        this.index_fname = null;
-        this.use_helper = null;
+        this.sdk_dir = null;
         this.sdk_versions_fname = null;
         this.sdk_versions = {};
         this.sdk_ver = null;
         this.sdk_url_mask = null;
         this.sdk_url = null;
-        this.sdk_service_dir = null;
-        this.sdk_service_fname = null;
-        this.brd_api_fname = null;
-        this.brd_api_dst_name = null;
-        this.brd_api_dst_fname = null;
-        this.brd_api_helper_name = null;
-        this.brd_api_helper_fname = null;
-        this.brd_api_helper_dst_fname = null;
+        this.sdk_zip = null;
+        this.sdk_zip_fname = null;
     }
     print(s, opt={}){
         if (!this.opt.interactive && !this.opt.verbose)
             return;
         const printed = print_base(s, opt);
         this.buffer += printed;
-    }
-    read_env(){
-        return {
-            js_dir: process.env.JS_DIR,
-            app_dir: process.env.APP_DIR,
-            index: process.env.INDEX,
-        };
-    }
-    read_config(config, fname){
-        this.print(`Reading configuration file ${fname}...`);
-        const overrides = read_json(fname);
-        Object.assign(config, overrides);
     }
     async get_value(question, def_answer, config_value, _opt={}){
         let value;
@@ -95,6 +69,170 @@ class BrightSdkUpdateWeb {
         print_base(this.buffer);
         this.print(`${question}: ${value}`);
         return value;
+    }
+    read_config(config, fname){
+        this.print(`Reading configuration file ${fname}...`);
+        const overrides = read_json(fname);
+        Object.assign(config, overrides);
+    }
+    async search_workdir(name){
+        return await search_directory(this.workdir, new RegExp(name), {
+            exclude: this.get_workdir_excludes().map(p=>path.join(this.workdir, p)),
+        });
+    }
+    get_workdir_excludes(){
+        return [
+            '.git',
+            '.sdk',
+            '.vscode',
+            '.idea',
+            '.build',
+            'node_modules',
+        ];
+    }
+    print_greeting(){
+        const greeting = `Welcome to BrightSDK Integration Code Generator for ${this.opt.name}!`;
+        const instructions = `Press CTRL+C at any time to break execution.
+        NOTE: remember to save your uncommited changes first.
+        `;
+        clear_screen();
+        this.print(greeting+lbr+instructions);
+    }
+    async load_config(){
+        if (!this.opt.config && !this.prev_config_fname)
+        {
+            const fname = get_config_fname(this.workdir);
+            if (fs.existsSync(fname))
+            {
+                this.read_config(this.config, this.prev_config_fname = fname);
+                this.print(`Loaded configuration: ${fname}`);
+            }
+        }
+    }
+    assign_sdk_dir_root(){
+        const root_dir = path.dirname(__dirname);
+        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);
+    }
+    create_sdk_dir_root(){
+        if (!fs.existsSync(this.sdk_dir_root))
+            fs.mkdirSync(this.sdk_dir_root, {recursive: true});
+    }
+    assign_sdk_versions_filename(){
+        this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
+    }
+    async assign_sdk_versions(){
+        this.sdk_versions = fs.existsSync(this.sdk_versions_fname)
+            ? read_json(this.sdk_versions_fname) : {};
+    }
+    async assign_sdk_ver(){
+        let ver = await this.get_value('SDK Version', 'latest', this.config.sdk_ver, {
+            selectable: fs.existsSync(this.sdk_dir_root),
+            lock_dir: true,
+            dir: this.sdk_dir_root,
+            strip: this.sdk_dir_root,
+        });
+        if (ver == 'latest')
+        {
+            const latest_fname = path.join(this.sdk_dir_root, 'latest.json');
+            const versions_url = app_config.urls?.sdk_versions;
+            if (!versions_url) {
+                throw new Error('SDK versions URL not configured. Please add urls.sdk_versions to config.json');
+            }
+            try {
+                await download_from_url(versions_url, latest_fname);
+            } catch(e){
+                this.print('Failed to download latest version info');
+                if (fs.existsSync(latest_fname))
+                    this.print('Falling back to cached version info');
+                else
+                {
+                    throw new Error('Please check your internet connection and'
+                        +' try again or provide cached sdk version name');
+                }
+            }
+            const latest = read_json(latest_fname)[this.opt.platform];
+            if (latest)
+                ver = latest;
+        }
+        this.sdk_ver = ver;
+    }
+    async check_sdk_ver(){
+        if (this.config.sdk_ver_prev)
+        {
+            this.print('SDK is already of the latest version.');
+            const force = this.opt.interactive && await this.get_value('Force update? (y/n)', 'n');
+            if (force != 'y')
+                return;
+        }
+    }
+    async assign_sdk_url(){
+        const default_sdk_url = app_config.defaults?.sdk_url_mask;
+        if (!default_sdk_url) {
+            throw new Error('SDK URL mask not configured. Please add defaults.sdk_url_mask to config.json');
+        }
+        this.sdk_url_mask = await this.get_value('SDK URL mask',
+            default_sdk_url, this.config.sdk_url);
+        this.sdk_url = this.sdk_url_mask.replace(/SDK_VER/g, this.sdk_ver);
+    }
+    assign_sdk_dir(){
+        this.sdk_dir = path.join(this.sdk_dir_root, this.sdk_ver);
+    }
+    create_sdk_dir(){
+        if (!fs.existsSync(this.sdk_dir))
+            fs.mkdirSync(this.sdk_dir);
+    }
+    assign_sdk_zip_names(){
+        this.sdk_zip = path.basename(this.sdk_url);
+        this.sdk_zip_fname = path.join(this.sdk_dir_root, this.sdk_zip);
+    }
+    update_sdk_files(){}
+    async download_sdk(){
+        if (fs.existsSync(this.sdk_dir) && this.sdk_versions[this.sdk_ver])
+        {
+            this.print(`✔ Using cached SDK version ${
+                this.sdk_ver} downloaded on ${this.sdk_versions[this.sdk_ver].date}`);
+        }
+        else
+        {
+            await download_from_url(this.sdk_url, this.sdk_zip_fname);
+            this.print(`✔ Downloaded ${this.sdk_zip}`);
+            this.sdk_versions[this.sdk_ver] = {
+                url: this.sdk_url,
+                date: new Date().toISOString(),
+            };
+            write_json(this.sdk_versions_fname, this.sdk_versions);
+            await unzip(this.sdk_zip_fname, this.sdk_dir);
+            this.print(`✔ SDK extracted into ${this.sdk_dir}`);
+        }
+    }
+}
+
+class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
+    constructor(opt){
+        super(opt);
+        this.env = {};
+        this.config_fnames = [];
+        this.appdir = null;
+        this.js_dir = null;
+        this.js_name = null;
+        this.appid = null;
+        this.index_fname = null;
+        this.use_helper = null;
+        this.sdk_service_dir = null;
+        this.sdk_service_fname = null;
+        this.brd_api_fname = null;
+        this.brd_api_dst_name = null;
+        this.brd_api_dst_fname = null;
+        this.brd_api_helper_name = null;
+        this.brd_api_helper_fname = null;
+        this.brd_api_helper_dst_fname = null;
+    }
+    read_env(){
+        return {
+            js_dir: process.env.JS_DIR,
+            app_dir: process.env.APP_DIR,
+            index: process.env.INDEX,
+        };
     }
     async get_js_dir(workdir, appdir, _opt){
         let def_value;
@@ -155,15 +293,6 @@ class BrightSdkUpdateWeb {
         fs.writeFileSync(fname, data);
         return prev;
     }
-    async search_workdir(name){
-        return await search_directory(this.workdir, new RegExp(name), {exclude: [
-            '.git',
-            '.sdk',
-            '.vscode',
-            '.idea',
-            'node_modules',
-        ].map(p=>path.join(this.workdir, p))});
-    }
     build_config(){
         this.env = this.read_env();
         this.config_fnames = this.opt.config_fnames
@@ -204,14 +333,6 @@ class BrightSdkUpdateWeb {
             this.config.workdir = this.workdir;
         }
     }
-    print_greeting(){
-        const greeting = `Welcome to BrightSDK Integration Code Generator for ${this.opt.name}!`;
-        const instructions = `Press CTRL+C at any time to break execution.
-        NOTE: remember to save your uncommited changes first.
-        `;
-        clear_screen();
-        this.print(greeting+lbr+instructions);
-    }
     async assign_appdir(){
         if (!this.appdir)
         {
@@ -219,70 +340,6 @@ class BrightSdkUpdateWeb {
                 this.config.app_dir, {selectable: true, dir: this.workdir});
             if (!fs.existsSync(path.join(this.workdir, this.appdir)))
                 this.workdir = path.dirname(this.appdir);
-        }
-    }
-    async load_config(){
-        if (!this.opt.config && !this.prev_config_fname)
-        {
-            const fname = get_config_fname(this.workdir);
-            if (fs.existsSync(fname))
-            {
-                this.read_config(this.config, this.prev_config_fname = fname);
-                this.print(`Loaded configuration: ${fname}`);
-            }
-        }
-    }
-    assign_sdk_dir_root(){
-        const root_dir = path.dirname(__dirname);
-        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);
-    }
-    create_sdk_dir_root(){
-        if (!fs.existsSync(this.sdk_dir_root))
-            fs.mkdirSync(this.sdk_dir_root, {recursive: true});
-    }
-    create_sdk_dir(){
-        if (!fs.existsSync(this.sdk_dir))
-            fs.mkdirSync(this.sdk_dir);
-    }
-    async assign_sdk_ver(){
-        let ver = await this.get_value('SDK Version', 'latest', this.config.sdk_ver, {
-            selectable: fs.existsSync(this.sdk_dir_root),
-            lock_dir: true,
-            dir: this.sdk_dir_root,
-            strip: this.sdk_dir_root,
-        });
-        if (ver == 'latest')
-        {
-            const latest_fname = path.join(this.sdk_dir_root, 'latest.json');
-            const versions_url = app_config.urls?.sdk_versions;
-            if (!versions_url) {
-                throw new Error('SDK versions URL not configured. Please add urls.sdk_versions to config.json');
-            }
-            try {
-                await download_from_url(versions_url, latest_fname);
-            } catch(e){
-                this.print('Failed to download latest version info');
-                if (fs.existsSync(latest_fname))
-                    this.print('Falling back to cached version info');
-                else
-                {
-                    throw new Error('Please check your internet connection and'
-                        +' try again or provide cached sdk version name');
-                }
-            }
-            const latest = read_json(latest_fname)[this.opt.platform];
-            if (latest)
-                ver = latest;
-        }
-        this.sdk_ver = ver;
-    }
-    async check_sdk_ver(){
-        if (this.config.sdk_ver_prev)
-        {
-            this.print('SDK is already of the latest version.');
-            const force = this.opt.interactive && await this.get_value('Force update? (y/n)', 'n');
-            if (force != 'y')
-                return;
         }
     }
     async assign_js_dir(){
@@ -307,22 +364,6 @@ class BrightSdkUpdateWeb {
             }
         );
     }
-    async assign_sdk_url(){
-        const default_sdk_url = app_config.defaults?.sdk_url_mask;
-        if (!default_sdk_url) {
-            throw new Error('SDK URL mask not configured. Please add defaults.sdk_url_mask to config.json');
-        }
-        this.sdk_url_mask = await this.get_value('SDK URL mask',
-            default_sdk_url, this.config.sdk_url);
-        this.sdk_url = this.sdk_url_mask.replace(/SDK_VER/g, this.sdk_ver);
-    }
-    assign_sdk_zip_names(){
-        this.sdk_zip = path.basename(this.sdk_url);
-        this.sdk_zip_fname = path.join(this.sdk_dir_root, this.sdk_zip);
-    }
-    assign_sdk_dir(){
-        this.sdk_dir = path.join(this.sdk_dir_root, this.sdk_ver);
-    }
     assign_appid(){
         const appinfo = read_json(path.join(this.appdir, 'appinfo.json'));
         this.appid = appinfo.id;
@@ -345,13 +386,6 @@ class BrightSdkUpdateWeb {
         const use_helper_yes_no = await this.get_value('Use BrightSDK Integration Helper? (y/n)',
             'y', this.config.use_helper && 'y');
         this.use_helper = use_helper_yes_no == 'y';
-    }
-    assign_sdk_versions_filename(){
-        this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
-    }
-    async assign_sdk_versions(){
-        this.sdk_versions = fs.existsSync(this.sdk_versions_fname)
-            ? read_json(this.sdk_versions_fname) : {};
     }
     async assign_sdk_service_filename(){
         this.sdk_service_fname = path.join(this.sdk_dir, 'sdk', 'service');
@@ -408,25 +442,6 @@ class BrightSdkUpdateWeb {
     async assign_brd_api_helper_dest_filename(){
         this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
     }
-    async download_sdk(){
-        if (fs.existsSync(this.sdk_dir) && this.sdk_versions[this.sdk_ver])
-        {
-            this.print(`✔ Using cached SDK version ${
-                this.sdk_ver} downloaded on ${this.sdk_versions[this.sdk_ver].date}`);
-        }
-        else
-        {
-            await download_from_url(this.sdk_url, this.sdk_zip_fname);
-            this.print(`✔ Downloaded ${this.sdk_zip}`);
-            this.sdk_versions[this.sdk_ver] = {
-                url: this.sdk_url,
-                date: new Date().toISOString(),
-            };
-            write_json(this.sdk_versions_fname, this.sdk_versions);
-            await unzip(this.sdk_zip_fname, this.sdk_dir);
-            this.print(`✔ SDK extracted into ${this.sdk_dir}`);
-        }
-    }
     get_sdk_files(){
         const files = [
             [this.sdk_service_fname, this.sdk_service_dir],
@@ -449,7 +464,6 @@ class BrightSdkUpdateWeb {
             this.print(`✔ Copied ${src} to ${dst}`);
         }
     }
-    update_sdk_files(){}
     update_brd_api(){
         let brd_api_name_prev, brd_api_fname_prev = 'none';
         if (brd_api_name_prev = this.update_index_ref(this.index_fname, this.brd_api_dst_name))
