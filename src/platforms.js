@@ -44,6 +44,8 @@ class BrightSdkUpdateBase {
         this.sdk_url = null;
         this.sdk_zip = null;
         this.sdk_zip_fname = null;
+        this.env = {};
+        this.config_fnames = [];
     }
     print(s, opt={}){
         if (!this.opt.interactive && !this.opt.verbose)
@@ -216,13 +218,48 @@ class BrightSdkUpdateBase {
             this.print(`✔ Copied ${src} to ${dst}`);
         }
     }
+    read_env(){
+        return {};
+    }
+    build_config(){
+        this.env = this.read_env();
+        this.config_fnames = this.opt.config_fnames
+            || this.opt.config_fname && [this.opt.config_fname];
+        if (this.opt.config) // where opt.config is assigned?
+            Object.assign(this.config, this.opt.config);
+        else if (this.config_fnames?.length)
+        {
+            for (let i=0; i<this.config_fnames.length; i++)
+            {
+                const config_fname = this.config_fnames[i];
+                if (fs.existsSync(config_fname))
+                    this.read_config(this.config, config_fname);
+                if (!i)
+                {
+                    for (const name in this.env)
+                    {
+                        if (this.env[name])
+                            this.config[name] = this.env[name];
+                    }
+                    this.prev_config_fname = config_fname;
+                }
+            }
+        }
+        this.workdir = this.config.workdir
+            || this.opt.workdir
+            || (this.config_fnames.length
+                ? path.dirname(this.config_fnames[this.config_fnames.length-1])
+                : process.cwd());
+        this.config.workdir = this.workdir;
+        this.platform_specific_build_config();
+    }
+    platform_specific_build_config() {
+    }
 }
 
 class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
     constructor(opt){
         super(opt);
-        this.env = {};
-        this.config_fnames = [];
         this.appdir = null;
         this.js_dir = null;
         this.js_name = null;
@@ -304,45 +341,9 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         fs.writeFileSync(fname, data);
         return prev;
     }
-    build_config(){
-        this.env = this.read_env();
-        this.config_fnames = this.opt.config_fnames
-            || this.opt.config_fname && [this.opt.config_fname];
-        if (this.opt.config) // where opt.config is assigned?
-        {
-            Object.assign(this.config, this.opt.config);
-            this.workdir = this.config.workdir;
+    platform_specific_build_config() {
+        if (this.config.app_dir)
             this.appdir = path.join(this.workdir, this.config.app_dir);
-        }
-        else
-        {
-            if (this.config_fnames?.length)
-            {
-                for (let i=0; i<this.config_fnames.length; i++)
-                {
-                    const config_fname = this.config_fnames[i];
-                    if (fs.existsSync(config_fname))
-                        this.read_config(this.config, config_fname);
-                    if (!i)
-                    {
-                        for (const name in this.env)
-                        {
-                            if (this.env[name])
-                                this.config[name] = env[name];
-                        }
-                        this.prev_config_fname = config_fname;
-                    }
-                }
-                this.workdir = this.config.workdir
-                    || path.dirname(this.config_fnames[this.config_fnames.length-1]);
-                this.appdir = path.join(this.workdir, this.config.app_dir || '');
-            }
-            else if (this.opt.workdir)
-                this.workdir = this.opt.workdir;
-            else
-                this.workdir = process.cwd();
-            this.config.workdir = this.workdir;
-        }
     }
     async assign_appdir(){
         if (!this.appdir)
