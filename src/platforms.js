@@ -205,6 +205,17 @@ class BrightSdkUpdateBase {
             this.print(`✔ SDK extracted into ${this.sdk_dir}`);
         }
     }
+    get_sdk_files(){
+        return [];
+    }
+    async replace_sdk_files(){
+        for (const [src, dst] of this.get_sdk_files())
+        {
+            if (await replace_file(src, dst))
+                this.print(`✔ Removed ${dst}`);
+            this.print(`✔ Copied ${src} to ${dst}`);
+        }
+    }
 }
 
 class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
@@ -297,7 +308,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.env = this.read_env();
         this.config_fnames = this.opt.config_fnames
             || this.opt.config_fname && [this.opt.config_fname];
-        if (this.opt.config)
+        if (this.opt.config) // where opt.config is assigned?
         {
             Object.assign(this.config, this.opt.config);
             this.workdir = this.config.workdir;
@@ -455,14 +466,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             ]);
         }
         return files;
-    }
-    async replace_sdk_files(){
-        for (const [src, dst] of this.get_sdk_files())
-        {
-            if (await replace_file(src, dst))
-                this.print(`✔ Removed ${dst}`);
-            this.print(`✔ Copied ${src} to ${dst}`);
-        }
     }
     update_brd_api(){
         let brd_api_name_prev, brd_api_fname_prev = 'none';
