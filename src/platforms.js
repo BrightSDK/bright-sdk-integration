@@ -255,6 +255,69 @@ class BrightSdkUpdateBase {
     }
     platform_specific_build_config() {
     }
+    workdir_relative_path(s) {
+        return path.relative(this.workdir, s) || '.';
+    }
+    get_config_to_save() {
+        const config = {
+            workdir: this.workdir_relative_path(this.workdir),
+            sdk_ver: this.config?.sdk_ver || this.sdk_ver,
+            sdk_ver_prev: this.sdk_ver,
+            sdk_url: this.sdk_url_mask,
+        };
+        const specific_config = this.get_specific_config_to_save();
+        return Object.assign(config, specific_config);
+    }
+    get_specific_config_to_save() {
+        return {};
+    }
+    get_git_add_specific_commands() {
+        return [];
+    }
+    get_git_commands(next_config_fname) {
+        const sdk_ver_from = this.config.sdk_ver_prev && this.config.sdk_ver_prev != this.sdk_ver
+            ? `from v${this.config.sdk_ver_prev} ` : '';
+        const commands = [];
+        if (path.resolve(this.workdir) != process.cwd())
+            commands.push(`cd ${this.workdir}`);
+        commands.push(...this.get_git_add_specific_commands());
+        commands.push(...[
+            `git add ${next_config_fname}`,
+            `git commit -m 'update brd_sdk ${sdk_ver_from}to v${this.sdk_ver}'`,
+        ]);
+        return commands;
+    }
+    get_reset_command() {
+        let reset = 'git checkout .';
+        if (path.resolve(this.workdir) != process.cwd())
+            reset = `cd ${this.workdir} && ${reset} && cd -`;
+        return reset;
+    }
+    print_save_config(next_config_fname) {
+        const commands = this.get_git_commands(next_config_fname).join(' && \\ \n');
+        const reset = this.get_reset_command();
+        this.print(`
+Thank you for using our products!
+To commit your changes, run:
+
+${commands}
+
+To start over, run
+
+${reset}
+`);
+    }
+    save_config(){
+        if (!this.opt.config)
+        {
+            const next_config = this.get_config_to_save();
+            this.print(`Generated config:\n${JSON.stringify(next_config, null, 2)}\n`);
+            const next_config_fname = get_config_fname(this.workdir);
+            write_json(next_config_fname, next_config);
+            this.print(`✔ Saved config into ${next_config_fname}`);
+            this.print_save_config(next_config_fname);
+        }
+    }
 }
 
 class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
@@ -481,52 +544,20 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         }
         this.print(`✔ Processed ${brd_api_fname_prev} -> ${this.brd_api_dst_fname}`);
     }
-    save_config(){
-        if (!this.opt.config)
-        {
-            // @TODO: use path.relative
-            const simplify = s=>path.relative(this.workdir, s) || '.';
-            const next_config = {
-                workdir: simplify(this.workdir),
-                app_dir: simplify(this.appdir),
-                js_dir: simplify(this.js_dir),
-                index: simplify(this.index_fname),
-                sdk_service_dir: simplify(this.sdk_service_dir),
-                sdk_ver: this.config?.sdk_ver || this.sdk_ver,
-                sdk_ver_prev: this.sdk_ver,
-                sdk_url: this.sdk_url_mask,
-                use_helper: this.use_helper,
-            };
-            this.print(`Generated config:\n${JSON.stringify(next_config, null, 2)}\n`);
-            const next_config_fname = get_config_fname(this.workdir);
-            write_json(next_config_fname, next_config);
-            this.print(`✔ Saved config into ${next_config_fname}`);
-            const sdk_ver_from = this.config.sdk_ver_prev && this.config.sdk_ver_prev != this.sdk_ver
-                ? `from v${this.config.sdk_ver_prev} ` : '';
-            const commands = [];
-            if (path.resolve(this.workdir) != process.cwd())
-                commands.push(`cd ${this.workdir}`);
-            commands.push(...[
-                `git add ${path.join(this.js_name, this.brd_api_dst_name)}`,
-                `git add ${this.sdk_service_dir}`,
-                `git add ${next_config_fname}`,
-                `git commit -m 'update brd_sdk ${sdk_ver_from}to v${this.sdk_ver}'`,
-            ]);
-            const reset = 'git checkout .';
-            if (path.resolve(this.workdir) != process.cwd())
-                reset = `cd ${this.workdir} && ${reset} && cd -`;
-
-            this.print(`
-Thank you for using our products!
-To commit your changes, run:
-
-${commands.join(' && \\ \n')}
-
-To start over, run
-
-${reset}
-`);
-        }
+    get_specific_config_to_save() {
+        return {
+            app_dir: this.workdir_relative_path(this.appdir),
+            js_dir: this.workdir_relative_path(this.js_dir),
+            index: this.workdir_relative_path(this.index_fname),
+            sdk_service_dir: this.workdir_relative_path(this.sdk_service_dir),
+            use_helper: this.use_helper,
+        };
+    }
+    get_git_add_specific_commands() {
+        return [
+            `git add ${path.join(this.js_name, this.brd_api_dst_name)}`,
+            `git add ${this.sdk_service_dir}`,
+        ];
     }
     async prepare(){
         if (this.opt.interactive)
