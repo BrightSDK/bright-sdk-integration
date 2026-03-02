@@ -318,6 +318,24 @@ ${reset}
             this.print_save_config(next_config_fname);
         }
     }
+
+    async prepare(){
+        if (this.opt.interactive)
+            process_init();
+        this.build_config();
+        this.print_greeting();
+        await this.load_config();
+
+        this.assign_sdk_dir_root();
+        this.create_sdk_dir_root();
+        await this.assign_sdk_url();
+        await this.assign_sdk_ver();
+        await this.check_sdk_ver();
+        this.assign_sdk_zip_names();
+        this.assign_sdk_dir();
+        this.assign_sdk_versions_filename();
+        await this.assign_sdk_versions();
+    }
 }
 
 class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
@@ -560,27 +578,15 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         ];
     }
     async prepare(){
-        if (this.opt.interactive)
-            process_init();
-        this.build_config();
-        this.print_greeting();
+        await super.prepare();
+
         await this.assign_appdir();
-        await this.load_config();
-        this.assign_sdk_dir_root();
-        this.create_sdk_dir_root();
-        await this.assign_sdk_ver();
-        await this.check_sdk_ver();
         await this.assign_js_dir();
         this.assign_js_name();
         await this.assign_sdk_service_dir();
-        await this.assign_sdk_url();
-        this.assign_sdk_zip_names();
-        this.assign_sdk_dir();
         this.assign_web_hosted();
         await this.assign_index_filename();
         await this.assign_use_helper();
-        this.assign_sdk_versions_filename();
-        await this.assign_sdk_versions();
         this.assign_sdk_service_filename();
         this.assign_brd_api_filename();
         this.assign_brd_api_dest_name();
