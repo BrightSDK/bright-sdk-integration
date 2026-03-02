@@ -328,9 +328,9 @@ ${reset}
 
         this.assign_sdk_dir_root();
         this.create_sdk_dir_root();
-        await this.assign_sdk_url();
         await this.assign_sdk_ver();
         await this.check_sdk_ver();
+        await this.assign_sdk_url();
         this.assign_sdk_zip_names();
         this.assign_sdk_dir();
         this.assign_sdk_versions_filename();
@@ -667,6 +667,48 @@ class BrightSdkUpdateTizen extends BrightSdkUpdateWeb {
     }
 }
 
+class BrightSdkUpdateAppleMobile extends BrightSdkUpdateBase {
+    constructor(opt){
+        super(opt);
+        this.libs_fname = null;
+        this.libs_dir = null;
+        this.framework_fname = 'brdsdk.xcframework';
+    }
+    async assign_libs_dir() {
+        this.libs_fname = await this.get_value('Directory to store framework', 'libs',
+            this.config.libs_dir, {
+                selectable: true,
+                dir: this.workdir,
+            });
+        this.libs_dir = path.join(this.workdir, this.libs_fname);
+    }
+    create_libs_dir() {
+        if (!fs.existsSync(this.libs_dir))
+            fs.mkdirSync(this.libs_dir, {recursive: true});
+    }
+    get_specific_config_to_save() {
+        return {
+            libs_dir: this.workdir_relative_path(this.libs_dir),
+        };
+    }
+    get_git_add_specific_commands() {
+        return [
+            `git add ${path.join(this.libs_dir, this.framework_fname)}`,
+        ];
+    }
+    get_sdk_files(){
+        return [
+            [path.join(this.sdk_dir, this.framework_fname), path.join(this.libs_dir, this.framework_fname)],
+        ];
+    }
+    async prepare() {
+        await super.prepare();
+
+        await this.assign_libs_dir();
+        this.create_libs_dir();
+    }
+}
+
 const process_web = async(opt={})=>{
     const platforms = {
         webos: {name: 'WebOS', Implementation: BrightSdkUpdateWebos},
@@ -676,4 +718,13 @@ const process_web = async(opt={})=>{
     new platform.Implementation({...opt, name: platform.name}).run();
 };
 
-module.exports = {get_config_fname, process_web, BrightSdkUpdateWeb};
+const process_apple = async(opt={})=>{
+    const platforms = {
+        ios: {name: 'iOS', Implementation: BrightSdkUpdateAppleMobile},
+        tvos: {name: 'tvOS', Implementation: BrightSdkUpdateAppleMobile},
+    };
+    const platform = platforms[opt.platform];
+    new platform.Implementation({...opt, name: platform.name}).run();
+};
+
+module.exports = {get_config_fname, process_web, process_apple, BrightSdkUpdateWeb};
