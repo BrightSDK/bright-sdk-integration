@@ -651,7 +651,6 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
     }
     async prepare(){
         await super.prepare();
-        this.assign_appid();
         this.assign_sdk_package_filename();
         this.assign_sdk_services_filename();
     }
