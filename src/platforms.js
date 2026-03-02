@@ -336,6 +336,24 @@ ${reset}
         this.assign_sdk_versions_filename();
         await this.assign_sdk_versions();
     }
+    async pre_run(){
+        await this.prepare();
+        this.print('Starting...');
+        this.create_sdk_dir();
+        await this.download_sdk();
+        await this.replace_sdk_files();
+        this.update_sdk_files();
+    }
+    async platform_specific_run(){
+    }
+    async post_run(){
+        this.save_config();
+    }
+    async run(){
+        await this.pre_run();
+        await this.platform_specific_run();
+        await this.post_run();
+    }
 }
 
 class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
@@ -598,15 +616,8 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             this.assign_brd_api_helper_dest_filename();
         }
     }
-    async run(){
-        await this.prepare();
-        this.print('Starting...');
-        this.create_sdk_dir();
-        await this.download_sdk();
-        await this.replace_sdk_files();
-        this.update_sdk_files();
+    async platform_specific_run() {
         this.update_brd_api();
-        this.save_config();
     }
 }
 
