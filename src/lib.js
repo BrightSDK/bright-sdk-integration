@@ -5,6 +5,7 @@ const https = require('follow-redirects').https;
 const path = require('path');
 const unzipper = require('unzipper');
 const fs = require('fs-extra');
+const {spawn} = require('child_process');
 
 const lbr = os.EOL;
 
@@ -97,12 +98,21 @@ const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
     });
 });
 
-const unzip = (fname, dst)=>new Promise((resolve, reject)=>{
-    const rs = fs.createReadStream(fname);
-    rs.pipe(unzipper.Extract({path: dst}))
-    .on('error', reject)
-    .on('finish', resolve);
-});
+const unzip = async (fname, dst)=>{
+    if (process.platform === 'darwin')
+    {
+        await execCommand('ditto', ['-x', '-k', fname, dst]);
+    }
+    else
+    {
+        await new Promise((resolve, reject)=>{
+            const rs = fs.createReadStream(fname);
+            rs.pipe(unzipper.Extract({path: dst}))
+                .on('error', reject)
+                .on('finish', resolve);
+        })
+    }
+};
 
 
 const set_prop = (obj, path, value)=>{
@@ -133,8 +143,21 @@ const replace_file = async(src, dst)=>{
         await fs.remove(dst);
         replaced = true;
     }
-    await fs.copy(src, dst);
+    await platformCopy(src, dst);
     return replaced;
+};
+
+const execCommand = (cmd, args)=>new Promise((res, rej)=>{
+    const p = spawn(cmd, args, {stdio: 'inherit'});
+    p.on('error', rej);
+    p.on('exit', code => code ? rej(new Error(`${cmd} exit ${code}`)) : res());
+});
+
+const platformCopy = async(src, dst)=>{
+    if (process.platform === 'darwin')
+        await execCommand('ditto', [src, dst]);
+    else
+        await fs.copy(src, dst);
 };
 
 module.exports = {
