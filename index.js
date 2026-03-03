@@ -12,7 +12,7 @@ if (require.main == module)
             .option('platform', {
                 alias: 'p',
                 type: 'string',
-                default: 'ios',
+                default: 'macos',
                 describe: 'Specify the platform'
             })
             .argv;
@@ -36,6 +36,7 @@ if (require.main == module)
             break;
         case 'ios':
         case 'tvos':
+        case 'macos':
             await process_apple(opt);
             break;
         default:
@@ -51,4 +52,5 @@ module.exports = {
     process_apple,
     process_ios: opt=>process_apple({...opt, platform: 'ios'}),
     process_tvos: opt=>process_apple({...opt, platform: 'tvos'}),
+    process_macos: opt=>process_apple({...opt, platform: 'macos'}),
 };

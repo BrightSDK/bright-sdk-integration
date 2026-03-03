@@ -716,6 +716,26 @@ class BrightSdkUpdateAppleMobile extends BrightSdkUpdateApple {
     }
 }
 
+class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
+    constructor(opt){
+        super(opt);
+        this.framework_fname = 'brdsdk.framework';
+        this.net_updater_fname = 'net_updater.app';
+    }
+    get_git_add_specific_commands() {
+        return [
+            `git add ${path.join(this.libs_dir, this.framework_fname)}`,
+            `git add ${path.join(this.libs_dir, this.net_updater_fname)}`,
+        ];
+    }
+    get_sdk_files(){
+        return [
+            [path.join(this.sdk_dir, this.framework_fname), path.join(this.libs_dir, this.framework_fname)],
+            [path.join(this.sdk_dir, this.net_updater_fname), path.join(this.libs_dir, this.net_updater_fname)],
+        ];
+    }
+}
+
 const process_web = async(opt={})=>{
     const platforms = {
         webos: {name: 'WebOS', Implementation: BrightSdkUpdateWebos},
@@ -729,6 +749,7 @@ const process_apple = async(opt={})=>{
     const platforms = {
         ios: {name: 'iOS', Implementation: BrightSdkUpdateAppleMobile},
         tvos: {name: 'tvOS', Implementation: BrightSdkUpdateAppleMobile},
+        macos: {name: 'macOS', Implementation: BrightSdkUpdateAppleDesktop},
     };
     const platform = platforms[opt.platform];
     new platform.Implementation({...opt, name: platform.name}).run();
