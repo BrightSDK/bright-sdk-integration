@@ -668,15 +668,14 @@ class BrightSdkUpdateTizen extends BrightSdkUpdateWeb {
     }
 }
 
-class BrightSdkUpdateAppleMobile extends BrightSdkUpdateBase {
+class BrightSdkUpdateApple extends BrightSdkUpdateBase {
     constructor(opt){
         super(opt);
         this.libs_fname = null;
         this.libs_dir = null;
-        this.framework_fname = 'brdsdk.xcframework';
     }
     async assign_libs_dir() {
-        this.libs_fname = await this.get_value('Directory to store framework', 'libs',
+        this.libs_fname = await this.get_value('Directory to store sdk framework', 'libs',
             this.config.libs_dir, {
                 selectable: true,
                 dir: this.workdir,
@@ -692,6 +691,19 @@ class BrightSdkUpdateAppleMobile extends BrightSdkUpdateBase {
             libs_dir: this.workdir_relative_path(this.libs_dir),
         };
     }
+    async prepare() {
+        await super.prepare();
+
+        await this.assign_libs_dir();
+        this.create_libs_dir();
+    }
+}
+
+class BrightSdkUpdateAppleMobile extends BrightSdkUpdateApple {
+    constructor(opt){
+        super(opt);
+        this.framework_fname = 'brdsdk.xcframework';
+    }
     get_git_add_specific_commands() {
         return [
             `git add ${path.join(this.libs_dir, this.framework_fname)}`,
@@ -701,12 +713,6 @@ class BrightSdkUpdateAppleMobile extends BrightSdkUpdateBase {
         return [
             [path.join(this.sdk_dir, this.framework_fname), path.join(this.libs_dir, this.framework_fname)],
         ];
-    }
-    async prepare() {
-        await super.prepare();
-
-        await this.assign_libs_dir();
-        this.create_libs_dir();
     }
 }
 
