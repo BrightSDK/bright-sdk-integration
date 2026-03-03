@@ -12,7 +12,7 @@ if (require.main == module)
             .option('platform', {
                 alias: 'p',
                 type: 'string',
-                default: 'macos',
+                default: 'webos',
                 describe: 'Specify the platform'
             })
             .argv;
