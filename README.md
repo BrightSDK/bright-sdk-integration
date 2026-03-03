@@ -21,10 +21,12 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 - [x] WebOS
 - [x] Tizen
+- [х] iOS/tvOS
+- [x] macOS
 - [ ] Android
-- [ ] iOS
 - [ ] Windows
-- [ ] macOS
+
+> For Apple platforms there're only downloading/updating SDK files implemented.
 
 ## Installation
 
@@ -34,8 +36,12 @@ Recommended: install globally from the official tarball and then execute with np
 # install globally from the release tarball
 npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
 
-# run with npx after install
-npx bright-sdk-integration
+# run with npx after install (which you need)
+npx bright-sdk-integration --platform webos
+npx bright-sdk-integration --platform tizen
+npx bright-sdk-integration --platform ios
+npx bright-sdk-integration --platform tvos
+npx bright-sdk-integration --platform macos
 ```
 
 ## Use as command line tool
@@ -43,6 +49,8 @@ npx bright-sdk-integration
 Follow the next steps to use the generator as command line tool to integrate the new application or manually update the Bright SDK distribution in existing app.
 
 You can run the script via the globally installed package (recommended) using npx, or with node from a local checkout. The following options are supported:
+
+- **--platform <name>** - indicates platform. Supported values are `webos`, `tizen`, `ios`, `tvos`, `macos`.
 
 #### Interactive mode
 
@@ -62,16 +70,20 @@ node index.js
 
 The script will prompt you for the necessary information interactively, allowing you to provide the path to the configuration file, the path to the application directory, or configure all parameters interactively.
 
+*Example for WebOS:*
 ```bash
 Welcome to BrightSDK Integration Code Generator for WebOS!
 Press CTRL+C at any time to break execution.
 NOTE: remember to save your uncommited changes first.
 
-Path to application directory: /path/to/my/app
-/path/to/my/app
-
 SDK Version (1.438.821):
 1.438.821
+
+SDK URL mask (https://path/to/sdk_SDK_VER.zip):
+https://path/to/sdk_SDK_VER.zip
+
+Path to application directory: /path/to/my/app
+/path/to/my/app
 
 Application JS directory (js):
 /js
@@ -81,10 +93,6 @@ index.html Location (index.html):
 
 SDK Service dir (/path/to/my/app/service):
 /service
-
-SDK URL mask (https://path/to/sdk_SDK_VER.zip):
-https://path/to/sdk_SDK_VER.zip
-
 ```
 
 The interactive prompts include:
@@ -130,6 +138,8 @@ Reading configuration file /path/to/your/app/brd_sdk.config.json...
 
 ##### JSON configuration file definition and example:
 
+*WebOS:*
+
 ```json
 {
   "appdir": "/path/to/your/app",
@@ -138,6 +148,16 @@ Reading configuration file /path/to/your/app/brd_sdk.config.json...
   "js_dir": "js",
   "index": "index.html",
   "sdk_service_dir": "service",
+  "sdk_url": "https://example.com/sdk_SDK_VER.zip"
+}
+```
+*iOS/tvOS/macOS:*
+
+```json
+{
+  "libs_dir": "/path/to/your/project/libraries",
+  "config_fname": "/path/to/your/config.json",
+  "sdk_ver": "1.438.821",
   "sdk_url": "https://example.com/sdk_SDK_VER.zip"
 }
 ```
