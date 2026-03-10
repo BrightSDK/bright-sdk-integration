@@ -3,7 +3,7 @@
 'use strict'; /*jslint node:true es9:true*/
 const path = require('path');
 const yargs = require('yargs');
-const {get_config_fname, process_web} = require('./src/platforms.js');
+const {get_config_fname, process_web} = require('./src/platforms/index.js');
 
 if (require.main == module)
 {

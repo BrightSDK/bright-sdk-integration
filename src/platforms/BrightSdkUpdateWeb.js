@@ -1,0 +1,343 @@
+// LICENSE_CODE ZON
+'use strict'; /*jslint node:true es9:true*/
+const fs = require('fs');
+const path = require('path');
+const lib = require('../lib.js');
+const {BrightSdkUpdateBase} = require('./BrighSdkUpdateBase.js');
+
+const {
+    read_json, download_from_url, set_json_props,
+} = lib;
+
+class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
+    constructor(opt){
+        super(opt);
+        this.brd_api_base = 'brd_api';
+        this.brd_api_name = this.app_config.files?.api_name;
+        if (!this.brd_api_name && fs.existsSync(this.config_path)) {
+            throw new Error('API filename not configured. Please add files.api_name to config.json');
+        }
+        this.js_ext = '.js';
+        this.appdir = null;
+        this.js_dir = null;
+        this.js_name = null;
+        this.appid = null;
+        this.index_fname = null;
+        this.use_helper = null;
+        this.sdk_service_dir = null;
+        this.sdk_service_fname = null;
+        this.brd_api_fname = null;
+        this.brd_api_dst_name = null;
+        this.brd_api_dst_fname = null;
+        this.brd_api_helper_name = null;
+        this.brd_api_helper_fname = null;
+        this.brd_api_helper_dst_fname = null;
+    }
+    read_env(){
+        return {
+            js_dir: process.env.JS_DIR,
+            app_dir: process.env.APP_DIR,
+            index: process.env.INDEX,
+        };
+    }
+    async get_js_dir(workdir, appdir, _opt){
+        let def_value;
+        const existing = await this.search_workdir(
+            `^${this.brd_api_base}(_.+)?\.${this.js_ext}$`);
+        if (existing)
+            def_value = path.dirname(existing);
+        else
+        {
+            for (const name of ['src', 'source', 'js', '/'])
+            {
+                const dir = path.join(appdir, name);
+                if (fs.existsSync(dir))
+                {
+                    def_value = dir;
+                    break;
+                }
+            }
+        }
+        def_value = def_value || path.join(workdir);
+        return path.relative(workdir, def_value);
+    }
+    async find_service_dir(){
+        return await this.search_workdir('^services.json$');
+    }
+    get_service_dir_default(){
+        return path.join(this.appdir, 'service');
+    }
+    async get_service_dir(){
+        let def_value;
+        const existing = await this.find_service_dir();
+        if (existing)
+            def_value = path.dirname(existing);
+        else
+        {
+            for (const name of ['service', 'bright_sdk_service'])
+            {
+                const dir = path.join(this.workdir, name);
+                if (fs.existsSync(dir))
+                {
+                    def_value = dir;
+                    break;
+                }
+            }
+        }
+        def_value = def_value || this.get_service_dir_default();
+        return path.relative(this.workdir, def_value);
+    }
+    update_index_ref(fname, ref){
+        if (!fs.existsSync(fname))
+            throw new Error(`index.html not found at ${fname}`);
+        let data = fs.readFileSync(fname).toString();
+        const regex = new RegExp(`${this.brd_api_base}.*${this.js_ext}`);
+        const [prev] = data.match(regex)||[];
+        if (!prev) // @TODO: initial sdk injection
+            throw new Error('BrightSDK not found, configuration unsupported.');
+        data = data.replace(prev, ref);
+        fs.writeFileSync(fname, data);
+        return prev;
+    }
+    build_config(){
+        super.build_config();
+        if (this.config.app_dir)
+            this.appdir = path.join(this.workdir, this.config.app_dir);
+    }
+    async assign_appdir(){
+        if (!this.appdir)
+        {
+            this.appdir = await this.get_value('Path to application directory', '',
+                this.config.app_dir, {selectable: true, dir: this.workdir});
+            if (!fs.existsSync(path.join(this.workdir, this.appdir)))
+                this.workdir = path.dirname(this.appdir);
+        }
+    }
+    async assign_js_dir(){
+        const js_dir_config = this.config.js_dir && path.join(this.workdir, this.config.js_dir);
+        const js_dir_def = js_dir_config || await this.get_js_dir(this.workdir, this.appdir);
+        this.js_dir = await this.get_value('Application JS directory', js_dir_def, js_dir_config,
+            {selectable: true, dir: js_dir_def ? path.dirname(js_dir_def) : this.workdir}
+        );
+    }
+    assign_js_name(){
+        this.js_name = this.js_dir == this.appdir ? '' : path.basename(this.js_dir);
+    }
+    async assign_sdk_service_dir(){
+        const sdk_service_dir_def = await this.get_service_dir();
+        this.sdk_service_dir = await this.get_value('SDK Service dir', sdk_service_dir_def,
+            this.config.sdk_service_dir && path.join(this.workdir, this.config.sdk_service_dir),
+            {
+                selectable: true,
+                dir: sdk_service_dir_def
+                    ? path.dirname(sdk_service_dir_def)
+                    : this.workdir,
+            }
+        );
+    }
+    assign_appid(){
+        const appinfo = read_json(path.join(this.appdir, 'appinfo.json'));
+        this.appid = appinfo.id;
+    }
+    assign_web_hosted(){
+        this.is_web_hosted = !this.js_dir.startsWith(this.appdir);
+    }
+    async assign_index_filename(){
+        const index_def = path.relative(this.workdir, path.join(
+            this.is_web_hosted ? path.dirname(this.js_dir) : this.appdir, 'index.html'));
+        const index_fname_def = this.config.index && path.join(this.workdir, this.config.index);
+        this.index_fname = await this.get_value('index.html location', index_def,
+            index_fname_def, {
+                selectable: true,
+                dir: index_fname_def ? path.dirname(index_fname_def) : this.appdir,
+            }
+        );
+    }
+    async assign_use_helper(){
+        const use_helper_yes_no = await this.get_value('Use BrightSDK Integration Helper? (y/n)',
+            'y', this.config.use_helper && 'y');
+        this.use_helper = use_helper_yes_no == 'y';
+    }
+    async assign_sdk_service_filename(){
+        this.sdk_service_fname = path.join(this.sdk_dir, 'sdk', 'service');
+    }
+    async assign_brd_api_filename(){
+        this.brd_api_fname = path.join(this.sdk_dir, 'sdk', 'consent', this.brd_api_name);
+    }
+    async assign_brd_api_dest_name(){
+        this.brd_api_dst_name = this.brd_api_name.replace(this.js_ext,
+            `_v${this.sdk_ver}${this.js_ext}`);
+    }
+    async assign_brd_api_dest_filename(){
+        this.brd_api_dst_fname = path.join(this.js_dir, this.brd_api_dst_name);
+    }
+    async assign_brd_api_helper_name(){
+        this.brd_api_helper_name = this.app_config.files?.helper_name;
+        if (!this.brd_api_helper_name) {
+            throw new Error('Helper filename not configured. Please add files.helper_name to config.json');
+        }
+    }
+    async assign_brd_api_helper_filename(){
+        const helper_url = this.app_config.urls?.helper_latest;
+        const temp_dir = path.join(this.workdir, 'temp');
+
+        // Ensure temp directory exists
+        if (!fs.existsSync(temp_dir)) {
+            fs.mkdirSync(temp_dir, { recursive: true });
+        }
+
+        this.brd_api_helper_fname = path.join(temp_dir, this.brd_api_helper_name);
+
+        if (helper_url) {
+            try {
+                this.print('Downloading BrightSDK Integration Helper...');
+                await download_from_url(helper_url, this.brd_api_helper_fname);
+                this.print('✔ Downloaded BrightSDK Integration Helper');
+                return;
+            } catch (err) {
+                this.print(`✗ Failed to download helper: ${err.message}`);
+                // Continue to fallback below
+            }
+        }
+        // Fall back to local file if download fails or helper_url is missing
+        if (this.app_config.files?.helper_name_local) {
+            this.brd_api_helper_fname = path.join(__dirname, this.app_config.files.helper_name_local);
+        } else {
+            this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+        }
+        if (!fs.existsSync(this.brd_api_helper_fname)) {
+            throw new Error('Helper file not available locally or from remote source');
+        }
+        this.print('Using local helper file as fallback');
+    }
+    async assign_brd_api_helper_dest_filename(){
+        this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
+    }
+    get_sdk_files(){
+        const files = [
+            [this.sdk_service_fname, this.sdk_service_dir],
+            [this.brd_api_fname, this.brd_api_dst_fname],
+        ];
+        if (this.use_helper)
+        {
+            files.push([
+                this.brd_api_helper_fname,
+                this.brd_api_helper_dst_fname
+            ]);
+        }
+        return files;
+    }
+    update_brd_api(){
+        let brd_api_name_prev, brd_api_fname_prev = 'none';
+        if (brd_api_name_prev = this.update_index_ref(this.index_fname, this.brd_api_dst_name))
+        {
+            brd_api_fname_prev = path.join(this.js_dir, brd_api_name_prev);
+            if (!this.is_web_hosted && brd_api_fname_prev != this.brd_api_dst_fname)
+            {
+                if (fs.existsSync(brd_api_fname_prev))
+                    fs.unlinkSync(brd_api_fname_prev);
+            }
+        }
+        this.print(`✔ Processed ${brd_api_fname_prev} -> ${this.brd_api_dst_fname}`);
+    }
+    get_config_to_save() {
+        const additional = {
+            app_dir: this.workdir_relative_path(this.appdir),
+            js_dir: this.workdir_relative_path(this.js_dir),
+            index: this.workdir_relative_path(this.index_fname),
+            sdk_service_dir: this.workdir_relative_path(this.sdk_service_dir),
+            use_helper: this.use_helper,
+        };
+        return Object.assign(super.get_config_to_save(), additional);
+    }
+    get_git_commit_files() {
+        const files = [
+            path.join(this.js_name, this.brd_api_dst_name),
+            this.sdk_service_dir,
+        ];
+        return super.get_git_commit_files().concat(files);
+    }
+    async prepare(){
+        await super.prepare();
+
+        await this.assign_appdir();
+        await this.assign_js_dir();
+        this.assign_js_name();
+        await this.assign_sdk_service_dir();
+        this.assign_web_hosted();
+        await this.assign_index_filename();
+        await this.assign_use_helper();
+        this.assign_sdk_service_filename();
+        this.assign_brd_api_filename();
+        this.assign_brd_api_dest_name();
+        this.assign_brd_api_dest_filename();
+        if (this.use_helper)
+        {
+            this.assign_brd_api_helper_name();
+            await this.assign_brd_api_helper_filename();
+            this.assign_brd_api_helper_dest_filename();
+        }
+    }
+    async run_body() {
+        await super.run_body();
+        this.update_brd_api();
+    }
+}
+
+class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
+    constructor(opt){
+        super(opt);
+        this.sdk_package_fname = null;
+        this.sdk_package = {};
+        this.sdk_services_fname = null;
+        this.sdk_service_id = null;
+    }
+    assign_sdk_package_filename(){
+        this.sdk_package_fname = path.join(this.sdk_service_dir, 'package.json');
+    }
+    assign_sdk_services_filename(){
+        this.sdk_services_fname = path.join(this.sdk_service_dir, 'services.json');
+    }
+    read_sdk_package(){
+        this.sdk_package = read_json(this.sdk_package_fname);
+        this.sdk_service_id = this.sdk_package.name
+            .replace(/.+(\.brd_sdk)$/, this.appid+'$1');
+    }
+    update_sdk_package(){
+        set_json_props(this.sdk_package_fname, ['name'], this.sdk_service_id);
+        this.print(`✔ Processed ${this.sdk_package_fname}`);
+    }
+    update_sdk_services(){
+        set_json_props(this.sdk_services_fname, ['id', 'services.0.id', 'services.0.name'],
+            this.sdk_service_id);
+        this.print(`✔ Processed ${this.sdk_services_fname}`);
+    }
+    async prepare(){
+        await super.prepare();
+        this.assign_appid();
+        this.assign_sdk_package_filename();
+        this.assign_sdk_services_filename();
+    }
+    async update_sdk_files(){
+        this.read_sdk_package();
+        this.update_sdk_package();
+        this.update_sdk_services();
+    }
+}
+
+class BrightSdkUpdateTizen extends BrightSdkUpdateWeb {
+    async find_service_dir(){
+        return await this.search_workdir('^ver_conf.js$');
+    }
+}
+
+const process_web = async(opt={})=>{
+    const platforms = {
+        webos: {name: 'WebOS', Implementation: BrightSdkUpdateWebos},
+        tizen: {name: 'Tizen', Implementation: BrightSdkUpdateTizen},
+    };
+    const platform = platforms[opt.platform];
+    new platform.Implementation({...opt, name: platform.name}).run();
+};
+
+module.exports = {process_web, BrightSdkUpdateWeb};
