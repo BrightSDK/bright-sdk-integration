@@ -143,7 +143,7 @@ const replace_file = async(src, dst)=>{
         await fs.remove(dst);
         replaced = true;
     }
-    await platformCopy(src, dst);
+    await fs.copy(src, dst);
     return replaced;
 };
 
@@ -152,13 +152,6 @@ const execCommand = (cmd, args)=>new Promise((res, rej)=>{
     p.on('error', rej);
     p.on('exit', code => code ? rej(new Error(`${cmd} exit ${code}`)) : res());
 });
-
-const platformCopy = async(src, dst)=>{
-    if (process.platform === 'darwin')
-        await execCommand('ditto', [src, dst]);
-    else
-        await fs.copy(src, dst);
-};
 
 module.exports = {
     lbr,
