@@ -1,4 +1,4 @@
-const { BrightSdkUpdateWeb, process_web, get_config_fname } = require('../src/platforms.js');
+const { BrightSdkUpdateWeb, process_web, get_config_fname } = require('../src/platforms/index.js');
 const lib = require('../src/lib.js');
 const navigation = require('../src/navigation.js');
 const fs = require('fs');
@@ -13,7 +13,7 @@ jest.mock('../src/navigation.js');
 // Mock the entire BrightSdkUpdateWeb class since it's not exported directly
 // We'll need to access it via process_web function or test the module exports
 
-describe('platforms.js', () => {
+describe('platforms/index.js', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockFs();
@@ -78,7 +78,7 @@ describe('platforms.js', () => {
 
         test('should handle configuration loading', () => {
             // Test configuration structure without actually running the class
-            const platforms = require('../src/platforms.js');
+            const platforms = require('../src/platforms/index.js');
 
             expect(typeof platforms.get_config_fname).toBe('function');
             expect(typeof platforms.process_web).toBe('function');
@@ -100,7 +100,7 @@ describe('platforms.js', () => {
             };
 
             // Test that the function exists and can be called
-            const { process_web } = require('../src/platforms.js');
+            const { process_web } = require('../src/platforms/index.js');
             expect(typeof process_web).toBe('function');
         });
 
@@ -112,7 +112,7 @@ describe('platforms.js', () => {
             };
 
             // Test that the function accepts tizen platform
-            const { process_web } = require('../src/platforms.js');
+            const { process_web } = require('../src/platforms/index.js');
             expect(typeof process_web).toBe('function');
         });        test('should handle tizen platform', async () => {
             const opt = {
@@ -123,7 +123,7 @@ describe('platforms.js', () => {
 
             // Test that the function accepts tizen platform
             expect(() => {
-                const { process_web } = require('../src/platforms.js');
+                const { process_web } = require('../src/platforms/index.js');
                 expect(typeof process_web).toBe('function');
             }).not.toThrow();
         });
@@ -150,8 +150,8 @@ describe('platforms.js', () => {
             lib.read_json.mockReturnValue(mockConfig);
 
             // Re-require the module to trigger config loading
-            delete require.cache[require.resolve('../src/platforms.js')];
-            const platforms = require('../src/platforms.js');
+            delete require.cache[require.resolve('../src/platforms/index.js')];
+            const platforms = require('../src/platforms/index.js');
 
             // Test that the module loads without errors and exports expected functions
             expect(typeof platforms.get_config_fname).toBe('function');
@@ -162,10 +162,10 @@ describe('platforms.js', () => {
             fs.existsSync.mockReturnValue(false);
 
             // Re-require the module to trigger config loading
-            delete require.cache[require.resolve('../src/platforms.js')];
+            delete require.cache[require.resolve('../src/platforms/index.js')];
 
             expect(() => {
-                const platforms = require('../src/platforms.js');
+                const platforms = require('../src/platforms/index.js');
             }).not.toThrow();
         });
 
@@ -174,10 +174,10 @@ describe('platforms.js', () => {
             lib.read_json.mockReturnValue({});
 
             // Re-require the module to trigger config loading with empty config
-            delete require.cache[require.resolve('../src/platforms.js')];
+            delete require.cache[require.resolve('../src/platforms/index.js')];
 
             expect(() => {
-                const platforms = require('../src/platforms.js');
+                const platforms = require('../src/platforms/index.js');
             }).not.toThrow();
         });
     });
@@ -208,8 +208,8 @@ describe('platforms.js', () => {
 
             // The module should handle errors during config loading
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                const platforms = require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                const platforms = require('../src/platforms/index.js');
             }).not.toThrow();
         });
 
@@ -220,8 +220,8 @@ describe('platforms.js', () => {
             });
 
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                const platforms = require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                const platforms = require('../src/platforms/index.js');
             }).not.toThrow();
         });
     });
@@ -252,7 +252,7 @@ describe('platforms.js', () => {
             });
 
             expect(() => {
-                const { process_web, get_config_fname } = require('../src/platforms.js');
+                const { process_web, get_config_fname } = require('../src/platforms/index.js');
                 const configFile = get_config_fname('/test/project');
                 expect(configFile).toBe('/test/project/brd_sdk.config.json');
             }).not.toThrow();
@@ -274,8 +274,8 @@ describe('platforms.js', () => {
             lib.read_json.mockReturnValue(mockConfig);
 
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                const platforms = require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                const platforms = require('../src/platforms/index.js');
             }).not.toThrow();
         });
     });

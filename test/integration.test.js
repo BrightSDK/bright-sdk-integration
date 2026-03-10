@@ -1,4 +1,4 @@
-const { process_web, get_config_fname } = require('../src/platforms.js');
+const { process_web, get_config_fname } = require('../src/platforms/index.js');
 const lib = require('../src/lib.js');
 const navigation = require('../src/navigation.js');
 const fs = require('fs');
@@ -150,8 +150,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             lib.read_json.mockReturnValue(testConfig);
 
             // Re-require to trigger config loading
-            delete require.cache[require.resolve('../src/platforms.js')];
-            const platforms = require('../src/platforms.js');
+            delete require.cache[require.resolve('../src/platforms/index.js')];
+            const platforms = require('../src/platforms/index.js');
 
             // Test that the module loads successfully with configuration
             expect(typeof platforms.get_config_fname).toBe('function');
@@ -162,8 +162,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             fs.existsSync.mockReturnValue(false);
 
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                require('../src/platforms/index.js');
             }).not.toThrow();
         });
     });
@@ -209,7 +209,7 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                     if (filePath && filePath.includes('brd_api.helper.js')) return true;
                     return false;
                 });
-                const { BrightSdkUpdateWeb } = require('../src/platforms.js');
+                const { BrightSdkUpdateWeb } = require('../src/platforms/BrightSdkUpdateWeb.js');
                 const instance = new BrightSdkUpdateWeb({ workdir: testWorkdir });
                 instance.print = jest.fn();
                 instance.workdir = testWorkdir;
@@ -289,8 +289,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             });
 
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                require('../src/platforms/index.js');
             }).not.toThrow();
         });
 
@@ -307,8 +307,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             });
 
             expect(() => {
-                delete require.cache[require.resolve('../src/platforms.js')];
-                require('../src/platforms.js');
+                delete require.cache[require.resolve('../src/platforms/index.js')];
+                require('../src/platforms/index.js');
             }).not.toThrow();
         });
     });

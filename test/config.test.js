@@ -6,7 +6,7 @@ describe('Configuration Loading', () => {
 
   beforeEach(() => {
     // Clear require cache to ensure fresh imports
-    delete require.cache[require.resolve('../src/platforms.js')];
+    delete require.cache[require.resolve('../src/platforms/index.js')];
   });
 
   test('should load configuration from config.json', () => {
