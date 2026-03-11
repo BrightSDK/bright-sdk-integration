@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const lib = require('../lib.js');
-const {BrightSdkUpdateBase} = require('./BrighSdkUpdateBase.js');
+const {BrightSdkUpdateBase} = require('./BrightSdkUpdateBase.js');
 
 const {
     read_json, download_from_url, set_json_props,
