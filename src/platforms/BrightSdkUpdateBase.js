@@ -74,6 +74,7 @@ class BrightSdkUpdateBase {
     get_workdir_excludes(){
         return [
             '.git',
+            '.github',
             '.sdk',
             '.vscode',
             '.idea',
@@ -102,7 +103,7 @@ class BrightSdkUpdateBase {
     }
     assign_sdk_dir_root(){
         const root_dir = path.dirname(__dirname);
-        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);
+        this.sdk_dir_root = path.join(root_dir, '..', '.sdk', this.opt.platform);
     }
     create_sdk_dir_root(){
         if (!fs.existsSync(this.sdk_dir_root))
