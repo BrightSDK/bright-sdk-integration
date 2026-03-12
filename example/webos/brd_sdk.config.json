@@ -1,7 +1,7 @@
 {
   "workdir": ".",
   "app_dir": "app",
-  "js_dir": "app",
+  "libs_dir": "app",
   "index": "app/index.html",
   "sdk_service_dir": "service",
   "sdk_ver": "latest",

@@ -22,6 +22,9 @@ class BrightSdkUpdateBase {
         this.opt = opt;
         this.buffer = '';
         this.workdir = null;
+        this.appdir = null;
+        this.libs_dir = null;
+        this.libs_name = null;
         this.config = {};
         this.prev_config_fname = null;
         this.sdk_dir_root = null;
@@ -209,7 +212,10 @@ class BrightSdkUpdateBase {
         }
     }
     read_env(){
-        return {};
+        return {
+            libs_dir: process.env.LIBS_DIR,
+            app_dir: process.env.APP_DIR,
+        };
     }
     build_config(){
         this.env = this.read_env();
@@ -241,13 +247,37 @@ class BrightSdkUpdateBase {
                 ? path.dirname(this.config_fnames[this.config_fnames.length-1])
                 : process.cwd());
         this.config.workdir = this.workdir;
+        if (this.config.app_dir)
+            this.appdir = path.join(this.workdir, this.config.app_dir);
     }
     workdir_relative_path(s) {
+        if (!s) return null;
         return path.relative(this.workdir, s) || '.';
+    }
+    async assign_appdir(){
+    }
+    async get_libs_dir_def(){
+        return null;
+    }
+    libs_dir_prompt(){
+        return 'External libraries directory';
+    }
+    async assign_libs_dir(){
+        const conf_dir = this.config.js_dir || this.config.libs_dir;
+        const libs_dir_config = conf_dir && path.join(this.workdir, conf_dir);
+        const libs_dir_def = libs_dir_config || await this.get_libs_dir_def(this.workdir, this.appdir);
+        this.libs_dir = await this.get_value(this.libs_dir_prompt(), libs_dir_def, libs_dir_config,
+            {selectable: true, dir: libs_dir_def ? path.dirname(libs_dir_def) : this.workdir}
+        );
+    }
+    assign_libs_name(){
+        this.libs_name = this.libs_dir == this.appdir ? '' : path.basename(this.libs_dir);
     }
     get_config_to_save() {
         const config = {
             workdir: this.workdir_relative_path(this.workdir),
+            app_dir: this.workdir_relative_path(this.appdir),
+            libs_dir: this.workdir_relative_path(this.libs_dir),
             sdk_ver: this.config?.sdk_ver || this.sdk_ver,
             sdk_ver_prev: this.sdk_ver,
             sdk_url: this.sdk_url_mask,
@@ -318,6 +348,9 @@ ${reset}
         this.assign_sdk_dir();
         this.assign_sdk_versions_filename();
         await this.assign_sdk_versions();
+        await this.assign_appdir();
+        await this.assign_libs_dir();
+        this.assign_libs_name();
     }
     async run_body(){
         await this.prepare();

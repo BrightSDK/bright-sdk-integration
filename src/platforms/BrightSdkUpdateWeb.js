@@ -18,9 +18,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             throw new Error('API filename not configured. Please add files.api_name to config.json');
         }
         this.js_ext = '.js';
-        this.appdir = null;
-        this.js_dir = null;
-        this.js_name = null;
         this.appid = null;
         this.index_fname = null;
         this.use_helper = null;
@@ -34,13 +31,13 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.brd_api_helper_dst_fname = null;
     }
     read_env(){
-        return {
-            js_dir: process.env.JS_DIR,
-            app_dir: process.env.APP_DIR,
+        const parent = super.read_env();
+        return Object.assign(parent, {
+            libs_dir: parent.libs_dir || process.env.JS_DIR,
             index: process.env.INDEX,
-        };
+        });
     }
-    async get_js_dir(workdir, appdir, _opt){
+    async get_libs_dir_def(){ // doesn't use parent implementation
         let def_value;
         const existing = await this.search_workdir(
             `^${this.brd_api_base}(_.+)?\.${this.js_ext}$`);
@@ -50,7 +47,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         {
             for (const name of ['src', 'source', 'js', '/'])
             {
-                const dir = path.join(appdir, name);
+                const dir = path.join(this.appdir, name);
                 if (fs.existsSync(dir))
                 {
                     def_value = dir;
@@ -58,8 +55,8 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
                 }
             }
         }
-        def_value = def_value || path.join(workdir);
-        return path.relative(workdir, def_value);
+        def_value = def_value || path.join(this.workdir);
+        return path.relative(this.workdir, def_value);
     }
     async find_service_dir(){
         return await this.search_workdir('^services.json$');
@@ -99,12 +96,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         fs.writeFileSync(fname, data);
         return prev;
     }
-    build_config(){
-        super.build_config();
-        if (this.config.app_dir)
-            this.appdir = path.join(this.workdir, this.config.app_dir);
-    }
-    async assign_appdir(){
+    async assign_appdir(){ // doesn't use parent implementation
         if (!this.appdir)
         {
             this.appdir = await this.get_value('Path to application directory', '',
@@ -113,15 +105,8 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
                 this.workdir = path.dirname(this.appdir);
         }
     }
-    async assign_js_dir(){
-        const js_dir_config = this.config.js_dir && path.join(this.workdir, this.config.js_dir);
-        const js_dir_def = js_dir_config || await this.get_js_dir(this.workdir, this.appdir);
-        this.js_dir = await this.get_value('Application JS directory', js_dir_def, js_dir_config,
-            {selectable: true, dir: js_dir_def ? path.dirname(js_dir_def) : this.workdir}
-        );
-    }
-    assign_js_name(){
-        this.js_name = this.js_dir == this.appdir ? '' : path.basename(this.js_dir);
+    libs_dir_prompt(){
+        return 'Application JS directory';
     }
     async assign_sdk_service_dir(){
         const sdk_service_dir_def = await this.get_service_dir();
@@ -140,11 +125,11 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.appid = appinfo.id;
     }
     assign_web_hosted(){
-        this.is_web_hosted = !this.js_dir.startsWith(this.appdir);
+        this.is_web_hosted = !this.libs_dir.startsWith(this.appdir);
     }
     async assign_index_filename(){
         const index_def = path.relative(this.workdir, path.join(
-            this.is_web_hosted ? path.dirname(this.js_dir) : this.appdir, 'index.html'));
+            this.is_web_hosted ? path.dirname(this.libs_dir) : this.appdir, 'index.html'));
         const index_fname_def = this.config.index && path.join(this.workdir, this.config.index);
         this.index_fname = await this.get_value('index.html location', index_def,
             index_fname_def, {
@@ -169,7 +154,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             `_v${this.sdk_ver}${this.js_ext}`);
     }
     async assign_brd_api_dest_filename(){
-        this.brd_api_dst_fname = path.join(this.js_dir, this.brd_api_dst_name);
+        this.brd_api_dst_fname = path.join(this.libs_dir, this.brd_api_dst_name);
     }
     async assign_brd_api_helper_name(){
         this.brd_api_helper_name = this.app_config.files?.helper_name;
@@ -211,7 +196,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.print('Using local helper file as fallback');
     }
     async assign_brd_api_helper_dest_filename(){
-        this.brd_api_helper_dst_fname = path.join(this.js_dir, this.brd_api_helper_name);
+        this.brd_api_helper_dst_fname = path.join(this.libs_dir, this.brd_api_helper_name);
     }
     get_sdk_files(){
         const files = [
@@ -231,7 +216,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         let brd_api_name_prev, brd_api_fname_prev = 'none';
         if (brd_api_name_prev = this.update_index_ref(this.index_fname, this.brd_api_dst_name))
         {
-            brd_api_fname_prev = path.join(this.js_dir, brd_api_name_prev);
+            brd_api_fname_prev = path.join(this.libs_dir, brd_api_name_prev);
             if (!this.is_web_hosted && brd_api_fname_prev != this.brd_api_dst_fname)
             {
                 if (fs.existsSync(brd_api_fname_prev))
@@ -242,8 +227,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
     }
     get_config_to_save() {
         const additional = {
-            app_dir: this.workdir_relative_path(this.appdir),
-            js_dir: this.workdir_relative_path(this.js_dir),
             index: this.workdir_relative_path(this.index_fname),
             sdk_service_dir: this.workdir_relative_path(this.sdk_service_dir),
             use_helper: this.use_helper,
@@ -252,7 +235,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
     }
     get_git_commit_files() {
         const files = [
-            path.join(this.js_name, this.brd_api_dst_name),
+            path.join(this.libs_name, this.brd_api_dst_name),
             this.sdk_service_dir,
         ];
         return super.get_git_commit_files().concat(files);
@@ -260,9 +243,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
     async prepare(){
         await super.prepare();
 
-        await this.assign_appdir();
-        await this.assign_js_dir();
-        this.assign_js_name();
         await this.assign_sdk_service_dir();
         this.assign_web_hosted();
         await this.assign_index_filename();
