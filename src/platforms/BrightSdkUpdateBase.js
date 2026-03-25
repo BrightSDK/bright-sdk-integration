@@ -265,7 +265,7 @@ class BrightSdkUpdateBase {
     async assign_libs_dir(){
         const conf_dir = this.config.js_dir || this.config.libs_dir;
         const libs_dir_config = conf_dir && path.join(this.workdir, conf_dir);
-        const libs_dir_def = libs_dir_config || await this.get_libs_dir_def(this.workdir, this.appdir);
+        const libs_dir_def = libs_dir_config || await this.get_libs_dir_def();
         this.libs_dir = await this.get_value(this.libs_dir_prompt(), libs_dir_def, libs_dir_config,
             {selectable: true, dir: libs_dir_def ? path.dirname(libs_dir_def) : this.workdir}
         );
