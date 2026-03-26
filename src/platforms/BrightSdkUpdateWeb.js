@@ -21,9 +21,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.appid = null;
         this.index_fname = null;
         this.use_helper = null;
-        this.brd_api_fname = null;
-        this.brd_api_dst_name = null;
-        this.brd_api_dst_fname = null;
         this.brd_api_helper_name = null;
         this.brd_api_helper_fname = null;
         this.brd_api_helper_dst_fname = null;
@@ -139,9 +136,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.brd_api_dst_name = this.brd_api_name.replace(this.js_ext,
             `_v${this.sdk_ver}${this.js_ext}`);
     }
-    async assign_brd_api_dest_filename(){
-        this.brd_api_dst_fname = path.join(this.libs_dir, this.brd_api_dst_name);
-    }
     async assign_brd_api_helper_name(){
         this.brd_api_helper_name = this.app_config.files?.helper_name;
         if (!this.brd_api_helper_name) {
@@ -185,10 +179,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.brd_api_helper_dst_fname = path.join(this.libs_dir, this.brd_api_helper_name);
     }
     get_sdk_files(){
-        const files = [
-            ...super.get_sdk_files(),
-            [this.brd_api_fname, this.brd_api_dst_fname],
-        ];
+        const files = super.get_sdk_files();
         if (this.use_helper)
         {
             files.push([
@@ -230,9 +221,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         this.assign_web_hosted();
         await this.assign_index_filename();
         await this.assign_use_helper();
-        this.assign_brd_api_filename();
-        this.assign_brd_api_dest_name();
-        this.assign_brd_api_dest_filename();
         if (this.use_helper)
         {
             this.assign_brd_api_helper_name();

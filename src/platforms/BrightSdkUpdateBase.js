@@ -27,6 +27,10 @@ class BrightSdkUpdateBase {
         this.libs_name = null;
         this.config = {};
         this.prev_config_fname = null;
+        this.brd_api_name = null;
+        this.brd_api_fname = null;
+        this.brd_api_dst_name = null;
+        this.brd_api_dst_fname = null;
         this.sdk_dir_root = null;
         this.sdk_dir = null;
         this.sdk_service_dir = null;
@@ -116,6 +120,15 @@ class BrightSdkUpdateBase {
     }
     async assign_sdk_service_filename(){
         this.sdk_service_fname = null;
+    }
+    async assign_brd_api_filename(){
+        this.brd_api_fname = null;
+    }
+    async assign_brd_api_dest_name(){
+        this.brd_api_dst_name = this.brd_api_name;
+    }
+    async assign_brd_api_dest_filename(){
+        this.brd_api_dst_fname = path.join(this.libs_dir, this.brd_api_dst_name);
     }
     async get_service_dir(){
         return null;
@@ -229,6 +242,8 @@ class BrightSdkUpdateBase {
         const result = [];
         if (this.sdk_service_dir && this.sdk_service_fname)
             result.push([this.sdk_service_fname, this.sdk_service_dir]);
+        if (this.brd_api_fname && this.brd_api_dst_fname)
+            result.push([this.brd_api_fname, this.brd_api_dst_fname]);
         return result;
     }
     async replace_sdk_files(){
@@ -385,6 +400,9 @@ ${reset}
         this.assign_libs_name();
         this.assign_sdk_service_filename();
         await this.assign_sdk_service_dir();
+        this.assign_brd_api_filename();
+        this.assign_brd_api_dest_name();
+        this.assign_brd_api_dest_filename();
     }
     async run_body(){
         await this.prepare();
