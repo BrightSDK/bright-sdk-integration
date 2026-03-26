@@ -29,6 +29,8 @@ class BrightSdkUpdateBase {
         this.prev_config_fname = null;
         this.sdk_dir_root = null;
         this.sdk_dir = null;
+        this.sdk_service_dir = null;
+        this.sdk_service_fname = null;
         this.sdk_versions_fname = null;
         this.sdk_versions = {};
         this.sdk_ver = null;
@@ -105,12 +107,35 @@ class BrightSdkUpdateBase {
         }
     }
     assign_sdk_dir_root(){
-        const root_dir = path.dirname(__dirname);
-        this.sdk_dir_root = path.join(root_dir, '..', '.sdk', this.opt.platform);
+        const root_dir = path.join(path.dirname(__dirname), '..');
+        this.sdk_dir_root = path.join(root_dir, '.sdk', this.opt.platform);
     }
     create_sdk_dir_root(){
         if (!fs.existsSync(this.sdk_dir_root))
             fs.mkdirSync(this.sdk_dir_root, {recursive: true});
+    }
+    async assign_sdk_service_filename(){
+        this.sdk_service_fname = null;
+    }
+    async get_service_dir(){
+        return null;
+    }
+    async assign_sdk_service_dir(){
+        if (!this.sdk_service_fname)
+        {
+            this.sdk_service_dir = null;
+            return;
+        }
+        const sdk_service_dir_def = await this.get_service_dir();
+        this.sdk_service_dir = await this.get_value('SDK Service dir', sdk_service_dir_def,
+            this.config.sdk_service_dir && path.join(this.workdir, this.config.sdk_service_dir),
+            {
+                selectable: true,
+                dir: sdk_service_dir_def
+                    ? path.dirname(sdk_service_dir_def)
+                    : this.workdir,
+            }
+        );
     }
     assign_sdk_versions_filename(){
         this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
@@ -201,7 +226,10 @@ class BrightSdkUpdateBase {
         }
     }
     get_sdk_files(){
-        return [];
+        const result = [];
+        if (this.sdk_service_dir && this.sdk_service_fname)
+            result.push([this.sdk_service_fname, this.sdk_service_dir]);
+        return result;
     }
     async replace_sdk_files(){
         for (const [src, dst] of this.get_sdk_files())
@@ -278,6 +306,7 @@ class BrightSdkUpdateBase {
             workdir: this.workdir_relative_path(this.workdir),
             app_dir: this.workdir_relative_path(this.appdir),
             libs_dir: this.workdir_relative_path(this.libs_dir),
+            sdk_service_dir: this.workdir_relative_path(this.sdk_service_dir),
             sdk_ver: this.config?.sdk_ver || this.sdk_ver,
             sdk_ver_prev: this.sdk_ver,
             sdk_url: this.sdk_url_mask,
@@ -285,7 +314,10 @@ class BrightSdkUpdateBase {
         return config;
     }
     get_git_commit_files() {
-        return [];
+        const result = [];
+        if (this.sdk_service_dir)
+            result.push(this.sdk_service_dir);
+        return result;
     }
     get_git_commit_commands(next_config_fname) {
         const sdk_ver_from = this.config.sdk_ver_prev && this.config.sdk_ver_prev != this.sdk_ver
@@ -351,6 +383,8 @@ ${reset}
         await this.assign_appdir();
         await this.assign_libs_dir();
         this.assign_libs_name();
+        this.assign_sdk_service_filename();
+        await this.assign_sdk_service_dir();
     }
     async run_body(){
         await this.prepare();
