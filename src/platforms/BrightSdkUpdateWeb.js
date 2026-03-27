@@ -209,12 +209,6 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         };
         return Object.assign(super.get_config_to_save(), additional);
     }
-    get_git_commit_files() {
-        const files = [
-            path.join(this.libs_name, this.brd_api_dst_name),
-        ];
-        return super.get_git_commit_files().concat(files);
-    }
     async prepare(){
         await super.prepare();
 
