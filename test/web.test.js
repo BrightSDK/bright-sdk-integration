@@ -2,7 +2,6 @@ const { BrightSdkUpdateWeb } = require('../src/platforms/BrightSdkUpdateWeb.js')
 const lib = require('../src/lib.js');
 const navigation = require('../src/navigation.js');
 const fs = require('fs');
-const path = require('path');
 
 // Mock dependencies
 jest.mock('fs');
