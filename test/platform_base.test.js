@@ -316,3 +316,178 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         expect(u.get_value).toHaveBeenCalledWith('Force update? (y/n)', 'n');
     });
 });
+
+describe('BrightSdkUpdateBase.search_workdir', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    test('passes exclude list rooted at workdir', async () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.workdir = '/test/project';
+
+        lib.search_directory.mockResolvedValue(null);
+
+        await u.search_workdir('^x$');
+
+        expect(lib.search_directory).toHaveBeenCalledWith(
+            '/test/project',
+            expect.any(RegExp),
+            expect.objectContaining({
+                exclude: expect.arrayContaining([
+                    '/test/project/.git',
+                    '/test/project/.sdk',
+                    '/test/project/node_modules',
+                ]),
+            })
+        );
+    });
+});
+
+describe('BrightSdkUpdateBase.build_config', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    test('uses opt.config and opt.workdir', () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: {
+                workdir: '/test/project',
+                app_dir: 'app',
+                libs_dir: 'libs',
+            },
+        });
+
+        u.build_config();
+
+        expect(u.workdir).toBe('/test/project');
+        expect(u.appdir).toBe('app');
+        expect(u.config.libs_dir).toBe('libs');
+    });
+
+    test('reads config from config_fnames when provided', () => {
+        const cfgPath = '/test/project/brd_sdk.config.json';
+
+        fs.existsSync.mockImplementation(p => p === cfgPath);
+
+        lib.read_json.mockImplementation((p) => {
+            if (p === cfgPath) {
+                return { workdir: '/test/project', app_dir: 'app', libs_dir: 'libs' };
+            }
+            return {};
+        });
+
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            config_fnames: [cfgPath],
+        });
+
+        u.build_config();
+
+        expect(u.workdir).toBe('/test/project');
+        expect(u.appdir).toBe('app');
+        expect(u.config.libs_dir).toBe('libs');
+    });
+
+    test('build_config applies env overrides on first config file', () => {
+        const cfgPath = '/test/project/brd_sdk.config.json';
+
+        fs.existsSync.mockImplementation(p => p === cfgPath);
+
+        lib.read_json.mockImplementation((p) => {
+            if (p === cfgPath) {
+                return { workdir: '/test/project', libs_dir: 'libs_from_file' };
+            }
+            return {};
+        });
+
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            config_fnames: [cfgPath],
+        });
+
+        jest.spyOn(u, 'read_env').mockReturnValue({ libs_dir: 'libs_from_env' });
+
+        u.build_config();
+
+        expect(u.config.libs_dir).toBe('libs_from_env');
+        expect(u.prev_config_fname).toBe(cfgPath);
+    });
+
+});
+
+describe('BrightSdkUpdateBase.prepare', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    lib.print.mockImplementation(() => {});
+  });
+
+  test('calls the main preparation steps', async () => {
+    const u = new BrightSdkUpdateBase({
+      platform: 'webos',
+      name: 'WebOS',
+      interactive: false,
+      verbose: false,
+      workdir: '/test/project',
+      config: { workdir: '/test/project' },
+    });
+
+    jest.spyOn(u, 'build_config').mockImplementation(() => { u.workdir = '/test/project'; });
+    jest.spyOn(u, 'print_greeting').mockImplementation(() => {});
+    jest.spyOn(u, 'load_config').mockResolvedValue();
+
+    jest.spyOn(u, 'assign_sdk_dir_root').mockImplementation(() => {});
+    jest.spyOn(u, 'create_sdk_dir_root').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_sdk_ver').mockResolvedValue();
+    jest.spyOn(u, 'check_sdk_ver').mockResolvedValue();
+    jest.spyOn(u, 'assign_sdk_url').mockResolvedValue();
+    jest.spyOn(u, 'assign_sdk_zip_names').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_sdk_dir').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_sdk_versions_filename').mockImplementation(() => { u.sdk_versions_fname = '/x'; });
+    jest.spyOn(u, 'assign_sdk_versions').mockResolvedValue();
+
+    jest.spyOn(u, 'assign_appdir').mockResolvedValue();
+    jest.spyOn(u, 'assign_libs_dir').mockResolvedValue();
+    jest.spyOn(u, 'create_libs_dir').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_sdk_service_filename').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_sdk_service_dir').mockResolvedValue();
+    jest.spyOn(u, 'assign_brd_api_filename').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_brd_api_dest_name').mockImplementation(() => {});
+    jest.spyOn(u, 'assign_brd_api_dest_filename').mockImplementation(() => {});
+
+    await u.prepare();
+
+    expect(u.build_config).toHaveBeenCalled();
+    expect(u.print_greeting).toHaveBeenCalled();
+    expect(u.load_config).toHaveBeenCalled();
+
+    expect(u.assign_sdk_dir_root).toHaveBeenCalled();
+    expect(u.assign_sdk_ver).toHaveBeenCalled();
+    expect(u.assign_sdk_url).toHaveBeenCalled();
+
+    expect(u.assign_appdir).toHaveBeenCalled();
+    expect(u.assign_libs_dir).toHaveBeenCalled();
+    expect(u.create_libs_dir).toHaveBeenCalled();
+
+    expect(u.assign_brd_api_dest_filename).toHaveBeenCalled();
+  });
+});
