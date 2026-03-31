@@ -316,4 +316,111 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         expect(u.index_fname).toBe('app/index.html');
     });
 
+    test('assign_use_helper uses config value in non-interactive mode', async () => {
+        const u = new BrightSdkUpdateWeb({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project', use_helper: true },
+        });
+
+        u.workdir = '/test/project';
+        u.config = { use_helper: true };
+
+        await u.assign_use_helper();
+
+        expect(u.use_helper).toBe(true);
+        expect(navigation.prompt).not.toHaveBeenCalled();
+    });
+
+    test('assign_brd_api_helper_filename downloads helper into <workdir>/temp', async () => {
+        const u = new BrightSdkUpdateWeb({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: true,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.workdir = '/test/project';
+        u.app_config = {
+            urls: { helper_latest: 'https://example.com/helper.js' },
+            files: { helper_name: 'brd_api.helper.js' },
+        };
+
+        u.brd_api_helper_name = 'brd_api.helper.js';
+
+        fs.existsSync.mockImplementation(p => p !== '/test/project/temp');
+        lib.download_from_url.mockResolvedValue();
+
+        await u.assign_brd_api_helper_filename();
+        expect(lib.download_from_url).toHaveBeenCalledWith(
+            'https://example.com/helper.js',
+            '/test/project/temp/brd_api.helper.js'
+        );
+        expect(u.brd_api_helper_fname).toBe('/test/project/temp/brd_api.helper.js');
+    });
+
+    test('assign_brd_api_helper_filename falls back to local assets on download failure', async () => {
+        const u = new BrightSdkUpdateWeb({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: true,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.workdir = '/test/project';
+        u.app_config = {
+            urls: { helper_latest: 'https://example.com/helper.js' },
+            files: { helper_name: 'brd_api.helper.js' },
+        };
+
+        u.brd_api_helper_name = 'brd_api.helper.js';
+
+        lib.download_from_url.mockRejectedValue(new Error('Network error'));
+        fs.existsSync.mockImplementation(p => {
+            if (p === '/test/project/temp') return true;
+            if (typeof p === 'string' && p.includes('assets') && p.endsWith('brd_api.helper.js')) return true;
+            return false;
+        });
+
+        await u.assign_brd_api_helper_filename();
+
+        expect(lib.download_from_url).toHaveBeenCalled();
+        expect(u.brd_api_helper_fname).toContain('assets');
+        expect(u.brd_api_helper_fname).toContain('brd_api.helper.js');
+    });
+
+    test('get_sdk_files includes helper mapping when use_helper=true', () => {
+        const u = new BrightSdkUpdateWeb({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.use_helper = true;
+        u.brd_api_helper_fname = '/test/project/temp/brd_api.helper.js';
+        u.brd_api_helper_dst_fname = 'app/js/brd_api.helper.js';
+        u.sdk_service_fname = '/sdk/service';
+        u.sdk_service_dir = 'service';
+        u.brd_api_fname = '/sdk/consent/brd_api.js';
+        u.brd_api_dst_fname = 'app/js/brd_api_v1.js';
+
+        const files = u.get_sdk_files();
+
+        expect(files).toEqual([
+            ['/sdk/service', 'service'],
+            ['/sdk/consent/brd_api.js', 'app/js/brd_api_v1.js'],
+            ['/test/project/temp/brd_api.helper.js', 'app/js/brd_api.helper.js'],
+        ]);
+    });
+
 });
