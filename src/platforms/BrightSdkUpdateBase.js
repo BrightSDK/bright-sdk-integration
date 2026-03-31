@@ -24,7 +24,6 @@ class BrightSdkUpdateBase {
         this.workdir = null;
         this.appdir = null;
         this.libs_dir = null;
-        this.libs_name = null;
         this.config = {};
         this.prev_config_fname = null;
         this.brd_api_name = null;
@@ -130,7 +129,7 @@ class BrightSdkUpdateBase {
     async assign_brd_api_dest_filename(){
         this.brd_api_dst_fname = path.join(this.libs_dir, this.brd_api_dst_name);
     }
-    async get_service_dir(){
+    async get_service_dir_def(){
         return null;
     }
     async assign_sdk_service_dir(){
@@ -139,16 +138,12 @@ class BrightSdkUpdateBase {
             this.sdk_service_dir = null;
             return;
         }
-        const sdk_service_dir_def = await this.get_service_dir();
-        this.sdk_service_dir = await this.get_value('SDK Service dir', sdk_service_dir_def,
-            this.config.sdk_service_dir && path.join(this.workdir, this.config.sdk_service_dir),
-            {
+        const sdk_service_dir_def = await this.get_service_dir_def();
+        this.sdk_service_dir = await this.get_value('SDK Service dir',
+            sdk_service_dir_def, this.config.sdk_service_dir, {
                 selectable: true,
-                dir: sdk_service_dir_def
-                    ? path.dirname(sdk_service_dir_def)
-                    : this.workdir,
-            }
-        );
+                dir: sdk_service_dir_def ? path.join(this.workdir, sdk_service_dir_def) : this.workdir,
+            });
     }
     assign_sdk_versions_filename(){
         this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
@@ -240,7 +235,7 @@ class BrightSdkUpdateBase {
     }
     get_sdk_files(){
         const result = [];
-        if (this.sdk_service_dir && this.sdk_service_fname)
+        if (this.sdk_service_fname && this.sdk_service_dir)
             result.push([this.sdk_service_fname, this.sdk_service_dir]);
         if (this.brd_api_fname && this.brd_api_dst_fname)
             result.push([this.brd_api_fname, this.brd_api_dst_fname]);
@@ -249,7 +244,8 @@ class BrightSdkUpdateBase {
     async replace_sdk_files(){
         for (const [src, dst] of this.get_sdk_files())
         {
-            if (await replace_file(src, dst))
+            const abs_dst = path.isAbsolute(dst) ? dst : path.join(this.workdir, dst);
+            if (await replace_file(src, abs_dst))
                 this.print(`✔ Removed ${dst}`);
             this.print(`✔ Copied ${src} to ${dst}`);
         }
@@ -291,7 +287,7 @@ class BrightSdkUpdateBase {
                 : process.cwd());
         this.config.workdir = this.workdir;
         if (this.config.app_dir)
-            this.appdir = path.join(this.workdir, this.config.app_dir);
+            this.appdir = this.config.app_dir;
     }
     workdir_relative_path(s) {
         if (!s) return null;
@@ -306,22 +302,25 @@ class BrightSdkUpdateBase {
         return 'External libraries directory';
     }
     async assign_libs_dir(){
-        const conf_dir = this.config.js_dir || this.config.libs_dir;
-        const libs_dir_config = conf_dir && path.join(this.workdir, conf_dir);
+        const libs_dir_config = this.config.js_dir || this.config.libs_dir;
         const libs_dir_def = libs_dir_config || await this.get_libs_dir_def();
         this.libs_dir = await this.get_value(this.libs_dir_prompt(), libs_dir_def, libs_dir_config,
-            {selectable: true, dir: libs_dir_def ? path.dirname(libs_dir_def) : this.workdir}
+            {selectable: true, dir: this.workdir}
         );
     }
-    assign_libs_name(){
-        this.libs_name = this.libs_dir == this.appdir ? '' : path.basename(this.libs_dir);
+    create_libs_dir() {
+        if (!this.libs_dir)
+            throw new Error('libs_dir is not set');
+        const abs = path.join(this.workdir, this.libs_dir);
+        if (!fs.existsSync(abs))
+            fs.mkdirSync(abs, { recursive: true });
     }
     get_config_to_save() {
         const config = {
             workdir: this.workdir_relative_path(this.workdir),
-            app_dir: this.workdir_relative_path(this.appdir),
-            libs_dir: this.workdir_relative_path(this.libs_dir),
-            sdk_service_dir: this.workdir_relative_path(this.sdk_service_dir),
+            app_dir: this.appdir,
+            libs_dir: this.libs_dir,
+            sdk_service_dir: this.sdk_service_dir,
             sdk_ver: this.config?.sdk_ver || this.sdk_ver,
             sdk_ver_prev: this.sdk_ver,
             sdk_url: this.sdk_url_mask,
@@ -329,7 +328,7 @@ class BrightSdkUpdateBase {
         return config;
     }
     get_git_commit_files() {
-        const result = [path.join(this.libs_name, this.brd_api_dst_name)];
+        const result = [this.brd_api_dst_fname];
         if (this.sdk_service_dir)
             result.push(this.sdk_service_dir);
         return result;
@@ -373,7 +372,7 @@ ${reset}
         {
             const next_config = this.get_config_to_save();
             this.print(`Generated config:\n${JSON.stringify(next_config, null, 2)}\n`);
-            const next_config_fname = get_config_fname(this.workdir);
+            const next_config_fname = path.relative(this.workdir, get_config_fname(this.workdir));
             write_json(next_config_fname, next_config);
             this.print(`✔ Saved config into ${next_config_fname}`);
             this.print_save_config(next_config_fname);
@@ -397,7 +396,7 @@ ${reset}
         await this.assign_sdk_versions();
         await this.assign_appdir();
         await this.assign_libs_dir();
-        this.assign_libs_name();
+        this.create_libs_dir();
         this.assign_sdk_service_filename();
         await this.assign_sdk_service_dir();
         this.assign_brd_api_filename();

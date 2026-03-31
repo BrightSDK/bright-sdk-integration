@@ -42,7 +42,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         {
             for (const name of ['src', 'source', 'js', '/'])
             {
-                const dir = path.join(this.appdir, name);
+                const dir = path.join(this.workdir, this.appdir, name);
                 if (fs.existsSync(dir))
                 {
                     def_value = dir;
@@ -56,10 +56,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
     async find_service_dir(){
         return await this.search_workdir('^services.json$');
     }
-    get_service_dir_default(){
-        return path.join(this.appdir, 'service');
-    }
-    async get_service_dir(){
+    async get_service_dir_def(){
         let def_value;
         const existing = await this.find_service_dir();
         if (existing)
@@ -76,19 +73,21 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
                 }
             }
         }
-        def_value = def_value || this.get_service_dir_default();
-        return path.relative(this.workdir, def_value);
+        if (def_value)
+            return path.relative(this.workdir, def_value);
+        return null;
     }
     update_index_ref(fname, ref){
-        if (!fs.existsSync(fname))
+        const fname_abs = path.isAbsolute(fname) ? fname : path.join(this.workdir, fname);
+        if (!fs.existsSync(fname_abs))
             throw new Error(`index.html not found at ${fname}`);
-        let data = fs.readFileSync(fname).toString();
+        let data = fs.readFileSync(fname_abs).toString();
         const regex = new RegExp(`${this.brd_api_base}.*${this.js_ext}`);
         const [prev] = data.match(regex)||[];
         if (!prev) // @TODO: initial sdk injection
             throw new Error('BrightSDK not found, configuration unsupported.');
         data = data.replace(prev, ref);
-        fs.writeFileSync(fname, data);
+        fs.writeFileSync(fname_abs, data);
         return prev;
     }
     async assign_appdir(){
@@ -104,20 +103,22 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         return 'Application JS directory';
     }
     assign_appid(){
-        const appinfo = read_json(path.join(this.appdir, 'appinfo.json'));
+        const appinfo = read_json(path.join(this.workdir, this.appdir, 'appinfo.json'));
         this.appid = appinfo.id;
     }
     assign_web_hosted(){
         this.is_web_hosted = !this.libs_dir.startsWith(this.appdir);
     }
     async assign_index_filename(){
-        const index_def = path.relative(this.workdir, path.join(
-            this.is_web_hosted ? path.dirname(this.libs_dir) : this.appdir, 'index.html'));
-        const index_fname_def = this.config.index && path.join(this.workdir, this.config.index);
+        const index_def = path.join(
+            this.is_web_hosted ? path.dirname(this.libs_dir) : this.appdir,
+            'index.html'
+        );
+        const index_fname_def = this.config.index;
         this.index_fname = await this.get_value('index.html location', index_def,
             index_fname_def, {
                 selectable: true,
-                dir: index_fname_def ? path.dirname(index_fname_def) : this.appdir,
+                dir: index_fname_def ? path.dirname(path.join(this.workdir, index_fname_def)) : path.join(this.workdir, this.appdir),
             }
         );
     }
@@ -166,9 +167,9 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         }
         // Fall back to local file if download fails or helper_url is missing
         if (this.app_config.files?.helper_name_local) {
-            this.brd_api_helper_fname = path.join(__dirname, this.app_config.files.helper_name_local);
+            this.brd_api_helper_fname = path.join(__dirname, '..', this.app_config.files.helper_name_local);
         } else {
-            this.brd_api_helper_fname = path.join(__dirname, '..', 'assets', this.brd_api_helper_name);
+            this.brd_api_helper_fname = path.join(__dirname, '..', '..', 'assets', this.brd_api_helper_name);
         }
         if (!fs.existsSync(this.brd_api_helper_fname)) {
             throw new Error('Helper file not available locally or from remote source');
@@ -196,15 +197,16 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             brd_api_fname_prev = path.join(this.libs_dir, brd_api_name_prev);
             if (!this.is_web_hosted && brd_api_fname_prev != this.brd_api_dst_fname)
             {
-                if (fs.existsSync(brd_api_fname_prev))
-                    fs.unlinkSync(brd_api_fname_prev);
+                const abs = path.isAbsolute(brd_api_fname_prev) ? brd_api_fname_prev : path.join(this.workdir, brd_api_fname_prev);
+                if (fs.existsSync(abs))
+                    fs.unlinkSync(abs);
             }
         }
         this.print(`✔ Processed ${brd_api_fname_prev} -> ${this.brd_api_dst_fname}`);
     }
     get_config_to_save() {
         const additional = {
-            index: this.workdir_relative_path(this.index_fname),
+            index: this.index_fname,
             use_helper: this.use_helper,
         };
         return Object.assign(super.get_config_to_save(), additional);
