@@ -51,7 +51,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             }
         }
         def_value = def_value || path.join(this.workdir);
-        return path.relative(this.workdir, def_value);
+        return this.workdir_relative_path(def_value);
     }
     async find_service_dir(){
         return await this.search_workdir('^services.json$');
@@ -74,7 +74,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             }
         }
         if (def_value)
-            return path.relative(this.workdir, def_value);
+            return this.workdir_relative_path(def_value);
         return null;
     }
     update_index_ref(fname, ref){

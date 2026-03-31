@@ -372,10 +372,11 @@ ${reset}
         {
             const next_config = this.get_config_to_save();
             this.print(`Generated config:\n${JSON.stringify(next_config, null, 2)}\n`);
-            const next_config_fname = path.relative(this.workdir, get_config_fname(this.workdir));
+            const next_config_fname = get_config_fname(this.workdir);
             write_json(next_config_fname, next_config);
-            this.print(`✔ Saved config into ${next_config_fname}`);
-            this.print_save_config(next_config_fname);
+            const next_config_fname_relative = this.workdir_relative_path(get_config_fname(this.workdir));
+            this.print(`✔ Saved config into ${next_config_fname_relative}`);
+            this.print_save_config(next_config_fname_relative);
         }
     }
     async prepare(){
