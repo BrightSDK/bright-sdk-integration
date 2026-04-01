@@ -13,18 +13,23 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Prerequisites
 
-- NodeJS (tested on v14.19.0)
-- NPM (tested on v6.14.18)
-- Git (tested on 2.39.3 (Apple Git-145))
+- Node.js (tested on v24.13.0)
+- npm (tested on v11.6.2)
+- Git (tested on 2.50.1 (Apple Git-155))
 
-## Supported Platforms (Work in Progress)
+## Supported platforms
 
-- [x] WebOS
-- [x] Tizen
-- [ ] Android
-- [ ] iOS
-- [ ] Windows
-- [ ] macOS
+| Platform | Status | Notes |
+|---|---:|---|
+| WebOS | ✅ | Full integration (copies files into app structure) |
+| Tizen | ✅ | Full integration (copies files into app structure) |
+| iOS | ✅ (partial) | Download/update SDK files only |
+| tvOS | ✅ (partial) | Download/update SDK files only |
+| macOS | ✅ (partial) | Download/update SDK files only |
+| Android | 🚧 | Not implemented |
+| Windows | 🚧 | Not implemented |
+
+> Apple platforms: only downloading/updating SDK files is implemented (no automatic Xcode project integration).
 
 ## Installation
 
@@ -34,8 +39,12 @@ Recommended: install globally from the official tarball and then execute with np
 # install globally from the release tarball
 npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
 
-# run with npx after install
-npx bright-sdk-integration
+# run with npx after install (which you need)
+npx bright-sdk-integration --platform webos
+npx bright-sdk-integration --platform tizen
+npx bright-sdk-integration --platform ios
+npx bright-sdk-integration --platform tvos
+npx bright-sdk-integration --platform macos
 ```
 
 ## Use as command line tool
@@ -67,24 +76,13 @@ Welcome to BrightSDK Integration Code Generator for WebOS!
 Press CTRL+C at any time to break execution.
 NOTE: remember to save your uncommited changes first.
 
-Path to application directory: /path/to/my/app
-/path/to/my/app
-
-SDK Version (1.438.821):
-1.438.821
-
-Application JS directory (js):
-/js
-
-index.html Location (index.html):
-/index.html
-
-SDK Service dir (/path/to/my/app/service):
-/service
-
-SDK URL mask (https://path/to/sdk_SDK_VER.zip):
-https://path/to/sdk_SDK_VER.zip
-
+SDK Version: latest
+SDK URL mask: https://path/to/sdk_SDK_VER.zip
+Path to application directory: app
+Application JS directory: app/js
+SDK Service dir: service
+index.html location: app/index.html
+Use BrightSDK Integration Helper? (y/n) (y): y
 ```
 
 The interactive prompts include:
@@ -98,8 +96,6 @@ The interactive prompts include:
 | index.html Location       | `index.html`                        |
 | SDK Service directory     | `service`         |
 | SDK URL mask              | `https://example.com/sdk_SDK_VER.zip` |
-
-Note that file paths are provided relative to your app folder.
 
 Follow the prompts to provide the required information, and the script will proceed with the integration based on your inputs. 
 
@@ -132,13 +128,15 @@ Reading configuration file /path/to/your/app/brd_sdk.config.json...
 
 ```json
 {
-  "appdir": "/path/to/your/app",
-  "config_fname": "/path/to/your/config.json",
-  "sdk_ver": "1.438.821",
-  "js_dir": "js",
-  "index": "index.html",
+  "workdir": ".",
+  "app_dir": "app",
+  "libs_dir": "app/js",
   "sdk_service_dir": "service",
-  "sdk_url": "https://example.com/sdk_SDK_VER.zip"
+  "sdk_ver": "1.614.148",
+  "sdk_ver_prev": "1.614.148",
+  "sdk_url": "https://example.com/sdk_SDK_VER.zip",
+  "index": "app/index.html",
+  "use_helper": true
 }
 ```
 
@@ -174,8 +172,6 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
 ```
 
 **NOTE:** Either `appdir` or `config_fname` is required in order for the method to work.
-
-
 
 ## The Flow:
 

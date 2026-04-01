@@ -3,8 +3,8 @@
 const os = require('os');
 const https = require('follow-redirects').https;
 const path = require('path');
-const unzipper = require('unzipper');
 const fs = require('fs-extra');
+const {unzip} = require('./unzip.js');
 
 const lbr = os.EOL;
 
@@ -97,14 +97,6 @@ const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
     });
 });
 
-const unzip = (fname, dst)=>new Promise((resolve, reject)=>{
-    const rs = fs.createReadStream(fname);
-    rs.pipe(unzipper.Extract({path: dst}))
-    .on('error', reject)
-    .on('finish', resolve);
-});
-
-
 const set_prop = (obj, path, value)=>{
     const keys = path.split('.');
     let dst = obj;
@@ -141,5 +133,5 @@ module.exports = {
     lbr,
     print, process_init, process_close,
     read_json, write_json, search_directory,
-    download_from_url, unzip, set_json_props, replace_file, exit,
+    download_from_url, set_json_props, replace_file, exit, unzip,
 };
