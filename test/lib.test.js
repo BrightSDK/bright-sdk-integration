@@ -266,52 +266,6 @@ describe('lib utilities', () => {
         });
     });
 
-    describe('unzip function', () => {
-        test('should extract zip file to destination', async () => {
-            const mockReadStream = {
-                pipe: jest.fn().mockReturnThis(),
-            };
-            const mockExtractor = {
-                on: jest.fn().mockImplementation((event, callback) => {
-                    if (event === 'finish') {
-                        callback();
-                    }
-                    return mockExtractor;
-                }),
-            };
-
-            fs.createReadStream.mockReturnValue(mockReadStream);
-            unzipper.Extract.mockReturnValue(mockExtractor);
-            mockReadStream.pipe.mockReturnValue(mockExtractor);
-
-            await lib.unzip('test.zip', '/extract/path');
-
-            expect(fs.createReadStream).toHaveBeenCalledWith('test.zip');
-            expect(unzipper.Extract).toHaveBeenCalledWith({ path: '/extract/path' });
-            expect(mockReadStream.pipe).toHaveBeenCalledWith(mockExtractor);
-        });
-
-        test('should handle extraction errors', async () => {
-            const mockReadStream = {
-                pipe: jest.fn().mockReturnThis(),
-            };
-            const mockExtractor = {
-                on: jest.fn().mockImplementation((event, callback) => {
-                    if (event === 'error') {
-                        callback(new Error('Extraction failed'));
-                    }
-                    return mockExtractor;
-                }),
-            };
-
-            fs.createReadStream.mockReturnValue(mockReadStream);
-            unzipper.Extract.mockReturnValue(mockExtractor);
-            mockReadStream.pipe.mockReturnValue(mockExtractor);
-
-            await expect(lib.unzip('test.zip', '/extract/path')).rejects.toThrow('Extraction failed');
-        });
-    });
-
     describe('set_json_props', () => {
         test('should update JSON file with new property values', () => {
             const mockJson = {

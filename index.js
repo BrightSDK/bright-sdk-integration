@@ -3,7 +3,7 @@
 'use strict'; /*jslint node:true es9:true*/
 const path = require('path');
 const yargs = require('yargs');
-const {get_config_fname, process_web} = require('./src/platforms/index.js');
+const {get_config_fname, process_web, process_apple} = require('./src/platforms/index.js');
 
 if (require.main == module)
 {
@@ -34,6 +34,11 @@ if (require.main == module)
         case 'webos':
             await process_web(opt);
             break;
+        case 'ios':
+        case 'tvos':
+        case 'macos':
+            await process_apple(opt);
+            break;
         default:
             throw new Error(`Unsupported platform: ${opt.platform}`);
         }
@@ -44,4 +49,8 @@ module.exports = {
     process_web,
     process_webos: opt=>process_web({...opt, platform: 'webos'}),
     process_tizen: opt=>process_web({...opt, platform: 'tizen'}),
+    process_apple,
+    process_ios: opt=>process_apple({...opt, platform: 'ios'}),
+    process_tvos: opt=>process_apple({...opt, platform: 'tvos'}),
+    process_macos: opt=>process_apple({...opt, platform: 'macos'}),
 };
