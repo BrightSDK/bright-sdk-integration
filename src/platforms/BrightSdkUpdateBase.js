@@ -213,7 +213,7 @@ class BrightSdkUpdateBase {
         this.sdk_zip = path.basename(this.sdk_url);
         this.sdk_zip_fname = path.join(this.sdk_dir_root, this.sdk_zip);
     }
-    update_sdk_files(){}
+    async update_sdk_files(){}
     async download_sdk(){
         if (fs.existsSync(this.sdk_dir) && this.sdk_versions[this.sdk_ver])
         {
@@ -410,7 +410,7 @@ ${reset}
         this.create_sdk_dir();
         await this.download_sdk();
         await this.replace_sdk_files();
-        this.update_sdk_files();
+        await this.update_sdk_files();
     }
     async run(){
         await this.run_body();
