@@ -285,8 +285,7 @@ const process_web = async(opt={})=>{
     const platform = platforms[opt.platform];
     if (!platform)
         throw new Error(`Unsupported platform: ${opt.platform}. Supported: ${Object.keys(platforms).join(', ')}`);
-    const impl = new platform.Implementation({...opt, name: platform.name})
-    return await impl.run();
+    return new platform.Implementation({...opt, name: platform.name}).run();
 };
 
 module.exports = {process_web, BrightSdkUpdateWeb};
