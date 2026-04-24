@@ -82,7 +82,7 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
         if (!fs.existsSync(fname_abs))
             throw new Error(`index.html not found at ${fname}`);
         let data = fs.readFileSync(fname_abs).toString();
-        const regex = new RegExp(`${this.brd_api_base}.*${this.js_ext}`);
+        const regex = new RegExp(`${this.brd_api_base}(_v[\\d.]+)?\\${this.js_ext}`);
         const [prev] = data.match(regex)||[];
         if (!prev) // @TODO: initial sdk injection
             throw new Error('BrightSDK not found, configuration unsupported.');
