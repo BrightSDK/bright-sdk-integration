@@ -330,7 +330,9 @@ class BrightSdkUpdateBase {
         return config;
     }
     get_git_commit_files() {
-        const result = [this.brd_api_dst_fname];
+        const result = [];
+        if (this.brd_api_dst_fname)
+            result.push(this.brd_api_dst_fname);
         if (this.sdk_service_dir)
             result.push(this.sdk_service_dir);
         return result;
