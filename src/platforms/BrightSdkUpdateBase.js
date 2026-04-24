@@ -245,6 +245,8 @@ class BrightSdkUpdateBase {
         for (const [src, dst] of this.get_sdk_files())
         {
             const abs_dst = path.isAbsolute(dst) ? dst : path.join(this.workdir, dst);
+            if (!path.resolve(abs_dst).startsWith(path.resolve(this.workdir)))
+                throw new Error(`Destination ${dst} escapes workdir boundary`);
             if (await replace_file(src, abs_dst))
                 this.print(`✔ Removed ${dst}`);
             this.print(`✔ Copied ${src} to ${dst}`);
