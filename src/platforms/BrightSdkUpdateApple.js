@@ -4,9 +4,6 @@ const path = require('path');
 const {BrightSdkUpdateBase} = require('./BrightSdkUpdateBase.js');
 
 class BrightSdkUpdateApple extends BrightSdkUpdateBase {
-    constructor(opt){
-        super(opt);
-    }
     async assign_brd_api_filename(){
         this.brd_api_fname = path.join(this.sdk_dir, this.brd_api_name);
     }
