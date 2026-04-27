@@ -284,7 +284,7 @@ class BrightSdkUpdateBase {
         }
         this.workdir = this.config.workdir
             || this.opt.workdir
-            || (this.config_fnames.length
+            || (this.config_fnames?.length
                 ? path.dirname(this.config_fnames[this.config_fnames.length-1])
                 : process.cwd());
         this.config.workdir = this.workdir;
