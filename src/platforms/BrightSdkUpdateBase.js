@@ -262,7 +262,7 @@ class BrightSdkUpdateBase {
         this.env = this.read_env();
         this.config_fnames = this.opt.config_fnames
             || this.opt.config_fname && [this.opt.config_fname];
-        if (this.opt.config) // where opt.config is assigned?
+        if (this.opt.config)
             Object.assign(this.config, this.opt.config);
         else if (this.config_fnames?.length)
         {
