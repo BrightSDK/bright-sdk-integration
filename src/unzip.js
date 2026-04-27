@@ -93,7 +93,10 @@ async function unzip(fname, dst) {
         if (isSymlinkEntry(relPath, modes)) {
             const buf = await entry.buffer();
             const linkTarget = buf.toString('utf8').replace(/\0/g, '');
-
+            const resolvedTarget = path.resolve(path.dirname(outPath), linkTarget);
+            if (!isPathInside(dstAbs, resolvedTarget)) {
+                throw new Error(`Symlink escape detected: ${relPath} -> ${linkTarget}`);
+            }
             await fs.ensureDir(path.dirname(outPath));
             await fs.remove(outPath);
             await fs.symlink(linkTarget, outPath);
