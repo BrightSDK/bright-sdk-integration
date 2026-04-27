@@ -114,7 +114,7 @@ async function unzip(fname, dst) {
 
         const mode = getUnixMode(relPath, modes);
         if (mode)
-            await fs.chmod(outPath, mode & 0o7777);
+            await fs.chmod(outPath, mode & 0o777);
     }
 }
 
