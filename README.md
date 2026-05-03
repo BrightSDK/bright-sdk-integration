@@ -25,17 +25,17 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Supported platforms
 
-| Platform | Status | Notes |
-|---|---:|---|
-| WebOS | ✅ | Full integration (copies files into app structure) |
-| Tizen | ✅ | Full integration (copies files into app structure) |
-| iOS | ✅ (partial) | Download/update SDK files only |
-| tvOS | ✅ (partial) | Download/update SDK files only |
-| macOS | ✅ (partial) | Download/update SDK files only |
+| Platform | Complete | Notes |
+|---|:---:|---|
+| WebOS | ✅ | Download/update SDK files, copy into app structure |
+| Tizen | ✅ | Download/update SDK files, copy into app structure |
+| iOS | ⚠️ | Download/update SDK files |
+| tvOS | ⚠️ | Download/update SDK files |
+| macOS | ⚠️ | Download/update SDK files |
 | Android | 🚧 | Not implemented |
 | Windows | 🚧 | Not implemented |
 
-> Apple platforms: only downloading/updating SDK files is implemented (no automatic Xcode project integration).
+> ⚠️ Apple platforms: automatic Xcode project integration is not yet implemented.
 
 ## Installation
 
