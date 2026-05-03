@@ -12,6 +12,10 @@
     "test:coverage": "jest --coverage"
   },
   "author": "vladislavs@brightdata.com",
+  "contributors": [
+    "vladislavs@brightdata.com",
+    "dmitriis@brightdata.com"
+  ],
   "license": "ISC",
   "dependencies": {
     "follow-redirects": "^1.15.6",
