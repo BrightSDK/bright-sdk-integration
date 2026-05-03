@@ -28,26 +28,8 @@ jobs:
       - name: Pack tarball
         run: npm pack
 
-      - name: Generate release notes
-        id: notes
-        run: |
-          PREV_TAG=$(git tag --sort=-v:refname | head -2 | tail -1)
-          if [ -z "$PREV_TAG" ]; then
-            NOTES=$(git log --pretty=format:"- %s (%h)" HEAD)
-          else
-            NOTES=$(git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD")
-          fi
-          {
-            echo 'RELEASE_NOTES<<EOF'
-            echo "$NOTES"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c062e08bd532815e2082a7e09a6fe0e1c8e7a5e5 # v2.2.1
         with:
-          body: |
-            ## What's Changed
-            ${{ steps.notes.outputs.RELEASE_NOTES }}
           generate_release_notes: true
           files: '*.tgz'
