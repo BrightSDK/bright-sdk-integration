@@ -1,5 +1,10 @@
 # BrightSDK Integration Code Generator
 
+[![Test](https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml/badge.svg)](https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/BrightSDK/bright-sdk-integration/pulls)
+
 ## Overview
 
 Welcome to the BrightSDK Integration Code Generator! This Node.js package is designed to assist in integrating BrightSDK into various platforms.
