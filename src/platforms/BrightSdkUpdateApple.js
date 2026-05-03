@@ -2,6 +2,7 @@
 'use strict'; /*jslint node:true es9:true*/
 const fs = require('fs');
 const path = require('path');
+const {read_json} = require('../lib.js');
 const {BrightSdkUpdateBase} = require('./BrightSdkUpdateBase.js');
 const lib_xcode = require('../lib_xcode.js');
 
@@ -54,6 +55,19 @@ class BrightSdkUpdateApple extends BrightSdkUpdateBase {
             base.xcodeproj_dir = path.relative(this.workdir, this.xcodeproj_dir);
         return base;
     }
+    async assign_sdk_ver(){
+        await super.assign_sdk_ver();
+        if (this.sdk_ver=='latest' && this.opt.platform=='tvos')
+        {
+            const latest_fname = path.join(this.sdk_dir_root, 'latest.json');
+            if (fs.existsSync(latest_fname))
+            {
+                const versions = read_json(latest_fname);
+                if (versions['ios'])
+                    this.sdk_ver = versions['ios'];
+            }
+        }
+    }
 }
 
 class BrightSdkUpdateAppleMobile extends BrightSdkUpdateApple {
@@ -81,7 +95,7 @@ class BrightSdkUpdateAppleMobile extends BrightSdkUpdateApple {
             this.print(`✔ ${this.brd_api_name} already present in Xcode project`);
 
         lib_xcode.set_build_setting(project, 'FRAMEWORK_SEARCH_PATHS',
-            `"$(inherited)" ${path.dirname(fw_rel)}`);
+            `("$(inherited)", "${path.dirname(fw_rel)}")`);
 
         lib_xcode.save_project(pbxproj_path, project);
         this.print(`✔ Saved ${path.relative(this.workdir, pbxproj_path)}`);
@@ -129,7 +143,7 @@ class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
             this.print(`✔ ${this.brd_api_name} already present in Xcode project`);
 
         lib_xcode.set_build_setting(project, 'FRAMEWORK_SEARCH_PATHS',
-            `"$(inherited)" ${path.dirname(fw_rel)}`);
+            `("$(inherited)", "${path.dirname(fw_rel)}")`);
         lib_xcode.set_build_setting(project, 'LD_RUNPATH_SEARCH_PATHS',
             '"$(inherited) @executable_path/../Frameworks"');
 

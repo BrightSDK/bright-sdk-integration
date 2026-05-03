@@ -59,10 +59,25 @@ const search_directory = async(dir, pattern, opt)=>{
     }
 };
 
-const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
+const download_from_url = (url, fname, _redirects=0)=>new Promise((resolve, reject)=>{
     const request = https.get(url, {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15'
     }, response=>{
+        if (response.statusCode >= 301 && response.statusCode <= 308)
+        {
+            response.resume();
+            if (_redirects >= 5)
+                return reject(new Error(`Too many redirects for ${url}`));
+            const loc = response.headers['location'];
+            const next = loc.startsWith('http') ? loc
+                : new URL(loc, url).toString();
+            return resolve(download_from_url(next, fname, _redirects+1));
+        }
+        if (response.statusCode < 200 || response.statusCode >= 300)
+        {
+            response.resume();
+            return reject(new Error(`Download failed: HTTP ${response.statusCode} for ${url}`));
+        }
         if (response.headers['content-type'].includes('application/json'))
         {
             let data = '';
@@ -84,7 +99,7 @@ const download_from_url = (url, fname)=>new Promise((resolve, reject)=>{
                 reject(err);
             });
             response.pipe(fileStream);
-            response.on('end', resolve);
+            fileStream.on('finish', resolve);
         }
     });
     request.on('error', reason=>{
