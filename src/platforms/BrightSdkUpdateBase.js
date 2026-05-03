@@ -178,7 +178,8 @@ class BrightSdkUpdateBase {
                         +' try again or provide cached sdk version name');
                 }
             }
-            const latest = read_json(latest_fname)[this.opt.platform];
+            const versions = read_json(latest_fname);
+            const latest = versions[this.opt.platform];
             if (latest)
                 ver = latest;
         }

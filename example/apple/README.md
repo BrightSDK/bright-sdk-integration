@@ -7,8 +7,8 @@ This folder demonstrates how to integrate BrightSDK into an iOS, tvOS or macOS X
 ```
 apple/
 ├── app/                        ← shared example Xcode project (iOS + tvOS + macOS)
-│   ├── test.xcodeproj/
-│   └── test/                   ← SwiftUI app source (ContentView.swift, testApp.swift)
+│   ├── example.xcodeproj/
+│   └── example/                ← SwiftUI app source (ContentView.swift, exampleApp.swift)
 ├── ios/
 │   ├── brd_sdk.config.json     ← iOS SDK config (workdir points to apple/)
 │   ├── auto-update.sh          ← non-interactive update
@@ -46,7 +46,7 @@ cd macos && sh auto-update.sh
 The tool will:
 1. Download the latest BrightSDK zip from `cdn.bright-sdk.com/static/`
 2. Extract the framework into `apple/BrightSDK/`
-3. Open `app/test.xcodeproj` and patch `project.pbxproj`:
+3. Open `app/example.xcodeproj` and patch `project.pbxproj`:
    - Add `brdsdk.xcframework` (iOS/tvOS) or `brdsdk.framework` (macOS) with **Embed & Sign**
    - Set `FRAMEWORK_SEARCH_PATHS` (iOS/tvOS) or `LD_RUNPATH_SEARCH_PATHS` + `FRAMEWORK_SEARCH_PATHS` (macOS)
 4. macOS only — also adds:
@@ -58,10 +58,10 @@ The tool will:
 ### 2. Open the project in Xcode
 
 ```sh
-open app/test.xcodeproj
+open app/example.xcodeproj
 ```
 
-Or double-click `app/test.xcodeproj` in Finder.
+Or double-click `app/example.xcodeproj` in Finder.
 
 On first open, Xcode will prompt you to select a **Development Team** for signing (no team is hardcoded).
 
@@ -70,8 +70,17 @@ On first open, Xcode will prompt you to select a **Development Team** for signin
 Select a simulator or device and press **⌘R**. The example app shows:
 
 - A status label reflecting the current SDK consent choice
+- SDK version display
 - **Display Consent** — calls `brd_api.show_consent()`
-- **Opt out** — calls `brd_api.optOut(from: .manual)`
+- **Opt in / Opt out** — toggles SDK opt-in state
+
+### Screenshots
+
+#### iOS
+
+| Main screen | Consent screen |
+|:-----------:|:--------------:|
+| ![Main](assets/ios/app_main.png) | ![Consent](assets/ios/consent_screen.png) |
 
 ## Using the tool with your own project
 
@@ -139,6 +148,31 @@ brd_api.optOut(from: .manual)
 let choice = brd_api.currentChoice   // BrdChoice enum
 let version = brd_api.sdkVersion
 let uuid = brd_api.get_uuid()
+```
+
+## Known Issues
+
+### macOS — Xcode version compatibility
+
+The macOS `brdsdk.framework` is built with **Xcode 16.4** (Swift 6.2.4). Building with a
+different Xcode version may produce compiler errors. Use Xcode 16.4 for macOS builds:
+
+```sh
+sudo xcode-select -s /Applications/Xcode-16.4.0.app/Contents/Developer
+```
+
+### macOS — Code signing with net_updater.app
+
+When building for macOS without a provisioning profile, Xcode may report:
+
+```
+error: Embedded binary is not signed with the same certificate as the parent app.
+```
+
+Pass `CODE_SIGNING_ALLOWED=NO` for local development builds:
+
+```sh
+xcodebuild -scheme example -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
 ```
 
 ## Reset / clean up

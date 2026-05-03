@@ -31,9 +31,34 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 | Tizen | ✅ | Download/update SDK files, copy into app structure |
 | iOS | ✅ | Download/update SDK files, patch Xcode project |
 | tvOS | ✅ | Download/update SDK files, patch Xcode project |
-| macOS | ✅ | Download/update SDK files, patch Xcode project |
+| macOS | ✅ | Download/update SDK files, patch Xcode project (see [Known Issues](#known-issues)) |
 | Android | 🚧 | Not implemented |
 | Windows | 🚧 | Not implemented |
+
+### Known Issues
+
+**macOS — Swift module name collision**
+
+The macOS `brdsdk.framework` contains a deprecated class named `brdsdk` that collides with
+the module name. This causes Swift compiler errors like `'Choice' is not a member type of
+class 'brdsdk.brdsdk'` on Xcode versions that cannot load the pre-built binary `.swiftmodule`
+(i.e. any Xcode other than the exact version used to build the SDK).
+
+**Workaround:** Remove the deprecated `@available(*, unavailable)` class `brdsdk` from all
+`.swiftinterface` files and the `brdsdk-Swift.h` header inside the framework:
+
+```sh
+cd BrightSDK/brdsdk.framework/Modules/brdsdk.swiftmodule/
+# Remove the "@available(*, unavailable, renamed: \"brd_api\")" class block from:
+#   arm64-apple-macos.swiftinterface
+#   arm64-apple-macos.private.swiftinterface
+#   x86_64-apple-macos.swiftinterface
+#   x86_64-apple-macos.private.swiftinterface
+# Also remove both @interface brdsdk blocks from:
+#   ../../Headers/brdsdk-Swift.h
+```
+
+This is a bug in the SDK build and will be fixed in a future SDK release.
 
 ## Installation
 
