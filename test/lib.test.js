@@ -178,6 +178,8 @@ describe('lib utilities', () => {
         beforeEach(() => {
             mockRequest = {
                 on: jest.fn(),
+                setTimeout: jest.fn(),
+                destroy: jest.fn(),
             };
             mockResponse = {
                 headers: {},
@@ -214,15 +216,17 @@ describe('lib utilities', () => {
 
         test('should download binary content using streams', async () => {
             mockResponse.headers['content-type'] = 'application/octet-stream';
-            const mockFileStream = { pipe: jest.fn(), on: jest.fn() };
+            const mockFileStream = {
+                pipe: jest.fn(),
+                on: jest.fn((event, callback) => {
+                    if (event === 'finish') {
+                        callback();
+                    }
+                }),
+            };
             fs.createWriteStream.mockReturnValue(mockFileStream);
 
-            // Mock response end event
-            mockResponse.on.mockImplementation((event, callback) => {
-                if (event === 'end') {
-                    callback();
-                }
-            });
+            mockResponse.pipe.mockReturnValue(mockFileStream);
 
             await lib.download_from_url('https://test.com/file.zip', 'output.zip');
 
@@ -240,6 +244,8 @@ describe('lib utilities', () => {
                             handler(new Error('Network error'));
                         }
                     }),
+                    setTimeout: jest.fn(),
+                    destroy: jest.fn(),
                 };
                 // Don't call the callback for error scenario
                 return mockRequest;
