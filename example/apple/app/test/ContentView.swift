@@ -2,59 +2,45 @@
 //  ContentView.swift
 //  test
 //
-//  Created by vladislav sokolov on 13/03/2026.
-//
 
 import SwiftUI
-import SwiftData
+import brdsdk
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var status: String = "N/A"
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        ZStack {
+            Color.black.ignoresSafeArea()
+            VStack(spacing: 24) {
+                Text("Welcome to BrightSDK Sample App")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                Text("BrightSDK status is: \(status)")
+                    .foregroundColor(.white)
+                Button("Display Consent") {
+                    brd_api.show_consent(
+                        nil,
+                        benefit: "to provide you with the best experience",
+                        agree_btn: "Accept",
+                        disagree_btn: "Decline",
+                        language: "en"
+                    )
                 }
-                .onDelete(perform: deleteItems)
+                .buttonStyle(.bordered)
+                Button("Opt out") {
+                    brd_api.optOut(from: .manual)
+                }
+                .buttonStyle(.bordered)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
+            .padding()
         }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+        .onAppear {
+            status = brd_api.currentChoice.rawValue
+            brd_api.onChoiceChange = { choice in
+                status = choice.rawValue
             }
         }
     }
@@ -62,5 +48,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }

@@ -2,31 +2,23 @@
 //  testApp.swift
 //  test
 //
-//  Created by vladislav sokolov on 13/03/2026.
-//
 
 import SwiftUI
-import SwiftData
+import brdsdk
 
 @main
 struct testApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    init() {
+        try! brd_api(
+            skip_consent: false,
+            app_name: "Sample App",
+            benefit: "to provide you with the best experience"
+        )
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
     }
 }
