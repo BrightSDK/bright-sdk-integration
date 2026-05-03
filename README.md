@@ -1,6 +1,7 @@
 # BrightSDK Integration Code Generator
 
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![Test](https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml/badge.svg)](https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml)
+[![Release](https://img.shields.io/github/v/release/BrightSDK/bright-sdk-integration)](https://github.com/BrightSDK/bright-sdk-integration/releases/latest)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/BrightSDK/bright-sdk-integration/pulls)
