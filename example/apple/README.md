@@ -82,6 +82,18 @@ Select a simulator or device and press **⌘R**. The example app shows:
 |:-----------:|:--------------:|
 | ![Main](assets/ios/app_main.png) | ![Consent](assets/ios/consent_screen.png) |
 
+#### tvOS
+
+| Main screen | Consent screen |
+|:-----------:|:--------------:|
+| ![Main](assets/tvos/app_main.png) | ![Consent](assets/tvos/consent_screen.png) |
+
+#### macOS
+
+| Main screen | Consent screen |
+|:-----------:|:--------------:|
+| ![Main](assets/macos/app_main.png) | ![Consent](assets/macos/consent_screen.png) |
+
 ## Using the tool with your own project
 
 Copy the platform subfolder (`ios/`, `tvos/`, or `macos/`) next to your own `.xcodeproj`, then edit `brd_sdk.config.json`:
