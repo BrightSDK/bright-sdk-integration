@@ -275,3 +275,8 @@ Notes:
 - Keep changes small and focused. Include example input (config.json) when relevant so reviewers can reproduce.
 - If you change public behavior, update the README and bump the package version in `package.json`.
 - Use `npm uninstall -g bright-sdk-integration` to remove a local global install.
+
+## Authors
+
+- vladislavs@brightdata.com
+- dmitriis@brightdata.com
