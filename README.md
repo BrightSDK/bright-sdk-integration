@@ -19,7 +19,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Prerequisites
 
-- Node.js (tested on v24.13.0)
+- Node.js (tested on v18, v20, v22)
 - npm (tested on v11.6.2)
 - Git (tested on 2.50.1 (Apple Git-155))
 
