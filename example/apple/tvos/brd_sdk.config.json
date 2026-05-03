@@ -1,5 +1,5 @@
 {
-  "workdir": ".",
+  "workdir": "..",
   "libs_dir": "BrightSDK",
   "sdk_ver": "latest",
   "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tvos-SDK_VER.zip"
