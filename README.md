@@ -38,6 +38,8 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 ## Examples
 
 - [Apple (iOS / tvOS / macOS)](example/apple/README.md) — SwiftUI sample app with consent flow screenshots
+- [WebOS](example/webos/README.md) — LG WebOS TV sample app
+- [Tizen](example/tizen/README.md) — Samsung Tizen TV sample app
 
 ## Installation
 
