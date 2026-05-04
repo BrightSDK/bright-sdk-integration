@@ -56,15 +56,16 @@ Or use the WebOS IDE to open and run the project.
 
 ### 3. What the app shows
 
-- A status label reflecting the current SDK consent choice
+- On first launch, the SDK consent dialog is displayed automatically
+- A status label reflecting the current SDK consent state (N/A, Opt In, Opt Out)
 - **Display Consent** — calls `BrightSDK.showConsent()`
-- **Opt out** — calls `BrightSDK.optOut()`
+- **Opt out / Opt in** — toggles between `BrightSDK.disable()` and `BrightSDK.enable(true)`
 
-### Screenshot
+### Screenshots
 
-| Main screen |
-|:-----------:|
-| ![Main](assets/app_main.png) |
+| Consent dialog | Main screen |
+|:-:|:-:|
+| ![Consent](assets/app_consent.png) | ![Main](assets/app_main.png) |
 
 ## Using the tool with your own project
 

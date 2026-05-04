@@ -1,9 +1,3 @@
-<!--
-Copyright (c) 2024 LG Electronics Inc.
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 <!DOCTYPE html>
 <html>
 
@@ -22,35 +16,82 @@ SPDX-License-Identifier: Apache-2.0
         }
         .container {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
 		}
+        .container h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+        .container p {
+            font-size: 24px;
+            margin: 0;
+        }
+        .btn {
+            width: 400px;
+            padding: 20px 0;
+            font-size: 28px;
+            font-weight: bold;
+            border: 2px solid white;
+            border-radius: 12px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+        }
+        .btn:hover, .btn:focus {
+            background: rgba(255,255,255,0.2);
+            border-color: #4fc3f7;
+            outline: 3px solid #4fc3f7;
+            outline-offset: 2px;
+        }
 	</style>
 </head>
 
 <script src="webOSTVjs-1.2.10/webOSTV.js" charset="utf-8"></script>
-<script src="webOSTVjs-1.2.10/webOSTV-dev.js" charset="utf-8"></script>
-<script src="brd_api.js" charset="utf-8"></script>
-<script src="brd_api.helper.js" charset="utf-8"></script>
+<!-- For simulator testing, uncomment: <script src="webos-simulator.js"></script> -->
+<script src="brd_api_v1.625.64.js" charset="utf-8"></script>
+<script src="brd_api.helper.min.js" charset="utf-8"></script>
 <script type="text/javascript">
-	BrightSDK.init({
-        lang: 'en',
-        agree_btn: 'Accept',
-        disagree_btn: 'Decline',
-        opt_out_instructions: 'Press Opt-out button to opt-out',
-        app_name: 'Sample App',
-        app_logo: 'icon.png',
-        benefit: 'to provide you with the best experience',
-        skip_consent: false,
-        on_dialog_shown: function(){},
-        on_dialog_closed: function(){},
-        iframe: false,
-        debug: true,
-        verbose: true,
-    });
-    document.findElementById('displayConsent').addEventListener('click', function() {
-        BrightSDK.showConsent();
-    });
-    document.findElementById('optOut').addEventListener('click', function() {
-        BrightSDK.optOut();
+    document.addEventListener('DOMContentLoaded', function() {
+        var statusSpan = document.querySelector('.container span');
+        var toggleBtn = document.getElementById('optOut');
+        function updateStatus(consent) {
+            if (consent === null || consent === undefined) {
+                statusSpan.textContent = 'N/A';
+                toggleBtn.textContent = 'Opt out';
+            } else if (consent) {
+                statusSpan.textContent = 'Opt In';
+                toggleBtn.textContent = 'Opt out';
+            } else {
+                statusSpan.textContent = 'Opt Out';
+                toggleBtn.textContent = 'Opt in';
+            }
+        }
+        BrightSDK.init({
+            lang: 'en',
+            agree_btn: 'Accept',
+            disagree_btn: 'Decline',
+            opt_out_instructions: 'Press Opt-out button to opt-out',
+            app_name: 'Sample App',
+            app_logo: 'icon.png',
+            benefit: 'to provide you with the best experience',
+            skip_consent: false,
+            on_status_change: updateStatus,
+            on_dialog_shown: function(){},
+            on_dialog_closed: function(){},
+            iframe: false,
+        }).catch(function(err){ console.error('BrightSDK:', err); });
+        document.getElementById('displayConsent').addEventListener('click', function() {
+            BrightSDK.showConsent();
+        });
+        toggleBtn.addEventListener('click', function() {
+            if (BrightSDK.isEnabled())
+                BrightSDK.disable();
+            else
+                BrightSDK.enable(true);
+        });
     });
 </script>
 
@@ -58,8 +99,8 @@ SPDX-License-Identifier: Apache-2.0
 	<div class="container">
         <h1>Welcome to BrightSDK Sample App for WebOS</h1>
         <p>BrightSDK status is: <span>N/A</span></p>
-		<button id="displayConsent">Display Consent</button>
-		<button id="optOut">Opt out</button>
+		<button id="displayConsent" class="btn">Display Consent</button>
+		<button id="optOut" class="btn">Opt out</button>
     </div>
 </body>
 

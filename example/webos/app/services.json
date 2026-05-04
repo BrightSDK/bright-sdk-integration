@@ -1,0 +1,54 @@
+{
+  "id": "com.brd.test.brd_sdk",
+  "description": "Bright SDK",
+  "services": [
+    {
+      "id": "com.brd.test.brd_sdk",
+      "name": "com.brd.test.brd_sdk",
+      "description": "brd peer service",
+      "commands": [{
+        "name": "start",
+        "public": true
+      }, {
+        "name": "stop",
+        "public": true
+      }, {
+        "name": "start_by_svc",
+        "public": true
+      }, {
+        "name": "dialog_shown",
+        "public": true
+      }, {
+        "name": "get_status",
+        "public": true
+      }, {
+        "name": "update_consent",
+        "public": true
+      }, {
+        "name": "get_sdk_conf",
+        "public": true
+      }, {
+        "name": "add_activity",
+        "public": true
+      }, {
+        "name": "remove_activity",
+        "public": true
+      }, {
+        "name": "set_tracking_id",
+        "public": true
+      }, {
+        "name": "perr",
+        "public": true
+      }, {
+        "name": "inc_init_cnt",
+        "public": true
+      }, {
+        "name": "reset_init_cnt",
+        "public": true
+      }, {
+        "name": "test",
+        "public": true
+      }]
+    }
+  ]
+}
