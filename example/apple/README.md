@@ -171,7 +171,7 @@ The macOS `brdsdk.framework` is built with **Xcode 26.4** (Swift 6.3.0). Buildin
 different Xcode version may produce compiler errors. Use Xcode 26 for macOS builds:
 
 ```sh
-sudo xcode-select -s /Applications/Xcode-16.4.0.app/Contents/Developer
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
 ### macOS — Code signing with net_updater.app
