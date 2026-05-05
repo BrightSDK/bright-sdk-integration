@@ -44,6 +44,7 @@ cd macos && sh auto-update.sh
 ```
 
 The tool will:
+
 1. Download the latest BrightSDK zip from `cdn.bright-sdk.com/static/`
 2. Extract the framework into `apple/BrightSDK/`
 3. Open `app/example.xcodeproj` and patch `project.pbxproj`:
