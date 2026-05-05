@@ -11,6 +11,7 @@
 		A1B2C3D4E5F647A8B9C0D1E2 /* brdsdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8655206EA1614BF09A463067 /* brdsdk.xcframework */; platformFilters = (ios, tvos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB59010976244BC589528F1C /* brdsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20C2848DD2942F7857B582D /* brdsdk.framework */; platformFilters = (macos, ); };
 		MAC0EMBED000000000000001 /* brdsdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B20C2848DD2942F7857B582D /* brdsdk.framework */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4C097103AD9C4035BDB46B6C /* net_updater.app in Resources */ = {isa = PBXBuildFile; fileRef = 55FA38DA85C840EC8DE52D40 /* net_updater.app */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +44,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4E757975CBDB471AA6BF4F33 /* Copy net_updater.app */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C097103AD9C4035BDB46B6C /* net_updater.app in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Copy net_updater.app";
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = undefined;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +64,7 @@
 		C49DFB812F640CF100E39069 /* example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C49DFB902F640CF300E39069 /* exampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = exampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C49DFB9A2F640CF300E39069 /* exampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = exampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		55FA38DA85C840EC8DE52D40 /* net_updater.app */ = {isa = PBXFileReference; name = "net_updater.app"; path = "../BrightSDK/net_updater.app"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.application; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -142,6 +155,7 @@
 				C49DFB7F2F640CF100E39069 /* Resources */,
 				F1E2D3C4B5A6978800112233 /* Embed Frameworks */,
 				6EF5944007854759A2527462 /* Resign net_updater.app */,
+				4E757975CBDB471AA6BF4F33 /* Copy net_updater.app */,
 			);
 			buildRules = (
 			);
@@ -365,10 +379,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -383,10 +394,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -395,6 +403,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Debug;
 		};
@@ -437,10 +446,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -449,16 +455,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Release;
 		};
@@ -475,10 +479,7 @@
 				ENABLE_PREVIEWS = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -491,10 +492,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
@@ -513,6 +511,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Debug;
 		};
@@ -529,10 +528,7 @@
 				ENABLE_PREVIEWS = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -545,10 +541,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
@@ -567,6 +560,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Release;
 		};
@@ -578,16 +572,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
@@ -604,6 +592,7 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/example";
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Debug;
 		};
@@ -615,16 +604,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
@@ -641,6 +624,7 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/example";
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Release;
 		};
@@ -651,16 +635,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
@@ -677,6 +655,7 @@
 				TEST_TARGET_NAME = example;
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Debug;
 		};
@@ -687,16 +666,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				"ENABLE_USER_SCRIPT_SANDBOXING[sdk=macosx*]" = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					../BrightSDK,
-				);
+				FRAMEWORK_SEARCH_PATHS = ("$(inherited)", "../BrightSDK");
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
@@ -713,6 +686,7 @@
 				TEST_TARGET_NAME = example;
 				TVOS_DEPLOYMENT_TARGET = 18.0;
 				"VALIDATE_EMBEDDED_BINARY[sdk=macosx*]" = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Release;
 		};
