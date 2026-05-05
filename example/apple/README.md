@@ -167,7 +167,7 @@ let uuid = brd_api.get_uuid()
 
 ### macOS — Xcode version compatibility
 
-The macOS `brdsdk.framework` is built with **Xcode 16.4** (Swift 6.2.4). Building with a
+The macOS `brdsdk.framework` is built with **Xcode 26.4** (Swift 6.3.0). Building with a
 different Xcode version may produce compiler errors. Use Xcode 16.4 for macOS builds:
 
 ```sh
