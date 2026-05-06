@@ -161,7 +161,8 @@ class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
                 [app_rel],
                 'Copy net_updater.app',
                 'application',
-                'Contents/Library/LoginItems'
+                'Contents/Library/LoginItems',
+                ['macos']
             );
             this.print('✔ Added "Copy net_updater.app" build phase (LoginItems)');
         }
