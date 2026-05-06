@@ -52,13 +52,39 @@ const save_project = (pbxproj_path, project)=>{
 
 // Add a framework with Embed & Sign. Idempotent — no-op if already present.
 // fw_path: path to framework relative to xcodeproj parent (e.g. 'BrightSDK/brdsdk.xcframework')
-const add_framework_embed_sign = (project, fw_path)=>{
+const add_framework_embed_sign = (project, fw_path, platforms = [])=>{
+    const targetUuid = project.getFirstTarget().uuid;
+
     const result = project.addFramework(fw_path, {
         customFramework: true,
         embed: true,
         link: true,
+        target: targetUuid,
     });
-    return result !== false; // false = already present
+
+    if (result === false) // false = already present
+        return false;
+    if (platforms.length)
+    {
+        const buildFiles = project.hash.project.objects.PBXBuildFile;
+        const frameworksPhase = project.pbxFrameworksBuildPhaseObj(targetUuid);
+
+        // embed-record
+        buildFiles[result.uuid].platformFilters = platforms;
+
+        // link-record
+        for (const ref of frameworksPhase.files || [])
+        {
+            const bf = buildFiles[ref.value];
+            if (bf && bf.fileRef === result.fileRef)
+            {
+                bf.platformFilters = platforms;
+                break;
+            }
+        }
+    }
+
+    return true;
 };
 
 // Add a Copy Files build phase. Idempotent — skips if a phase with the same name exists.
