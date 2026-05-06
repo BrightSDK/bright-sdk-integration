@@ -119,6 +119,9 @@ class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
         }
         if (this.brd_api_fname && this.brd_api_dst_fname)
             result.push([this.brd_api_fname, this.brd_api_dst_fname]);
+        const entitlements_src = path.join(this.sdk_dir, 'net_updater.entitlements');
+        const entitlements_dst = path.join(this.sdk_service_dir, 'net_updater.entitlements');
+        result.push([entitlements_src, entitlements_dst]);
         return result;
     }
     async update_sdk_files(){
