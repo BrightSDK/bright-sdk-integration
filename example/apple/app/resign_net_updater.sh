@@ -9,7 +9,7 @@ if [ ! -d "${NET_UPDATER_PATH}" ]; then
 fi
 
 CERTIFICATE_NAME=$(codesign -d --verbose=4 "${MAIN_APP_PATH}" 2>&1 | awk -F= '/^Authority=/{print $2}' | awk '/^(Apple Development|Developer ID Application|Mac Developer):/{print; exit}')
-AUTH_NAME="${CERTIFICATE_NAME:-${EXPANDED_CODE_SIGN_IDENTITY_NAME}}"
+AUTH_NAME="${CERTIFICATE_NAME:--}"
 ORIGINAL_ENTITLEMENTS="${PROJECT_DIR}/${NET_UPDATER_ENTITLEMENTS}"
 
 if [ -z "${ORIGINAL_ENTITLEMENTS}" ] || [ ! -f "${ORIGINAL_ENTITLEMENTS}" ]; then
