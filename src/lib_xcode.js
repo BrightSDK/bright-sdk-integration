@@ -64,10 +64,10 @@ const add_framework_embed_sign = (project, fw_path)=>{
 // Add a Copy Files build phase. Idempotent — skips if a phase with the same name exists.
 // folder_type: xcode folder type string e.g. 'wrapper'
 // dst_path: destination subpath string e.g. 'Contents/Library/LoginItems'
-const add_copy_files_phase = (project, file_paths, phase_name, folder_type, dst_path)=>{
+const add_copy_files_phase = (project, file_paths, phase_name, folder_type, dst_path, platforms = [])=>{
     if (_has_build_phase(project, phase_name))
         return false;
-    project.addBuildPhase(
+    const {buildPhase} = project.addBuildPhase(
         file_paths,
         'PBXCopyFilesBuildPhase',
         phase_name,
@@ -75,6 +75,14 @@ const add_copy_files_phase = (project, file_paths, phase_name, folder_type, dst_
         folder_type,
         dst_path,
     );
+    if (platforms.length) {
+        const buildFiles = project.hash.project.objects.PBXBuildFile;
+        for (const ref of buildPhase.files || []) {
+            const bf = buildFiles[ref.value];
+            if (bf)
+                bf.platformFilters = platforms;
+        }
+    }
     return true;
 };
 
