@@ -180,10 +180,10 @@ class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
                 path.basename(entitlements_src));
             const entitlements_rel = path.relative(proj_parent, entitlements_dst);
             const resign_script = [
-                '"$SRCROOT/resign_net_updater.sh"',
-                '"$CODESIGNING_FOLDER_PATH/Contents/Library/LoginItems/net_updater.app"',
-                `"${entitlements_rel}"`,
-            ].join(' \\\n  ');
+                'if [ "$PLATFORM_NAME" = "macosx" ]; then',
+                '  sh "$SRCROOT/resign_net_updater.sh"',
+                'fi',
+            ].join(' \\\n');
 
             lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {
                 shellPath: '/bin/sh',
