@@ -54,7 +54,7 @@ describe('Apple updaters', () => {
         ]);
     });
 
-    test('macOS: get_sdk_files includes net_updater.app and brdsdk.framework', () => {
+    test('macOS: get_sdk_files includes net_updater.app and brdsdk.framework and entitlements', () => {
         const u = new BrightSdkUpdateAppleDesktop({
             platform: 'macos',
             name: 'macOS',
@@ -78,6 +78,7 @@ describe('Apple updaters', () => {
         expect(files).toEqual([
             ['/cache/sdk/1.2.3/net_updater.app', 'libs/net_updater.app'],
             ['/cache/sdk/1.2.3/brdsdk.framework', 'libs/brdsdk.framework'],
+            ['/cache/sdk/1.2.3/net_updater.entitlements', 'libs/net_updater.entitlements'],
         ]);
     });
 
@@ -275,7 +276,8 @@ describe('Apple updaters', () => {
             );
             expect(lib_xcode.add_framework_embed_sign).toHaveBeenCalledWith(
                 mock_project,
-                expect.stringContaining('brdsdk.xcframework')
+                expect.stringContaining('brdsdk.xcframework'),
+                ['ios', 'tvos']
             );
             expect(lib_xcode.set_build_setting).toHaveBeenCalledWith(
                 mock_project, 'FRAMEWORK_SEARCH_PATHS', expect.any(String)
@@ -333,14 +335,17 @@ describe('Apple updaters', () => {
             await u.update_sdk_files();
 
             expect(lib_xcode.add_framework_embed_sign).toHaveBeenCalledWith(
-                mock_project, expect.stringContaining('brdsdk.framework')
+                mock_project,
+                expect.stringContaining('brdsdk.framework'),
+                ['macos']
             );
             expect(lib_xcode.add_copy_files_phase).toHaveBeenCalledWith(
                 mock_project,
                 expect.any(Array),
                 'Copy net_updater.app',
-                'wrapper',
-                'Contents/Library/LoginItems'
+                'application',
+                'Contents/Library/LoginItems',
+                ['macos']
             );
             expect(lib_xcode.set_build_setting).toHaveBeenCalledWith(
                 mock_project, 'LD_RUNPATH_SEARCH_PATHS', expect.any(String)
