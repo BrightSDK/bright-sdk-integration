@@ -272,6 +272,18 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
 }
 
 class BrightSdkUpdateTizen extends BrightSdkUpdateWeb {
+    assign_appid(){
+        const configXmlPath = path.join(this.workdir, this.appdir, 'config.xml');
+        if (!fs.existsSync(configXmlPath)) {
+            throw new Error(`config.xml not found at ${configXmlPath}`);
+        }
+        const configXml = fs.readFileSync(configXmlPath).toString();
+        const match = configXml.match(/<(?:\w+:)?application\b[^>]*\bid=["']([^"']+)["']/i);
+        if (!match) {
+            throw new Error(`Application id not found in ${configXmlPath}`);
+        }
+        this.appid = `tizen_${match[1]}`;
+    }
     async find_service_dir(){
         return await this.search_workdir('^ver_conf.js$');
     }
@@ -288,4 +300,9 @@ const process_web = async(opt={})=>{
     return new platform.Implementation({...opt, name: platform.name}).run();
 };
 
-module.exports = {process_web, BrightSdkUpdateWeb};
+module.exports = {
+    process_web,
+    BrightSdkUpdateWeb,
+    BrightSdkUpdateWebos,
+    BrightSdkUpdateTizen,
+};
