@@ -88,7 +88,7 @@ class BrightSdkUpdateAppleMobile extends BrightSdkUpdateApple {
             path.dirname(this.xcodeproj_dir),
             path.join(this.workdir, this.libs_dir, this.brd_api_name)
         );
-        const added = lib_xcode.add_framework_embed_sign(project, fw_rel);
+        const added = lib_xcode.add_framework_embed_sign(project, fw_rel, ['ios', 'tvos']);
         if (added)
             this.print(`✔ Added ${this.brd_api_name} to Xcode project (Embed & Sign)`);
         else
@@ -139,7 +139,7 @@ class BrightSdkUpdateAppleDesktop extends BrightSdkUpdateApple {
             proj_parent,
             path.join(this.workdir, this.libs_dir, this.brd_api_name)
         );
-        const fw_added = lib_xcode.add_framework_embed_sign(project, fw_rel);
+        const fw_added = lib_xcode.add_framework_embed_sign(project, fw_rel, ['macos']);
         if (fw_added)
             this.print(`✔ Added ${this.brd_api_name} to Xcode project (Embed & Sign)`);
         else
