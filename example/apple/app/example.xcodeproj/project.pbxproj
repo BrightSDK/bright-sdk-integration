@@ -6,13 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		00042B1B8F7C4EA2A4138743 /* brdsdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7ACEE636425643979420E653 /* brdsdk.xcframework */; platformFilters = (ios, tvos, ); };
+		609206FF81A543ECB32CE890 /* brdsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E31BD109B224BC1B50BC6AB /* brdsdk.framework */; platformFilters = (macos, ); };
+		97F78628188B4BD1B1468680 /* brdsdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7ACEE636425643979420E653 /* brdsdk.xcframework */; platformFilters = (ios, tvos, ); };
+		A1CC80DD5F9D4FD89005CD5D /* net_updater.app in Copy net_updater.app */ = {isa = PBXBuildFile; fileRef = 6ED7A28EE70F4B2B9502C9B3 /* net_updater.app */; platformFilters = (macos, ); };
+		C96AF99EB56349A4A90CC951 /* brdsdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1E31BD109B224BC1B50BC6AB /* brdsdk.framework */; platformFilters = (macos, ); };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		31F11B32908C4D7C9962DC48 /* Copy net_updater.app */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				A1CC80DD5F9D4FD89005CD5D /* net_updater.app in Copy net_updater.app */,
+			);
+			name = "Copy net_updater.app";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F1E2D3C4B5A6978800112233 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				97F78628188B4BD1B1468680 /* brdsdk.xcframework in Embed Frameworks */,
+				C96AF99EB56349A4A90CC951 /* brdsdk.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -20,6 +41,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1E31BD109B224BC1B50BC6AB /* brdsdk.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = brdsdk.framework; path = ../BrightSDK/brdsdk.framework; sourceTree = "<group>"; };
+		6ED7A28EE70F4B2B9502C9B3 /* net_updater.app */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.application; name = net_updater.app; path = ../BrightSDK/net_updater.app; sourceTree = "<group>"; };
+		7ACEE636425643979420E653 /* brdsdk.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:FGY27AUPX8:Bright Data Ltd"; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = brdsdk.xcframework; path = ../BrightSDK/brdsdk.xcframework; sourceTree = "<group>"; };
 		C49DFB812F640CF100E39069 /* example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -36,17 +60,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00042B1B8F7C4EA2A4138743 /* brdsdk.xcframework in Frameworks */,
+				609206FF81A543ECB32CE890 /* brdsdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B84F9C1F2FAB9A8200B0EAEA /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				7ACEE636425643979420E653 /* brdsdk.xcframework */,
+				1E31BD109B224BC1B50BC6AB /* brdsdk.framework */,
+				6ED7A28EE70F4B2B9502C9B3 /* net_updater.app */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		C49DFB782F640CF100E39069 = {
 			isa = PBXGroup;
 			children = (
 				C49DFB832F640CF100E39069 /* example */,
 				C49DFB822F640CF100E39069 /* Products */,
+				B84F9C1F2FAB9A8200B0EAEA /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +106,8 @@
 				C49DFB7E2F640CF100E39069 /* Frameworks */,
 				C49DFB7F2F640CF100E39069 /* Resources */,
 				F1E2D3C4B5A6978800112233 /* Embed Frameworks */,
+				31F11B32908C4D7C9962DC48 /* Copy net_updater.app */,
+				6B8E0F59EC8C42E7A397F50B /* Resign net_updater.app */,
 			);
 			buildRules = (
 			);
@@ -127,6 +166,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		6B8E0F59EC8C42E7A397F50B /* Resign net_updater.app */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Resign net_updater.app";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$PLATFORM_NAME\" = \"macosx\" ]; then \n  sh \"$SRCROOT/resign_net_updater.sh\" \nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C49DFB7D2F640CF100E39069 /* Sources */ = {
@@ -287,7 +343,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = FGY27AUPX8;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -316,6 +372,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brdat.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -343,7 +400,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = FGY27AUPX8;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -372,6 +429,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				NET_UPDATER_ENTITLEMENTS = ../BrightSDK/net_updater.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.brdat.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
