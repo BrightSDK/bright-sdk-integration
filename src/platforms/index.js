@@ -3,5 +3,6 @@
 const {get_config_fname} = require('./util.js');
 const {process_web} = require('./BrightSdkUpdateWeb.js');
 const {process_apple} = require('./BrightSdkUpdateApple.js');
+const {process_windows} = require('./BrightSdkUpdateWin.js');
 
-module.exports = {get_config_fname, process_web, process_apple};
+module.exports = {get_config_fname, process_web, process_apple, process_windows};

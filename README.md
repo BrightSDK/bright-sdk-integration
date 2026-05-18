@@ -33,13 +33,14 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 | tvOS | ✅ | Download/update SDK files, patch Xcode project |
 | macOS | ✅ | Download/update SDK files, patch Xcode project |
 | Android | 🚧 | Not implemented |
-| Windows | 🚧 | Not implemented |
+| Windows | ✅ | Download/update SDK files, patch .csproj reference |
 
 ## Examples
 
 - [Apple (iOS / tvOS / macOS)](example/apple/README.md) — SwiftUI sample app with consent flow screenshots
 - [WebOS](example/webos/README.md) — LG WebOS TV sample app with consent flow screenshots
 - [Tizen](example/tizen/README.md) — Samsung Tizen TV sample app with consent flow
+- [Windows](example/windows/README.md) — WinUI 3 / .NET sample app with csproj patching
 
 ## Installation
 
@@ -55,6 +56,7 @@ npx bright-sdk-integration --platform tizen
 npx bright-sdk-integration --platform ios
 npx bright-sdk-integration --platform tvos
 npx bright-sdk-integration --platform macos
+npx bright-sdk-integration --platform windows
 ```
 
 ## Use as command line tool
