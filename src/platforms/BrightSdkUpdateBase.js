@@ -152,6 +152,9 @@ class BrightSdkUpdateBase {
         this.sdk_versions = fs.existsSync(this.sdk_versions_fname)
             ? read_json(this.sdk_versions_fname) : {};
     }
+    get_platform_version_key(){
+        return this.opt.platform;
+    }
     async assign_sdk_ver(){
         let ver = await this.get_value('SDK Version', 'latest', this.config.sdk_ver, {
             selectable: fs.existsSync(this.sdk_dir_root),
@@ -179,7 +182,7 @@ class BrightSdkUpdateBase {
                 }
             }
             const versions = read_json(latest_fname);
-            const latest = versions[this.opt.platform];
+            const latest = versions[this.get_platform_version_key()];
             if (latest)
                 ver = latest;
         }

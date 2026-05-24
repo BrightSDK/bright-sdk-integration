@@ -1,0 +1,28 @@
+<Window x:Class="example.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BrightSDK Sample App" Height="480" Width="700"
+        Background="Black" ResizeMode="CanMinimize">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                Width="560">
+        <TextBlock Text="Welcome to BrightSDK Sample App for Windows"
+                   FontSize="28" FontWeight="Bold" Foreground="White"
+                   TextWrapping="Wrap" TextAlignment="Center"
+                   Margin="0,0,0,24"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                    Margin="0,0,0,32">
+            <TextBlock Text="BrightSDK status is: " FontSize="20" Foreground="White"/>
+            <TextBlock x:Name="StatusText" Text="N/A" FontSize="20" Foreground="White"/>
+        </StackPanel>
+        <Button x:Name="DisplayConsentBtn" Content="Display Consent"
+                Height="64" FontSize="22" FontWeight="Bold"
+                Background="Transparent" Foreground="White"
+                BorderBrush="White" BorderThickness="2"
+                Margin="0,0,0,16" Click="DisplayConsent_Click"/>
+        <Button x:Name="OptOutBtn" Content="Opt out"
+                Height="64" FontSize="22" FontWeight="Bold"
+                Background="Transparent" Foreground="White"
+                BorderBrush="White" BorderThickness="2"
+                Click="OptToggle_Click"/>
+    </StackPanel>
+</Window>
