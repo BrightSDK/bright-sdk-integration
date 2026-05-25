@@ -6,6 +6,6 @@
   "scripts": {
     "update": "npx github:BrightSDK/bright-sdk-integration brd_sdk.config.json",
     "update:interactive": "npx github:BrightSDK/bright-sdk-integration",
-    "reset": "rm -rf service && rm -f app/brd_api*.js && git checkout ."
+    "reset": "git clean -fdX && git checkout ."
   }
 }
