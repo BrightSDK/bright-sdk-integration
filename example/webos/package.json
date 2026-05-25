@@ -4,8 +4,8 @@
   "private": true,
   "description": "BrightSDK WebOS integration example",
   "scripts": {
-    "update": "npx github:BrightSDK/bright-sdk-integration brd_sdk.config.json",
-    "update:interactive": "npx github:BrightSDK/bright-sdk-integration",
+    "update": "npx github:BrightSDK/bright-sdk-integration --platform webos brd_sdk.config.json",
+    "update:interactive": "npx github:BrightSDK/bright-sdk-integration --platform webos",
     "reset": "git clean -fdX && git checkout ."
   }
 }

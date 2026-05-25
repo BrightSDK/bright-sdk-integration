@@ -49,7 +49,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 Use `npx` to run directly from GitHub without any prior installation — always fetches the latest release:
 
 ```bash
-npx github:BrightSDK/bright-sdk-integration
+npx github:BrightSDK/bright-sdk-integration --platform <platform>
 ```
 
 ### Global install (recommended for repeated use)
