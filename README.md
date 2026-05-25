@@ -44,35 +44,47 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Installation
 
-Recommended: install globally from the official tarball and then execute with npx. This installs a known release and lets you run it via npx:
+### One-off run (no install required)
+
+Use `npx` to run directly from GitHub without any prior installation — always fetches the latest release:
 
 ```bash
-# install globally from the release tarball
-npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
+npx github:BrightSDK/bright-sdk-integration
+```
 
-# run with npx after install (which you need)
-npx bright-sdk-integration --platform webos
-npx bright-sdk-integration --platform tizen
-npx bright-sdk-integration --platform ios
-npx bright-sdk-integration --platform tvos
-npx bright-sdk-integration --platform macos
-npx bright-sdk-integration --platform windows
+### Global install (recommended for repeated use)
+
+Install globally from GitHub, then run the command directly:
+
+```bash
+npm install -g github:BrightSDK/bright-sdk-integration
+```
+
+After installation the `bright-sdk-integration` command is available system-wide:
+
+```bash
+bright-sdk-integration --platform webos
+bright-sdk-integration --platform tizen
+bright-sdk-integration --platform ios
+bright-sdk-integration --platform tvos
+bright-sdk-integration --platform macos
+bright-sdk-integration --platform windows
 ```
 
 ## Use as command line tool
 
 Follow the next steps to use the generator as command line tool to integrate the new application or manually update the Bright SDK distribution in existing app.
 
-You can run the script via the globally installed package (recommended) using npx, or with node from a local checkout. The following options are supported:
+You can run the script via the globally installed package (recommended) or with node from a local checkout. The following options are supported:
 
 #### Interactive mode
 
 Execute the script without command line arguments to make the tool ask you for the configuration values.
 
-After global install, run with npx:
+After global install:
 
 ```bash
-npx bright-sdk-integration
+bright-sdk-integration
 ```
 
 Or, from a local checkout:
@@ -119,10 +131,10 @@ Feel free to customize the prompts and parameters based on your project's specif
 
 Execute the script, adding path to the JSON configuration file as the command line argument.
 
-After global install, run with npx:
+After global install:
 
 ```bash
-npx bright-sdk-integration /path/to/your/app/brd_sdk.config.json
+bright-sdk-integration /path/to/your/app/brd_sdk.config.json
 ```
 
 Or, from a local checkout:
