@@ -13,12 +13,7 @@ webos/
 │   ├── largeIcon.png
 │   └── webOSTVjs-1.2.10/       ← WebOS TV JS library
 ├── brd_sdk.config.json         ← SDK config (workdir, version, CDN URL)
-├── auto-update.sh              ← non-interactive SDK update (macOS/Linux)
-├── auto-update.ps1             ← non-interactive SDK update (Windows)
-├── interactive-update.sh       ← interactive update (macOS/Linux)
-├── interactive-update.ps1      ← interactive update (Windows)
-├── reset.sh                    ← remove downloaded SDK, restore clean state (macOS/Linux)
-├── reset.ps1                   ← remove downloaded SDK, restore clean state (Windows)
+├── package.json                ← npm scripts for update/reset
 ├── assets/                     ← screenshots
 └── README.md                   ← this file
 ```
@@ -35,14 +30,13 @@ webos/
 
 ```sh
 cd webos
-sh auto-update.sh
+npm run update
 ```
 
-**On Windows (PowerShell):**
+Or interactively (prompts for missing values):
 
-```powershell
-cd webos
-.\auto-update.ps1
+```sh
+npm run update:interactive
 ```
 
 The tool will:
@@ -108,13 +102,7 @@ Copy `brd_sdk.config.json` next to your own app directory, then edit it:
 Then run:
 
 ```sh
-sh auto-update.sh          # non-interactive
-sh interactive-update.sh   # interactive (prompts for missing values)
-```
-
-**On Windows (PowerShell):**
-
-```powershell
-.\auto-update.ps1          # non-interactive
-.\interactive-update.ps1   # interactive (prompts for missing values)
+npm run update              # non-interactive
+npm run update:interactive  # interactive (prompts for missing values)
+npm run reset               # remove SDK files and restore clean state
 ```

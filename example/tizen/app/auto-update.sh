@@ -1,1 +1,0 @@
-npx github:BrightSDK/bright-sdk-integration brd_sdk.config.json
