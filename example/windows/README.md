@@ -79,14 +79,13 @@ Copy `brd_sdk.config.json` next to your own `.csproj`, then edit it:
 Then run:
 
 ```sh
-node /path/to/bright-sdk-integration/index.js --platform windows brd_sdk.config.json
+npx github:BrightSDK/bright-sdk-integration --platform windows brd_sdk.config.json
 ```
 
-Or install globally and use npx:
+Or run interactively:
 
 ```sh
-npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
-npx bright-sdk-integration --platform windows
+npx github:BrightSDK/bright-sdk-integration --platform windows
 ```
 
 ## What gets patched in your .csproj

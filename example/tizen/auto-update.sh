@@ -1,1 +1,1 @@
-node ../../index.js --platform tizen brd_sdk.config.json
+npx github:BrightSDK/bright-sdk-integration --platform tizen brd_sdk.config.json

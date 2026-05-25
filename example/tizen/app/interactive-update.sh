@@ -1,1 +1,1 @@
-node ../../index.js
+npx github:BrightSDK/bright-sdk-integration

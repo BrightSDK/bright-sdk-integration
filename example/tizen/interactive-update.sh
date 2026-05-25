@@ -1,1 +1,1 @@
-node ../../index.js --platform tizen
+npx github:BrightSDK/bright-sdk-integration --platform tizen

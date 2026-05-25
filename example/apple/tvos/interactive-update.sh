@@ -1,3 +1,3 @@
 #!/bin/sh
 # Interactive tvOS SDK update — prompts for any missing values
-node ../../../index.js --platform tvos
+npx github:BrightSDK/bright-sdk-integration --platform tvos

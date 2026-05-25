@@ -1,3 +1,3 @@
 #!/bin/sh
 # Interactive iOS SDK update — prompts for any missing values
-node ../../../index.js --platform ios
+npx github:BrightSDK/bright-sdk-integration --platform ios

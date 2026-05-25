@@ -1,1 +1,1 @@
-node ../../index.js brd_sdk.config.json
+npx github:BrightSDK/bright-sdk-integration brd_sdk.config.json
