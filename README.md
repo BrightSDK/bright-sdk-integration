@@ -6,6 +6,20 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/BrightSDK/bright-sdk-integration/pulls)
 
+## ⚠️ Breaking change in v1.7.0 — API key now required
+
+Starting with **v1.7.0** the tool authenticates with the BrightSDK releases API.
+**Older versions will stop working once the unauthenticated endpoint is retired.**
+
+**What you need to do:**
+
+1. Upgrade to the latest version
+2. Obtain a BrightSDK API key — see [docs/obtain-api-key.md](docs/obtain-api-key.md)
+3. Export the key before running the tool:
+   ```bash
+   export SDK_API_KEY=<your-api-key>
+   ```
+
 ## Overview
 
 Welcome to the BrightSDK Integration Code Generator! This Node.js package is designed to assist in integrating BrightSDK into various platforms.
