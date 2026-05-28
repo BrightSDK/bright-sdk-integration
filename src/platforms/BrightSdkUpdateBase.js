@@ -10,7 +10,7 @@ const {
     lbr,
     print: print_base, process_init,
     read_json, write_json, search_directory,
-    download_from_url, unzip, replace_file,
+    download_from_url, fetch_releases, resolve_url_tpl, unzip, replace_file,
 } = lib;
 
 const {clear_screen, prompt} = navigation;
@@ -39,6 +39,7 @@ class BrightSdkUpdateBase {
         this.sdk_ver = null;
         this.sdk_url_mask = null;
         this.sdk_url = null;
+        this.releases_data = null;
         this.sdk_zip = null;
         this.sdk_zip_fname = null;
         this.env = {};
@@ -145,6 +146,15 @@ class BrightSdkUpdateBase {
                 dir: sdk_service_dir_def ? path.join(this.workdir, sdk_service_dir_def) : this.workdir,
             });
     }
+    async _get_releases_data(){
+        if (this.releases_data)
+            return this.releases_data;
+        const releases_url = this.app_config.urls?.sdk_releases;
+        if (!releases_url)
+            return null;
+        this.releases_data = await fetch_releases(releases_url);
+        return this.releases_data;
+    }
     assign_sdk_versions_filename(){
         this.sdk_versions_fname = path.join(this.sdk_dir_root, 'versions.json');
     }
@@ -164,32 +174,20 @@ class BrightSdkUpdateBase {
         });
         if (ver == 'latest')
         {
-            const latest_fname = path.join(this.sdk_dir_root, 'latest.json');
-            const versions_url = this.app_config.urls?.sdk_versions;
-            if (!versions_url) {
-                throw new Error('SDK versions URL not configured. Please add urls.sdk_versions to config.json');
-            }
-            try {
-                await download_from_url(versions_url, latest_fname);
-            } catch(e){
-                this.print('Failed to download latest version info');
-                if (fs.existsSync(latest_fname))
-                    this.print('Falling back to cached version info');
-                else
-                {
-                    throw new Error('Please check your internet connection and'
-                        +' try again or provide cached sdk version name');
-                }
-            }
-            const versions = read_json(latest_fname);
-            const latest = versions[this.get_platform_version_key()];
-            if (latest)
-                ver = latest;
+            const releases = await this._get_releases_data();
+            if (!releases)
+                throw new Error('SDK releases URL not configured. Please add urls.sdk_releases to config.json');
+            const platform_key = this.get_platform_version_key();
+            const latest = releases.platforms?.[platform_key]?.last_version;
+            if (!latest)
+                throw new Error(`No latest version found for platform '${platform_key}'`);
+            ver = latest;
         }
         this.sdk_ver = ver;
     }
     async check_sdk_ver(){
-        if (this.config.sdk_ver_prev)
+        if (this.config.sdk_ver_prev &&
+            this.config.sdk_ver_prev === this.sdk_ver)
         {
             this.print('SDK is already of the latest version.');
             const force = this.opt.interactive && await this.get_value('Force update? (y/n)', 'n');
@@ -198,6 +196,19 @@ class BrightSdkUpdateBase {
         }
     }
     async assign_sdk_url(){
+        const releases_url = this.app_config.urls?.sdk_releases;
+        if (releases_url)
+        {
+            const releases = await this._get_releases_data();
+            const platform_key = this.get_platform_version_key();
+            const resolved = resolve_url_tpl(releases, platform_key, this.sdk_ver);
+            if (resolved)
+            {
+                this.sdk_url_mask = releases.platforms[platform_key].url_tpl;
+                this.sdk_url = resolved;
+                return;
+            }
+        }
         const default_sdk_url = this.app_config.defaults?.sdk_url_mask;
         if (!default_sdk_url) {
             throw new Error('SDK URL mask not configured. Please add defaults.sdk_url_mask to config.json');

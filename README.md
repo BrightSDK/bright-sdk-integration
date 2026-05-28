@@ -22,6 +22,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 - Node.js (tested on v18, v20, v22)
 - npm (tested on v11.6.2)
 - Git (tested on 2.50.1 (Apple Git-155))
+- A BrightSDK API key — see [docs/obtain-api-key.md](docs/obtain-api-key.md)
 
 ## Supported platforms
 
@@ -84,12 +85,14 @@ Execute the script without command line arguments to make the tool ask you for t
 After global install:
 
 ```bash
+export SDK_API_KEY=<your-api-key>
 bright-sdk-integration
 ```
 
 Or, from a local checkout:
 
 ```bash
+export SDK_API_KEY=<your-api-key>
 node index.js
 ```
 
@@ -134,12 +137,14 @@ Execute the script, adding path to the JSON configuration file as the command li
 After global install:
 
 ```bash
+export SDK_API_KEY=<your-api-key>
 bright-sdk-integration /path/to/your/app/brd_sdk.config.json
 ```
 
 Or, from a local checkout:
 
 ```bash
+export SDK_API_KEY=<your-api-key>
 node index.js /path/to/your/app/brd_sdk.config.json
 ```
 Once the file is readed successfully, the program will provide the respected output:

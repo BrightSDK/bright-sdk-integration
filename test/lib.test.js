@@ -322,3 +322,142 @@ describe('lib utilities', () => {
         });
     });
 });
+
+describe('fetch_releases', () => {
+    let mockRequest;
+    let mockResponse;
+    let original_sdk_api_key;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        original_sdk_api_key = process.env.SDK_API_KEY;
+        process.env.SDK_API_KEY = 'test-api-key';
+        mockRequest = {
+            on: jest.fn(),
+            setTimeout: jest.fn(),
+            destroy: jest.fn(),
+        };
+        mockResponse = {
+            statusCode: 200,
+            on: jest.fn(),
+            resume: jest.fn(),
+        };
+        https.get.mockImplementation((_url, _opts, callback) => {
+            callback(mockResponse);
+            return mockRequest;
+        });
+    });
+
+    afterEach(() => {
+        if (original_sdk_api_key === undefined)
+            delete process.env.SDK_API_KEY;
+        else
+            process.env.SDK_API_KEY = original_sdk_api_key;
+    });
+
+    test('should reject when SDK_API_KEY is not set', async () => {
+        delete process.env.SDK_API_KEY;
+        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
+            .rejects.toThrow('SDK_API_KEY environment variable is required');
+        expect(https.get).not.toHaveBeenCalled();
+    });
+
+    test('should fetch and parse releases JSON with api-key header', async () => {
+        const releases_data = {
+            webos: {ver: '2.5.0', url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip'},
+            win: {ver: '3.1.0', url: 'https://cdn.example.com/bright_sdk_win-3.1.0.zip'},
+        };
+        mockResponse.on.mockImplementation((event, callback) => {
+            if (event === 'data')
+                callback(JSON.stringify(releases_data));
+            else if (event === 'end')
+                callback();
+        });
+
+        const result = await lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases');
+
+        expect(https.get).toHaveBeenCalledWith(
+            'https://bright-sdk.com/sdk_api/sdk/releases',
+            expect.objectContaining({
+                headers: expect.objectContaining({'api-key': 'test-api-key'}),
+            }),
+            expect.any(Function)
+        );
+        expect(result).toEqual(releases_data);
+    });
+
+    test('should reject on non-2xx HTTP status', async () => {
+        mockResponse.statusCode = 403;
+        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
+            .rejects.toThrow('Releases fetch failed: HTTP 403');
+    });
+
+    test('should reject on invalid JSON in response', async () => {
+        mockResponse.on.mockImplementation((event, callback) => {
+            if (event === 'data')
+                callback('not valid json{{');
+            else if (event === 'end')
+                callback();
+        });
+
+        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
+            .rejects.toThrow('Failed to parse releases JSON');
+    });
+
+    test('should reject on request error', async () => {
+        https.get.mockImplementation((_url, _opts, _callback) => {
+            const req = {
+                on: jest.fn((event, handler) => {
+                    if (event === 'error')
+                        handler(new Error('Network error'));
+                }),
+                setTimeout: jest.fn(),
+                destroy: jest.fn(),
+            };
+            return req;
+        });
+
+        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
+            .rejects.toThrow('Network error');
+    });
+});
+
+describe('resolve_url_tpl', () => {
+    const releases = {
+        templates: {
+            base: 'https://bsdk-cdn.zspeed-cdn.com/static',
+            common: '{{base}}/bright_sdk_{{platform}}-{{version}}.zip',
+            tv: '{{base}}/brd_sdk_{{platform}}-{{version}}.zip',
+        },
+        platforms: {
+            win:     {last_version: '1.617.770', url_tpl: '{{common}}'},
+            webos:   {last_version: '1.617.770', url_tpl: '{{tv}}'},
+            android: {last_version: '1.617.770', url_tpl: '{{base}}/bright_sdk_{{platform}}-{{version}}.tar.gz'},
+        },
+    };
+
+    test('resolves url_tpl_common for win', () => {
+        const url = lib.resolve_url_tpl(releases, 'win', '1.617.770');
+        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_win-1.617.770.zip');
+    });
+
+    test('resolves url_tpl_tv for webos', () => {
+        const url = lib.resolve_url_tpl(releases, 'webos', '1.617.770');
+        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/brd_sdk_webos-1.617.770.zip');
+    });
+
+    test('resolves android url_tpl with tar.gz extension', () => {
+        const url = lib.resolve_url_tpl(releases, 'android', '1.617.770');
+        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_android-1.617.770.tar.gz');
+    });
+
+    test('substitutes arbitrary version, not just last_version', () => {
+        const url = lib.resolve_url_tpl(releases, 'win', '1.500.000');
+        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_win-1.500.000.zip');
+    });
+
+    test('returns null for unknown platform', () => {
+        const url = lib.resolve_url_tpl(releases, 'unknown', '1.0.0');
+        expect(url).toBeNull();
+    });
+});

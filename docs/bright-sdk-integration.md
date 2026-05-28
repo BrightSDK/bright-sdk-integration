@@ -203,7 +203,7 @@ await brd_sdk_gen.process_tizen({
 
 1. **Load config**: Reads `brd_sdk.config.json` if found in the app directory or passed as argument.
 2. **Resolve app directory**: From config or interactive prompt.
-3. **Resolve SDK version**: Reads `sdk_ver` from config or prompts. If `"latest"`, fetches current version from `https://bright-sdk.com/sdk_api/sdk/versions`.
+3. **Resolve SDK version**: Reads `sdk_ver` from config or prompts. If `"latest"`, fetches the current version from the releases API (`urls.sdk_releases` in `config.json`, defaults to `https://bright-sdk.com/sdk_api/sdk/integration/config`). Throws if no version is returned for the platform.
 4. **Download SDK zip**: Downloads from URL (e.g., `https://cdn.bright-sdk.com/static/brd_sdk_webos-1.533.23.zip`) into a local `.sdk/{platform}/{version}/` cache.
 5. **Extract SDK**: Unzips the downloaded archive into the versioned cache directory.
 6. **Copy API file**: Copies `brd_api.js` (versioned) into the app's JS directory.

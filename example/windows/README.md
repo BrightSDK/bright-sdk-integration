@@ -24,6 +24,7 @@ windows/
 - **Visual Studio 2022** (or 2019) — to open and build the WPF project
 - **.NET Framework 4.8 targeting pack** — included with Visual Studio by default
 - An internet connection — the SDK zip is downloaded from the CDN on first run
+- A **BrightSDK API key** set as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
 
 ## Quick start — example app
 
@@ -32,6 +33,7 @@ windows/
 Run the auto-update script from this folder:
 
 ```powershell
+$env:SDK_API_KEY = "<your-api-key>"
 .\auto-update.ps1
 ```
 
@@ -79,12 +81,14 @@ Copy `brd_sdk.config.json` next to your own `.csproj`, then edit it:
 Then run:
 
 ```sh
+export SDK_API_KEY=<your-api-key>
 npx github:BrightSDK/bright-sdk-integration --platform windows brd_sdk.config.json
 ```
 
 Or run interactively:
 
 ```sh
+export SDK_API_KEY=<your-api-key>
 npx github:BrightSDK/bright-sdk-integration --platform windows
 ```
 
