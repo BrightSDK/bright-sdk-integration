@@ -2,70 +2,89 @@
 
 **GitHub**: https://github.com/BrightSDK/bright-sdk-integration
 **npm package name**: `bright-sdk-integration`
-**Version**: 1.5.3
+**Version**: 1.7.0
 **Author**: vladislavs@brightdata.com
 
 ## What it is
 
-`bright-sdk-integration` is a Node.js CLI tool and library that automates the process of integrating or updating BrightSDK inside a Smart TV application project. It handles:
+`bright-sdk-integration` is a Node.js CLI tool and library that automates the process of integrating or updating BrightSDK inside a Smart TV and mobile application project. It handles:
 
+- Resolving the correct SDK download URL from the BrightSDK integration config API.
 - Downloading the correct SDK version for a given platform.
 - Extracting and copying the SDK files into the right directories in your app.
-- Updating `index.html` to reference the new SDK API file.
+- Updating `index.html` to reference the new SDK API file (WebOS/Tizen).
 - Updating the SDK service directory (`service/`).
 - Optionally injecting the BrightSDK helper file (`brd_api.helper.min.js`).
 - Saving and reusing a `brd_sdk.config.json` configuration file for future runs.
 
-**Supported platforms**: WebOS, Tizen. Android, iOS, Windows, macOS are planned but not yet implemented.
+**Supported platforms**: WebOS, Tizen, iOS, tvOS, macOS, Windows.
+
+---
+
+## Requirements
+
+- Node.js 18+
+- A BrightSDK API key set as `SDK_API_KEY` environment variable — see [How to obtain an API key](https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md)
+
+```bash
+export SDK_API_KEY=<your-api-key>
+```
+
+> **Breaking change in v1.7.0**: `SDK_API_KEY` is now required. The tool fetches the SDK download URL from the authenticated integration config API (`https://bright-sdk.com/sdk_api/sdk/integration/config`). Older versions that used hardcoded CDN URLs will stop working once the unauthenticated endpoint is retired.
 
 ---
 
 ## Installation
 
-Install globally from the official tarball (recommended):
+### One-off run (no install required)
 
 ```bash
-npm install -g https://brightsdk.github.io/packages/bright-sdk-integration/latest.tgz
+npx github:BrightSDK/bright-sdk-integration --platform <platform>
 ```
 
-Then run anywhere with:
+### Global install (recommended for repeated use)
 
 ```bash
-npx bright-sdk-integration
+npm install -g github:BrightSDK/bright-sdk-integration
+bright-sdk-integration --platform webos
 ```
 
 ---
 
 ## CLI Usage
 
-### Interactive mode (default)
-
-Run without arguments. The tool prompts for all configuration values interactively, guessing defaults from your project structure.
+`--platform` is required in all cases.
 
 ```bash
-npx bright-sdk-integration
-# or from local checkout:
-node index.js
+bright-sdk-integration --platform <platform> [config.json | app_path]
 ```
 
-Prompts:
-| Prompt | Description | Example |
-|---|---|---|
-| Path to application directory | Root of the app being integrated | `/path/to/my/app` |
-| SDK Version | Version string or `latest` | `1.438.821` |
-| Application JS directory | Where `brd_api.js` lives relative to app | `js` |
-| index.html location | Path to the main HTML entry point | `index.html` |
-| SDK Service directory | Where to place the SDK background service | `service` |
-| SDK URL mask | Download URL template (use `SDK_VER` as placeholder) | `https://cdn.bright-sdk.com/static/brd_sdk_webos-SDK_VER.zip` |
+Supported platform values:
+
+| Value | Description |
+|---|---|
+| `webos` | LG WebOS TV app |
+| `tizen` | Samsung Tizen TV app |
+| `ios` | iOS app (Xcode) |
+| `tvos` | tvOS app (Xcode) |
+| `macos` | macOS app (Xcode) |
+| `windows` | Windows app (.NET / WPF) |
+
+### Examples
+
+```bash
+bright-sdk-integration --platform webos
+bright-sdk-integration --platform tizen /path/to/app/brd_sdk.config.json
+bright-sdk-integration --platform ios /path/to/app
+bright-sdk-integration --platform windows ./my-app
+```
 
 ### Config file mode
 
 Pass a path to `brd_sdk.config.json`:
 
 ```bash
-npx bright-sdk-integration /path/to/your/app/brd_sdk.config.json
-# or:
-node index.js /path/to/your/app/brd_sdk.config.json
+bright-sdk-integration --platform webos /path/to/your/app/brd_sdk.config.json
 ```
 
 ### App directory mode
@@ -73,26 +92,16 @@ node index.js /path/to/your/app/brd_sdk.config.json
 Pass a path to the app directory. The tool will automatically look for `brd_sdk.config.json` inside it:
 
 ```bash
-npx bright-sdk-integration /path/to/your/app
-node index.js /path/to/your/app
+bright-sdk-integration --platform tizen /path/to/your/app
 ```
-
-### Platform selection
-
-Use `--platform` / `-p` to specify the target platform (default: `webos`):
-
-```bash
-npx bright-sdk-integration --platform tizen /path/to/app/brd_sdk.config.json
-npx bright-sdk-integration -p webos
-```
-
-Supported values: `webos`, `tizen`.
 
 ---
 
 ## brd_sdk.config.json
 
 This is the per-project configuration file. It is read on startup and written back with resolved values after each run to speed up future updates.
+
+The SDK download URL is resolved automatically from the integration config API using `SDK_API_KEY`. Manual `sdk_url` / `sdk_url_mask` entries in the config are only used as a fallback if the API is unreachable.
 
 ### WebOS example
 
@@ -104,8 +113,7 @@ This is the per-project configuration file. It is read on startup and written ba
   "index": "app/index.html",
   "sdk_service_dir": "service",
   "sdk_ver": "latest",
-  "use_helper": true,
-  "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_webos-SDK_VER.zip"
+  "use_helper": true
 }
 ```
 
@@ -119,8 +127,7 @@ This is the per-project configuration file. It is read on startup and written ba
   "index": "app/index.html",
   "sdk_service_dir": "app/service",
   "sdk_ver": "latest",
-  "use_helper": true,
-  "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tizen-SDK_VER.zip"
+  "use_helper": true
 }
 ```
 
@@ -134,8 +141,6 @@ This is the per-project configuration file. It is read on startup and written ba
 | `index` | string | Path to `index.html` relative to `workdir` |
 | `sdk_service_dir` | string | Directory for the SDK background service |
 | `sdk_ver` | string | SDK version string, or `"latest"` |
-| `sdk_url` | string | Full SDK download URL (replaces `SDK_VER` with the version) |
-| `sdk_url_mask` | string | URL template using `SDK_VER` placeholder |
 | `use_helper` | boolean | Whether to include `brd_api.helper.min.js` |
 | `config_fname` | string | Path to the config file itself |
 
@@ -149,38 +154,59 @@ The package can also be required as a Node.js module:
 const brd_sdk_gen = require('bright-sdk-integration');
 ```
 
+`SDK_API_KEY` must be set in `process.env` before calling any of these functions.
+
 ### `process_web(opt)` → Promise
 
-General entry point for any supported web-based platform.
+Entry point for WebOS and Tizen.
 
 ```js
 await brd_sdk_gen.process_web({
   platform: 'webos',        // 'webos' | 'tizen'
   appdir: '/path/to/app',   // or use config_fname
   config_fname: '/path/to/brd_sdk.config.json',
-  verbose: false,           // print progress to stdout
+  verbose: false,
 });
 ```
 
-### `process_webos(opt)` → Promise
+### `process_webos(opt)` / `process_tizen(opt)` → Promise
 
-Shortcut for WebOS. Calls `process_web` with `platform: 'webos'`.
+Shortcuts that call `process_web` with the platform preset.
 
 ```js
-await brd_sdk_gen.process_webos({
+await brd_sdk_gen.process_webos({ appdir: '/path/to/app', verbose: true });
+await brd_sdk_gen.process_tizen({ config_fname: '/path/to/app/brd_sdk.config.json' });
+```
+
+### `process_apple(opt)` → Promise
+
+Entry point for iOS, tvOS, and macOS.
+
+```js
+await brd_sdk_gen.process_apple({
+  platform: 'ios',          // 'ios' | 'tvos' | 'macos'
+  appdir: '/path/to/app',
+  verbose: false,
+});
+```
+
+### `process_ios(opt)` / `process_tvos(opt)` / `process_macos(opt)` → Promise
+
+Shortcuts that call `process_apple` with the platform preset.
+
+```js
+await brd_sdk_gen.process_ios({ appdir: '/path/to/app' });
+await brd_sdk_gen.process_macos({ config_fname: '/path/to/app/brd_sdk.config.json' });
+```
+
+### `process_windows(opt)` → Promise
+
+Entry point for Windows (.NET / WPF).
+
+```js
+await brd_sdk_gen.process_windows({
   appdir: '/path/to/app',
   verbose: true,
-});
-```
-
-### `process_tizen(opt)` → Promise
-
-Shortcut for Tizen. Calls `process_web` with `platform: 'tizen'`.
-
-```js
-await brd_sdk_gen.process_tizen({
-  config_fname: '/path/to/app/brd_sdk.config.json',
-  verbose: false,
 });
 ```
 
@@ -188,7 +214,7 @@ await brd_sdk_gen.process_tizen({
 
 | Field | Type | Description |
 |---|---|---|
-| `platform` | string | `'webos'` or `'tizen'` |
+| `platform` | string | Target platform (see supported values above) |
 | `appdir` | string | Path to the app directory (required if no `config_fname`) |
 | `config_fname` | string | Path to `brd_sdk.config.json` (required if no `appdir`) |
 | `config_fnames` | string[] | Array of config file paths to merge |
