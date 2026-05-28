@@ -17,7 +17,7 @@ describe('Configuration Loading', () => {
     expect(config).toHaveProperty('defaults');
 
     expect(config.urls).toHaveProperty('helper_latest');
-    expect(config.urls).toHaveProperty('sdk_versions');
+    expect(config.urls).toHaveProperty('sdk_releases');
     expect(config.files).toHaveProperty('helper_name');
     expect(config.files).toHaveProperty('api_name');
   });
@@ -26,7 +26,7 @@ describe('Configuration Loading', () => {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
     expect(config.urls.helper_latest).toMatch(/^https:\/\//);
-    expect(config.urls.sdk_versions).toMatch(/^https:\/\//);
+    expect(config.urls.sdk_releases).toMatch(/^https:\/\//);
     expect(config.urls.helper_latest).toContain('githubusercontent.com');
   });
 

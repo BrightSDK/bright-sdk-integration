@@ -141,9 +141,10 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         lib.print.mockImplementation(() => { });
+        lib.fetch_releases.mockResolvedValue({});
     });
 
-    test('builds sdk_url by replacing SDK_VER', async () => {
+    test('uses url_tpl from releases substituting sdk_ver', async () => {
         const u = new BrightSdkUpdateBase({
             platform: 'webos',
             name: 'WebOS',
@@ -153,9 +154,74 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
             config: { workdir: '/test/project' },
         });
 
-        u.app_config = { defaults: { sdk_url_mask: 'https://cdn/sdk_SDK_VER.zip' } };
+        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
+        u.config = {};
+        u.sdk_ver = '2.5.0';
+        const releases = {
+            templates: {
+                base: 'https://cdn.example.com',
+                tv: '{{base}}/brd_sdk_{{platform}}-{{version}}.zip',
+            },
+            platforms: {webos: {last_version: '2.5.0', url_tpl: '{{tv}}'}},
+        };
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue(releases);
+        lib.resolve_url_tpl.mockReturnValue('https://cdn.example.com/brd_sdk_webos-2.5.0.zip');
+
+        await u.assign_sdk_url();
+
+        expect(lib.resolve_url_tpl).toHaveBeenCalledWith(releases, 'webos', '2.5.0');
+        expect(u.sdk_url_mask).toBe('{{tv}}');
+        expect(u.sdk_url).toBe('https://cdn.example.com/brd_sdk_webos-2.5.0.zip');
+    });
+
+    test('url_tpl with specific (non-latest) version substitutes correctly', async () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
+        u.config = {};
+        u.sdk_ver = '1.500.000';
+        const releases = {
+            templates: {
+                base: 'https://cdn.example.com',
+                tv: '{{base}}/brd_sdk_{{platform}}-{{version}}.zip',
+            },
+            platforms: {webos: {last_version: '2.5.0', url_tpl: '{{tv}}'}},
+        };
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue(releases);
+        lib.resolve_url_tpl.mockReturnValue('https://cdn.example.com/brd_sdk_webos-1.500.000.zip');
+
+        await u.assign_sdk_url();
+
+        expect(u.sdk_url).toBe('https://cdn.example.com/brd_sdk_webos-1.500.000.zip');
+    });
+
+    test('falls back to sdk_url_mask when releases has no url for platform', async () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.app_config = {
+            urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' },
+            defaults: { sdk_url_mask: 'https://cdn/sdk_SDK_VER.zip' },
+        };
         u.config = { sdk_url: 'https://cdn/sdk_SDK_VER.zip' };
         u.sdk_ver = '1.2.3';
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue({
+            platforms: {webos: {last_version: '1.2.3'}},
+        });
+        lib.resolve_url_tpl.mockReturnValue(null);
 
         await u.assign_sdk_url();
 
@@ -163,7 +229,7 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
         expect(u.sdk_url).toBe('https://cdn/sdk_1.2.3.zip');
     });
 
-    test('throws if sdk_url_mask not configured', async () => {
+    test('throws if releases has no url_tpl and sdk_url_mask not configured', async () => {
         const u = new BrightSdkUpdateBase({
             platform: 'webos',
             name: 'WebOS',
@@ -173,8 +239,15 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
             config: { workdir: '/test/project' },
         });
 
-        u.app_config = { defaults: {} };
+        u.app_config = {
+            urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' },
+            defaults: {},
+        };
         u.sdk_ver = '1.2.3';
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue({
+            platforms: {webos: {last_version: '1.2.3'}},
+        });
+        lib.resolve_url_tpl.mockReturnValue(null);
 
         await expect(u.assign_sdk_url()).rejects.toThrow(/SDK URL mask not configured/);
     });
@@ -207,11 +280,11 @@ describe('BrightSdkUpdateBase.get_value', () => {
 describe('BrightSdkUpdateBase.assign_sdk_ver (latest)', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.download_from_url.mockResolvedValue();
+        lib.fetch_releases.mockResolvedValue({});
         lib.print.mockImplementation(() => { });
     });
 
-    test('resolves "latest" using downloaded latest.json', async () => {
+    test('resolves "latest" ver from releases API', async () => {
         const u = new BrightSdkUpdateBase({
             platform: 'webos',
             name: 'WebOS',
@@ -221,26 +294,39 @@ describe('BrightSdkUpdateBase.assign_sdk_ver (latest)', () => {
             config: { workdir: '/test/project' },
         });
 
-        u.workdir = '/test/project';
         u.sdk_dir_root = '/cache/.sdk/webos';
-        u.app_config = { urls: { sdk_versions: 'https://example.com/versions.json' } };
+        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
         u.config = {};
 
         jest.spyOn(u, 'get_value').mockResolvedValue('latest');
-
-        lib.read_json.mockImplementation((fname) => {
-            if (String(fname).endsWith('latest.json'))
-                return { webos: '9.9.9' };
-            return {};
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue({
+            platforms: {webos: {last_version: '9.9.9', url_tpl: '{{tv}}'}},
         });
 
         await u.assign_sdk_ver();
 
-        expect(lib.download_from_url).toHaveBeenCalledWith(
-            'https://example.com/versions.json',
-            '/cache/.sdk/webos/latest.json'
-        );
+        expect(u._get_releases_data).toHaveBeenCalled();
         expect(u.sdk_ver).toBe('9.9.9');
+    });
+
+    test('throws when releases API returns no version for platform', async () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.sdk_dir_root = '/cache/.sdk/webos';
+        u.app_config = { urls: {} };
+        u.config = {};
+
+        jest.spyOn(u, 'get_value').mockResolvedValue('latest');
+        jest.spyOn(u, '_get_releases_data').mockResolvedValue({platforms: {}});
+
+        await expect(u.assign_sdk_ver()).rejects.toThrow(/No latest version found for platform/);
     });
 });
 
@@ -278,7 +364,7 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         lib.print.mockImplementation(() => { });
     });
 
-    test('does not prompt in non-interactive mode', async () => {
+    test('does not print or prompt when sdk_ver_prev differs from sdk_ver', async () => {
         const u = new BrightSdkUpdateBase({
             platform: 'webos',
             name: 'WebOS',
@@ -289,6 +375,29 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         });
 
         u.config = { sdk_ver_prev: '1.0.0' };
+        u.sdk_ver = '1.1.0';
+
+        const spy = jest.spyOn(u, 'get_value');
+
+        await u.check_sdk_ver();
+
+        expect(spy).not.toHaveBeenCalled();
+        expect(lib.print).not.toHaveBeenCalledWith(
+            expect.stringContaining('already'));
+    });
+
+    test('does not prompt in non-interactive mode when versions match', async () => {
+        const u = new BrightSdkUpdateBase({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir: '/test/project',
+            config: { workdir: '/test/project' },
+        });
+
+        u.config = { sdk_ver_prev: '1.0.0' };
+        u.sdk_ver = '1.0.0';
 
         const spy = jest.spyOn(u, 'get_value');
 
@@ -297,7 +406,7 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    test('prompts for force update in interactive mode', async () => {
+    test('prompts for force update in interactive mode when versions match', async () => {
         const u = new BrightSdkUpdateBase({
             platform: 'webos',
             name: 'WebOS',
@@ -308,6 +417,7 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         });
 
         u.config = { sdk_ver_prev: '1.0.0' };
+        u.sdk_ver = '1.0.0';
 
         jest.spyOn(u, 'get_value').mockResolvedValue('n');
 

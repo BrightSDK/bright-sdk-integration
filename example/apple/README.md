@@ -25,6 +25,7 @@ apple/
 - **Node.js ≥ 18** — to run the integration tool
 - **Xcode** — to open and build the example project
 - An internet connection — the SDK zip is downloaded from the CDN on first run
+- A **BrightSDK API key** exported as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
 
 ## Quick start — example app
 
@@ -33,6 +34,8 @@ apple/
 Run the script for your target platform from its subfolder:
 
 ```sh
+export SDK_API_KEY=<your-api-key>
+
 # iOS
 cd ios && sh auto-update.sh
 

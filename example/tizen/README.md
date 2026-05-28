@@ -26,12 +26,14 @@ tizen/
 - **Node.js ≥ 18** — to run the integration tool
 - **Tizen Studio** — to package, sign, and deploy to a TV or emulator
 - An internet connection — the SDK zip is downloaded from the CDN on first run
+- A **BrightSDK API key** exported as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
 
 ## Quick start
 
 ### 1. Install SDK files
 
 ```sh
+export SDK_API_KEY=<your-api-key>
 cd tizen
 npm run update
 ```
@@ -39,6 +41,7 @@ npm run update
 Or interactively (prompts for missing values):
 
 ```sh
+export SDK_API_KEY=<your-api-key>
 npm run update:interactive
 ```
 

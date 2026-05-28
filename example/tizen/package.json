@@ -6,6 +6,6 @@
   "scripts": {
     "update": "npx github:BrightSDK/bright-sdk-integration --platform tizen brd_sdk.config.json",
     "update:interactive": "npx github:BrightSDK/bright-sdk-integration --platform tizen",
-    "reset": "git clean -fdX && git checkout ."
+    "reset": "git clean -fdx && git checkout ."
   }
 }

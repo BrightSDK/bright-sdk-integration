@@ -144,9 +144,58 @@ const replace_file = async(src, dst)=>{
     return replaced;
 };
 
+const fetch_releases = releases_url=>new Promise((resolve, reject)=>{
+    const api_key = process.env.SDK_API_KEY;
+    if (!api_key)
+        return void reject(new Error('SDK_API_KEY environment variable is required'));
+    const request = https.get(releases_url, {
+        headers: {
+            'api-key': api_key,
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
+        },
+    }, response=>{
+        if (response.statusCode < 200 || response.statusCode >= 300)
+        {
+            response.resume();
+            return void reject(new Error(`Releases fetch failed: HTTP ${response.statusCode} for ${releases_url}`));
+        }
+        let data = '';
+        response.on('data', chunk=>{ data+=chunk; });
+        response.on('end', ()=>{
+            try { resolve(JSON.parse(data)); }
+            catch(e) { reject(new Error(`Failed to parse releases JSON: ${e.message}`)); }
+        });
+    });
+    request.on('error', reason=>{
+        console.error('Releases fetch failed:', reason);
+        reject(reason);
+    });
+    request.setTimeout(10000, ()=>{
+        request.destroy(new Error('Releases fetch timed out'));
+    });
+});
+const resolve_url_tpl = (releases, platform_key, ver)=>{
+    const platform = (releases.platforms||{})[platform_key];
+    if (!platform?.url_tpl)
+        return null;
+    let url = platform.url_tpl;
+    const {base, ...named} = releases.templates || {};
+    for (const [key, val] of Object.entries(named))
+    {
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+            continue;
+        url = url.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), val||'');
+    }
+    url = url.replace(/\{\{base\}\}/g, base||'');
+    url = url.replace(/\{\{platform\}\}/g, platform_key);
+    url = url.replace(/\{\{version\}\}/g, ver);
+    return url;
+};
+
 module.exports = {
     lbr,
     print, process_init, process_close,
     read_json, write_json, search_directory,
-    download_from_url, set_json_props, replace_file, exit, unzip,
+    download_from_url, fetch_releases, resolve_url_tpl,
+    set_json_props, replace_file, exit, unzip,
 };
