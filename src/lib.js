@@ -1,9 +1,11 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
 const os = require('os');
-const https = require('follow-redirects').https;
 const path = require('path');
 const fs = require('fs-extra');
+const {
+    download_from_url, resolve_sdk, fetch_sdk, list_platforms,
+} = require('./downloader.js');
 const {unzip} = require('./unzip.js');
 
 const lbr = os.EOL;
@@ -59,59 +61,6 @@ const search_directory = async(dir, pattern, opt)=>{
     }
 };
 
-const download_from_url = (url, fname, _redirects=0)=>new Promise((resolve, reject)=>{
-    const request = https.get(url, {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15'
-    }, response=>{
-        if (response.statusCode >= 301 && response.statusCode <= 308)
-        {
-            response.resume();
-            if (_redirects >= 5)
-                return reject(new Error(`Too many redirects for ${url}`));
-            const loc = response.headers['location'];
-            const next = loc.startsWith('http') ? loc
-                : new URL(loc, url).toString();
-            return resolve(download_from_url(next, fname, _redirects+1));
-        }
-        if (response.statusCode < 200 || response.statusCode >= 300)
-        {
-            response.resume();
-            return reject(new Error(`Download failed: HTTP ${response.statusCode} for ${url}`));
-        }
-        if (response.headers['content-type'].includes('application/json'))
-        {
-            let data = '';
-            response.on('data', chunk=>{ data+=chunk; });
-            response.on('end', ()=>{
-                fs.writeFile(fname, data, 'utf8', err=>{
-                    if (err)
-                        reject(err);
-                    else
-                        resolve();
-                });
-            });
-        }
-        else
-        {
-            const fileStream = fs.createWriteStream(fname);
-            fileStream.on('error', err => {
-                console.error('File stream error:', err);
-                reject(err);
-            });
-            response.pipe(fileStream);
-            fileStream.on('finish', resolve);
-        }
-    });
-    request.on('error', reason=>{
-        console.error('Request failed:', reason);
-        reject(reason);
-    });
-    request.setTimeout(10000, () => {
-        console.error('Request timed out');
-        request.destroy();
-    });
-});
-
 const set_prop = (obj, path, value)=>{
     const keys = path.split('.');
     let dst = obj;
@@ -144,58 +93,10 @@ const replace_file = async(src, dst)=>{
     return replaced;
 };
 
-const fetch_releases = releases_url=>new Promise((resolve, reject)=>{
-    const api_key = process.env.SDK_API_KEY;
-    if (!api_key)
-        return void reject(new Error('SDK_API_KEY environment variable is required'));
-    const request = https.get(releases_url, {
-        headers: {
-            'api-key': api_key,
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
-        },
-    }, response=>{
-        if (response.statusCode < 200 || response.statusCode >= 300)
-        {
-            response.resume();
-            return void reject(new Error(`Releases fetch failed: HTTP ${response.statusCode} for ${releases_url}`));
-        }
-        let data = '';
-        response.on('data', chunk=>{ data+=chunk; });
-        response.on('end', ()=>{
-            try { resolve(JSON.parse(data)); }
-            catch(e) { reject(new Error(`Failed to parse releases JSON: ${e.message}`)); }
-        });
-    });
-    request.on('error', reason=>{
-        console.error('Releases fetch failed:', reason);
-        reject(reason);
-    });
-    request.setTimeout(10000, ()=>{
-        request.destroy(new Error('Releases fetch timed out'));
-    });
-});
-const resolve_url_tpl = (releases, platform_key, ver)=>{
-    const platform = (releases.platforms||{})[platform_key];
-    if (!platform?.url_tpl)
-        return null;
-    let url = platform.url_tpl;
-    const {base, ...named} = releases.templates || {};
-    for (const [key, val] of Object.entries(named))
-    {
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
-            continue;
-        url = url.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), val||'');
-    }
-    url = url.replace(/\{\{base\}\}/g, base||'');
-    url = url.replace(/\{\{platform\}\}/g, platform_key);
-    url = url.replace(/\{\{version\}\}/g, ver);
-    return url;
-};
-
 module.exports = {
     lbr,
     print, process_init, process_close,
     read_json, write_json, search_directory,
-    download_from_url, fetch_releases, resolve_url_tpl,
+    download_from_url, resolve_sdk, fetch_sdk, list_platforms,
     set_json_props, replace_file, exit, unzip,
 };

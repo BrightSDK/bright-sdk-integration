@@ -4,12 +4,14 @@ const os = require('os');
 const https = require('follow-redirects').https;
 const fs = require('fs-extra');
 const unzipper = require('unzipper');
+const child_process = require('child_process');
 const { mockFs, restoreFs } = require('./setup');
 
 // Mock external dependencies
 jest.mock('follow-redirects');
 jest.mock('fs-extra');
 jest.mock('unzipper');
+jest.mock('child_process');
 
 describe('lib utilities', () => {
     beforeEach(() => {
@@ -193,25 +195,21 @@ describe('lib utilities', () => {
             });
         });
 
-        test('should download JSON content', async () => {
-            mockResponse.headers['content-type'] = 'application/json';
-            fs.writeFile.mockImplementation((fname, data, encoding, callback) => {
-                callback(null);
-            });
-
-            // Mock response data events
-            mockResponse.on.mockImplementation((event, callback) => {
-                if (event === 'data') {
-                    callback('{"test": "data"}');
-                } else if (event === 'end') {
-                    callback();
-                }
-            });
+        test('should download content using streams', async () => {
+            const mockFileStream = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'finish')
+                        callback();
+                }),
+            };
+            fs.createWriteStream.mockReturnValue(mockFileStream);
+            mockResponse.pipe.mockReturnValue(mockFileStream);
 
             await lib.download_from_url('https://test.com/data.json', 'output.json');
 
             expect(https.get).toHaveBeenCalledWith('https://test.com/data.json', expect.any(Object), expect.any(Function));
-            expect(fs.writeFile).toHaveBeenCalledWith('output.json', '{"test": "data"}', 'utf8', expect.any(Function));
+            expect(fs.createWriteStream).toHaveBeenCalledWith('output.json');
+            expect(mockResponse.pipe).toHaveBeenCalledWith(mockFileStream);
         });
 
         test('should download binary content using streams', async () => {
@@ -254,19 +252,15 @@ describe('lib utilities', () => {
             await expect(lib.download_from_url('https://test.com/fail', {}, 'output')).rejects.toThrow('Network error');
         });
 
-        test('should handle file write errors for JSON', async () => {
-            mockResponse.headers['content-type'] = 'application/json';
-            fs.writeFile.mockImplementation((fname, data, encoding, callback) => {
-                callback(new Error('Write error'));
-            });
-
-            mockResponse.on.mockImplementation((event, callback) => {
-                if (event === 'data') {
-                    callback('{}');
-                } else if (event === 'end') {
-                    callback();
-                }
-            });
+        test('should handle file write stream errors', async () => {
+            const mockFileStream = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'error')
+                        callback(new Error('Write error'));
+                }),
+            };
+            fs.createWriteStream.mockReturnValue(mockFileStream);
+            mockResponse.pipe.mockReturnValue(mockFileStream);
 
             await expect(lib.download_from_url('https://test.com/data.json', 'output.json')).rejects.toThrow('Write error');
         });
@@ -323,141 +317,85 @@ describe('lib utilities', () => {
     });
 });
 
-describe('fetch_releases', () => {
-    let mockRequest;
-    let mockResponse;
-    let original_sdk_api_key;
-
+describe('resolve_sdk', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        original_sdk_api_key = process.env.SDK_API_KEY;
-        process.env.SDK_API_KEY = 'test-api-key';
-        mockRequest = {
-            on: jest.fn(),
-            setTimeout: jest.fn(),
-            destroy: jest.fn(),
-        };
-        mockResponse = {
-            statusCode: 200,
-            on: jest.fn(),
-            resume: jest.fn(),
-        };
-        https.get.mockImplementation((_url, _opts, callback) => {
-            callback(mockResponse);
-            return mockRequest;
+    });
+
+    test('calls bright-sdk-downloader resolve with platform and version', () => {
+        child_process.execFileSync.mockReturnValue(
+            JSON.stringify({platform: 'webos', version: '2.5.0',
+                url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip'}));
+
+        const result = lib.resolve_sdk('webos', '2.5.0');
+
+        expect(result).toEqual({
+            platform: 'webos',
+            version: '2.5.0',
+            url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip',
         });
+        const call_args = child_process.execFileSync.mock.calls[0][1];
+        expect(call_args).toContain('resolve');
+        expect(call_args).toContain('-p');
+        expect(call_args).toContain('webos');
+        expect(call_args).toContain('-v');
+        expect(call_args).toContain('2.5.0');
     });
 
-    afterEach(() => {
-        if (original_sdk_api_key === undefined)
-            delete process.env.SDK_API_KEY;
-        else
-            process.env.SDK_API_KEY = original_sdk_api_key;
-    });
+    test('omits -v flag when version is latest', () => {
+        child_process.execFileSync.mockReturnValue(
+            JSON.stringify({platform: 'ios', version: '3.0.0',
+                url: 'https://cdn.example.com/sdk-ios-3.0.0.zip'}));
 
-    test('should reject when SDK_API_KEY is not set', async () => {
-        delete process.env.SDK_API_KEY;
-        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
-            .rejects.toThrow('SDK_API_KEY environment variable is required');
-        expect(https.get).not.toHaveBeenCalled();
-    });
+        lib.resolve_sdk('ios', 'latest');
 
-    test('should fetch and parse releases JSON with api-key header', async () => {
-        const releases_data = {
-            webos: {ver: '2.5.0', url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip'},
-            win: {ver: '3.1.0', url: 'https://cdn.example.com/bright_sdk_win-3.1.0.zip'},
-        };
-        mockResponse.on.mockImplementation((event, callback) => {
-            if (event === 'data')
-                callback(JSON.stringify(releases_data));
-            else if (event === 'end')
-                callback();
-        });
-
-        const result = await lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases');
-
-        expect(https.get).toHaveBeenCalledWith(
-            'https://bright-sdk.com/sdk_api/sdk/releases',
-            expect.objectContaining({
-                headers: expect.objectContaining({'api-key': 'test-api-key'}),
-            }),
-            expect.any(Function)
-        );
-        expect(result).toEqual(releases_data);
-    });
-
-    test('should reject on non-2xx HTTP status', async () => {
-        mockResponse.statusCode = 403;
-        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
-            .rejects.toThrow('Releases fetch failed: HTTP 403');
-    });
-
-    test('should reject on invalid JSON in response', async () => {
-        mockResponse.on.mockImplementation((event, callback) => {
-            if (event === 'data')
-                callback('not valid json{{');
-            else if (event === 'end')
-                callback();
-        });
-
-        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
-            .rejects.toThrow('Failed to parse releases JSON');
-    });
-
-    test('should reject on request error', async () => {
-        https.get.mockImplementation((_url, _opts, _callback) => {
-            const req = {
-                on: jest.fn((event, handler) => {
-                    if (event === 'error')
-                        handler(new Error('Network error'));
-                }),
-                setTimeout: jest.fn(),
-                destroy: jest.fn(),
-            };
-            return req;
-        });
-
-        await expect(lib.fetch_releases('https://bright-sdk.com/sdk_api/sdk/releases'))
-            .rejects.toThrow('Network error');
+        const call_args = child_process.execFileSync.mock.calls[0][1];
+        expect(call_args).toContain('resolve');
+        expect(call_args).toContain('-p');
+        expect(call_args).toContain('ios');
+        expect(call_args).not.toContain('-v');
     });
 });
 
-describe('resolve_url_tpl', () => {
-    const releases = {
-        templates: {
-            base: 'https://bsdk-cdn.zspeed-cdn.com/static',
-            common: '{{base}}/bright_sdk_{{platform}}-{{version}}.zip',
-            tv: '{{base}}/brd_sdk_{{platform}}-{{version}}.zip',
-        },
-        platforms: {
-            win:     {last_version: '1.617.770', url_tpl: '{{common}}'},
-            webos:   {last_version: '1.617.770', url_tpl: '{{tv}}'},
-            android: {last_version: '1.617.770', url_tpl: '{{base}}/bright_sdk_{{platform}}-{{version}}.tar.gz'},
-        },
-    };
-
-    test('resolves url_tpl_common for win', () => {
-        const url = lib.resolve_url_tpl(releases, 'win', '1.617.770');
-        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_win-1.617.770.zip');
+describe('fetch_sdk', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    test('resolves url_tpl_tv for webos', () => {
-        const url = lib.resolve_url_tpl(releases, 'webos', '1.617.770');
-        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/brd_sdk_webos-1.617.770.zip');
+    test('calls bright-sdk-downloader fetch with platform, version, output', () => {
+        child_process.execFileSync.mockReturnValue(
+            JSON.stringify({platform: 'tizen', version: '1.0.0',
+                url: 'https://cdn/sdk.zip', output: '/tmp/sdk'}));
+
+        const result = lib.fetch_sdk('tizen', '1.0.0', '/tmp/sdk');
+
+        expect(result.output).toBe('/tmp/sdk');
+        const call_args = child_process.execFileSync.mock.calls[0][1];
+        expect(call_args).toContain('fetch');
+        expect(call_args).toContain('-p');
+        expect(call_args).toContain('tizen');
+        expect(call_args).toContain('-o');
+        expect(call_args).toContain('/tmp/sdk');
+        expect(call_args).toContain('-v');
+        expect(call_args).toContain('1.0.0');
+    });
+});
+
+describe('list_platforms', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    test('resolves android url_tpl with tar.gz extension', () => {
-        const url = lib.resolve_url_tpl(releases, 'android', '1.617.770');
-        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_android-1.617.770.tar.gz');
-    });
+    test('calls bright-sdk-downloader platforms and returns parsed JSON', () => {
+        const platforms = [{key: 'webos', last_version: '2.5.0'},
+            {key: 'tizen', last_version: '2.5.0'}];
+        child_process.execFileSync.mockReturnValue(
+            JSON.stringify(platforms));
 
-    test('substitutes arbitrary version, not just last_version', () => {
-        const url = lib.resolve_url_tpl(releases, 'win', '1.500.000');
-        expect(url).toBe('https://bsdk-cdn.zspeed-cdn.com/static/bright_sdk_win-1.500.000.zip');
-    });
+        const result = lib.list_platforms();
 
-    test('returns null for unknown platform', () => {
-        const url = lib.resolve_url_tpl(releases, 'unknown', '1.0.0');
-        expect(url).toBeNull();
+        expect(result).toEqual(platforms);
+        const call_args = child_process.execFileSync.mock.calls[0][1];
+        expect(call_args).toContain('platforms');
     });
 });

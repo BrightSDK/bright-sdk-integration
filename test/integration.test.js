@@ -78,6 +78,11 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
 
         lib.write_json.mockImplementation(() => {});
         lib.download_from_url.mockResolvedValue();
+        lib.resolve_sdk.mockReturnValue({platform: 'webos', version: '2.5.0',
+            url: 'https://cdn.example.com/sdk.zip'});
+        lib.fetch_sdk.mockReturnValue({platform: 'webos', version: '2.5.0',
+            url: 'https://cdn.example.com/sdk.zip', output: '/cache/sdk/2.5.0'});
+        lib.list_platforms.mockReturnValue([{key: 'webos', last_version: '2.5.0'}]);
         lib.search_directory.mockResolvedValue('/test/project/src/brd_api.js');
         lib.replace_file.mockResolvedValue(true);
         lib.unzip.mockResolvedValue();

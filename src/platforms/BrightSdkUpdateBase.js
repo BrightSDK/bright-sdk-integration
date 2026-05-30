@@ -10,7 +10,7 @@ const {
     lbr,
     print: print_base, process_init,
     read_json, write_json, search_directory,
-    download_from_url, fetch_releases, resolve_url_tpl, unzip, replace_file,
+    download_from_url, resolve_sdk, fetch_sdk, replace_file,
 } = lib;
 
 const {clear_screen, prompt} = navigation;
@@ -149,10 +149,9 @@ class BrightSdkUpdateBase {
     async _get_releases_data(){
         if (this.releases_data)
             return this.releases_data;
-        const releases_url = this.app_config.urls?.sdk_releases;
-        if (!releases_url)
-            return null;
-        this.releases_data = await fetch_releases(releases_url);
+        const platform_key = this.get_platform_version_key();
+        const resolved = resolve_sdk(platform_key, 'latest');
+        this.releases_data = {resolved};
         return this.releases_data;
     }
     assign_sdk_versions_filename(){
@@ -174,14 +173,11 @@ class BrightSdkUpdateBase {
         });
         if (ver == 'latest')
         {
-            const releases = await this._get_releases_data();
-            if (!releases)
-                throw new Error('SDK releases URL not configured. Please add urls.sdk_releases to config.json');
             const platform_key = this.get_platform_version_key();
-            const latest = releases.platforms?.[platform_key]?.last_version;
-            if (!latest)
+            const resolved = resolve_sdk(platform_key, 'latest');
+            if (!resolved?.version)
                 throw new Error(`No latest version found for platform '${platform_key}'`);
-            ver = latest;
+            ver = resolved.version;
         }
         this.sdk_ver = ver;
     }
@@ -196,18 +192,12 @@ class BrightSdkUpdateBase {
         }
     }
     async assign_sdk_url(){
-        const releases_url = this.app_config.urls?.sdk_releases;
-        if (releases_url)
+        const platform_key = this.get_platform_version_key();
+        const resolved = resolve_sdk(platform_key, this.sdk_ver);
+        if (resolved?.url)
         {
-            const releases = await this._get_releases_data();
-            const platform_key = this.get_platform_version_key();
-            const resolved = resolve_url_tpl(releases, platform_key, this.sdk_ver);
-            if (resolved)
-            {
-                this.sdk_url_mask = releases.platforms[platform_key].url_tpl;
-                this.sdk_url = resolved;
-                return;
-            }
+            this.sdk_url = resolved.url;
+            return;
         }
         const default_sdk_url = this.app_config.defaults?.sdk_url_mask;
         if (!default_sdk_url) {
@@ -237,15 +227,15 @@ class BrightSdkUpdateBase {
         }
         else
         {
-            await download_from_url(this.sdk_url, this.sdk_zip_fname);
-            this.print(`✔ Downloaded ${this.sdk_zip}`);
+            const platform_key = this.get_platform_version_key();
+            const result = fetch_sdk(platform_key, this.sdk_ver, this.sdk_dir);
+            this.sdk_url = result.url;
+            this.print(`✔ Downloaded and extracted SDK ${this.sdk_ver}`);
             this.sdk_versions[this.sdk_ver] = {
-                url: this.sdk_url,
+                url: result.url,
                 date: new Date().toISOString(),
             };
             write_json(this.sdk_versions_fname, this.sdk_versions);
-            await unzip(this.sdk_zip_fname, this.sdk_dir);
-            this.print(`✔ SDK extracted into ${this.sdk_dir}`);
         }
     }
     get_sdk_files(){

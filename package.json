@@ -4,7 +4,8 @@
   "description": "BrightSDK Integration Tools",
   "main": "index.js",
   "bin": {
-    "bright-sdk-integration": "index.js"
+    "bright-sdk-integration": "index.js",
+    "bright-sdk": "bin/bright-sdk.js"
   },
   "scripts": {
     "test": "jest",

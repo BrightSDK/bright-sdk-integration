@@ -6,6 +6,8 @@
   "scripts": {
     "update": "npx github:BrightSDK/bright-sdk-integration --platform webos brd_sdk.config.json",
     "update:interactive": "npx github:BrightSDK/bright-sdk-integration --platform webos",
+    "update:local": "node ../../index.js --platform webos brd_sdk.config.json",
+    "update:local:interactive": "node ../../index.js --platform webos",
     "reset": "git clean -fdx && git checkout ."
   }
 }
