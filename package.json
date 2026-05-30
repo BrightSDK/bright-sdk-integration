@@ -21,7 +21,8 @@
     "author": "vladislavs@brightdata.com",
     "contributors": [
         "vladislavs@brightdata.com",
-        "dmitriis@brightdata.com"
+        "dmitriis@brightdata.com",
+        "yaroslavt@brightdata.com"
     ],
     "license": "ISC",
     "dependencies": {
