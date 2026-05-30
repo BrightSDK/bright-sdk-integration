@@ -6,7 +6,8 @@ const { execFileSync } = require('child_process');
 const { unzip } = require('../src/unzip.js');
 
 const canRunSymlinkTest =
-    process.platform !== 'win32' && (() => {
+    process.platform !== 'win32' &&
+    (() => {
         try {
             execFileSync('zip', ['-v'], { stdio: 'ignore' });
             return true;
@@ -103,5 +104,4 @@ describe('unzipping', () => {
         const content = await fs.readFile(linkPath, 'utf8');
         expect(content).toBe('hello');
     });
-
 });

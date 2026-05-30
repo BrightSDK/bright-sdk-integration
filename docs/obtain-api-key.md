@@ -26,7 +26,7 @@ Scroll down the Company profile page until you see the **API keys** section.
 
 Click **+ Add** inside the API keys section. A dialog will appear:
 
-- **Expiration** — choose how long the key should be valid (e.g. *One year*).
+- **Expiration** — choose how long the key should be valid (e.g. _One year_).
 - **Note** — give the key a descriptive name so you remember what it is for,
   e.g. `bright-sdk-integration-tool`.
 

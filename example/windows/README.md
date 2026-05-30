@@ -23,8 +23,8 @@ windows/
 - **Node.js ≥ 18** — to run the integration tool
 - **Visual Studio 2022** (or 2019) — to open and build the WPF project
 - **.NET Framework 4.8 targeting pack** — included with Visual Studio by default
-- An internet connection — the SDK zip is downloaded from the CDN on first run
 - A **BrightSDK API key** set as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
+- An internet connection — the SDK zip is downloaded from the CDN on first run
 
 ## Quick start — example app
 
@@ -71,10 +71,10 @@ Copy `brd_sdk.config.json` next to your own `.csproj`, then edit it:
 
 ```json
 {
-  "workdir": ".",
-  "libs_dir": "BrightSDK",
-  "sdk_ver": "latest",
-  "sdk_url": "https://cdn.bright-sdk.com/static/bright_sdk_win-SDK_VER.zip"
+    "workdir": ".",
+    "libs_dir": "BrightSDK",
+    "sdk_ver": "latest",
+    "sdk_url": "https://cdn.bright-sdk.com/static/bright_sdk_win-SDK_VER.zip"
 }
 ```
 

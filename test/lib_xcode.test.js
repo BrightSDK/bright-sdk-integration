@@ -9,7 +9,7 @@ function make_tmp_pbxproj() {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'xcode-test-'));
     const pbxproj = path.join(dir, 'project.pbxproj');
     fs.copyFileSync(FIXTURE_PBXPROJ, pbxproj);
-    return {dir, pbxproj};
+    return { dir, pbxproj };
 }
 
 describe('lib_xcode', () => {
@@ -49,10 +49,13 @@ describe('lib_xcode', () => {
 
     describe('add_framework_embed_sign', () => {
         test('adds xcframework reference to pbxproj', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
-            const added = lib_xcode.add_framework_embed_sign(project, 'BrightSDK/brdsdk.xcframework');
+            const added = lib_xcode.add_framework_embed_sign(
+                project,
+                'BrightSDK/brdsdk.xcframework',
+            );
             lib_xcode.save_project(pbxproj, project);
 
             expect(added).toBe(true);
@@ -61,11 +64,17 @@ describe('lib_xcode', () => {
         });
 
         test('is idempotent — returns false on second call', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
-            const first = lib_xcode.add_framework_embed_sign(project, 'BrightSDK/brdsdk.xcframework');
-            const second = lib_xcode.add_framework_embed_sign(project, 'BrightSDK/brdsdk.xcframework');
+            const first = lib_xcode.add_framework_embed_sign(
+                project,
+                'BrightSDK/brdsdk.xcframework',
+            );
+            const second = lib_xcode.add_framework_embed_sign(
+                project,
+                'BrightSDK/brdsdk.xcframework',
+            );
 
             expect(first).toBe(true);
             expect(second).toBe(false);
@@ -74,10 +83,14 @@ describe('lib_xcode', () => {
 
     describe('set_build_setting', () => {
         test('writes build setting to all configurations', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
-            lib_xcode.set_build_setting(project, 'FRAMEWORK_SEARCH_PATHS', '"$(inherited)" BrightSDK');
+            lib_xcode.set_build_setting(
+                project,
+                'FRAMEWORK_SEARCH_PATHS',
+                '"$(inherited)" BrightSDK',
+            );
             lib_xcode.save_project(pbxproj, project);
 
             const content = fs.readFileSync(pbxproj, 'utf-8');
@@ -87,7 +100,7 @@ describe('lib_xcode', () => {
 
     describe('add_copy_files_phase', () => {
         test('adds a PBXCopyFilesBuildPhase entry', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
             const added = lib_xcode.add_copy_files_phase(
@@ -95,7 +108,7 @@ describe('lib_xcode', () => {
                 ['BrightSDK/net_updater.app'],
                 'Copy net_updater.app',
                 'wrapper',
-                'Contents/Library/LoginItems'
+                'Contents/Library/LoginItems',
             );
             lib_xcode.save_project(pbxproj, project);
 
@@ -106,11 +119,23 @@ describe('lib_xcode', () => {
         });
 
         test('is idempotent — second call returns false', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
-            const first = lib_xcode.add_copy_files_phase(project, [], 'Copy net_updater.app', 'wrapper', '');
-            const second = lib_xcode.add_copy_files_phase(project, [], 'Copy net_updater.app', 'wrapper', '');
+            const first = lib_xcode.add_copy_files_phase(
+                project,
+                [],
+                'Copy net_updater.app',
+                'wrapper',
+                '',
+            );
+            const second = lib_xcode.add_copy_files_phase(
+                project,
+                [],
+                'Copy net_updater.app',
+                'wrapper',
+                '',
+            );
 
             expect(first).toBe(true);
             expect(second).toBe(false);
@@ -119,7 +144,7 @@ describe('lib_xcode', () => {
 
     describe('add_shell_script_phase', () => {
         test('adds a PBXShellScriptBuildPhase entry', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
             const added = lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {
@@ -136,11 +161,17 @@ describe('lib_xcode', () => {
         });
 
         test('is idempotent — second call returns false', () => {
-            const {pbxproj} = make_tmp_pbxproj();
+            const { pbxproj } = make_tmp_pbxproj();
             const project = lib_xcode.open_project(pbxproj);
 
-            const first = lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {shellPath: '/bin/sh', shellScript: 'x'});
-            const second = lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {shellPath: '/bin/sh', shellScript: 'x'});
+            const first = lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {
+                shellPath: '/bin/sh',
+                shellScript: 'x',
+            });
+            const second = lib_xcode.add_shell_script_phase(project, 'Resign net_updater.app', {
+                shellPath: '/bin/sh',
+                shellScript: 'x',
+            });
 
             expect(first).toBe(true);
             expect(second).toBe(false);

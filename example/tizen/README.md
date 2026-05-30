@@ -25,8 +25,8 @@ tizen/
 
 - **Node.js ≥ 18** — to run the integration tool
 - **Tizen Studio** — to package, sign, and deploy to a TV or emulator
-- An internet connection — the SDK zip is downloaded from the CDN on first run
 - A **BrightSDK API key** exported as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
+- An internet connection — the SDK zip is downloaded from the CDN on first run
 
 ## Quick start
 
@@ -46,6 +46,7 @@ npm run update:interactive
 ```
 
 The tool will:
+
 1. Download the latest BrightSDK zip from `cdn.bright-sdk.com/static/`
 2. Extract `brd_api.js` and `brd_api.helper.js` into `app/js/`
 3. Extract the `service/` directory for the background service
@@ -73,8 +74,8 @@ tizen run -p <app-id>
 
 ### Screenshots
 
-| Consent dialog | Main screen |
-|:-:|:-:|
+|           Consent dialog           |         Main screen          |
+| :--------------------------------: | :--------------------------: |
 | ![Consent](assets/app_consent.png) | ![Main](assets/app_main.png) |
 
 ## Using the tool with your own project
@@ -83,27 +84,27 @@ Copy `brd_sdk.config.json` next to your own app directory, then edit it:
 
 ```json
 {
-  "workdir": ".",
-  "app_dir": "app",
-  "libs_dir": "app/js",
-  "index": "app/index.html",
-  "sdk_service_dir": "app/service",
-  "sdk_ver": "latest",
-  "use_helper": true,
-  "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tizen-SDK_VER.zip"
+    "workdir": ".",
+    "app_dir": "app",
+    "libs_dir": "app/js",
+    "index": "app/index.html",
+    "sdk_service_dir": "app/service",
+    "sdk_ver": "latest",
+    "use_helper": true,
+    "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_tizen-SDK_VER.zip"
 }
 ```
 
-| Key | Description |
-|---|---|
-| `workdir` | Working directory for the tool. |
-| `app_dir` | Directory containing your web app files. |
-| `libs_dir` | Directory where `brd_api.js` will be placed. |
-| `index` | Path to `index.html` — SDK script tags are injected here. |
-| `sdk_service_dir` | Directory for the background service. |
-| `sdk_ver` | `"latest"` or a specific version string. |
-| `use_helper` | Whether to include `brd_api.helper.js` (recommended). |
-| `sdk_url` | CDN URL template — `SDK_VER` is replaced with the resolved version. |
+| Key               | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `workdir`         | Working directory for the tool.                                     |
+| `app_dir`         | Directory containing your web app files.                            |
+| `libs_dir`        | Directory where `brd_api.js` will be placed.                        |
+| `index`           | Path to `index.html` — SDK script tags are injected here.           |
+| `sdk_service_dir` | Directory for the background service.                               |
+| `sdk_ver`         | `"latest"` or a specific version string.                            |
+| `use_helper`      | Whether to include `brd_api.helper.js` (recommended).               |
+| `sdk_url`         | CDN URL template — `SDK_VER` is replaced with the resolved version. |
 
 Then run:
 

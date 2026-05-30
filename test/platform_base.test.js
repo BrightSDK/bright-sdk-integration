@@ -15,10 +15,10 @@ describe('BrightSdkUpdateBase.download_sdk', () => {
         fs.mkdirSync = jest.fn();
 
         lib.read_json.mockReturnValue({});
-        lib.write_json.mockImplementation(() => { });
+        lib.write_json.mockImplementation(() => {});
         lib.download_from_url.mockResolvedValue();
         lib.unzip.mockResolvedValue();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('uses cached sdk when sdk_dir exists and versions entry exists', async () => {
@@ -66,7 +66,10 @@ describe('BrightSdkUpdateBase.download_sdk', () => {
         u.sdk_zip_fname = '/cache/sdk.zip';
 
         fs.existsSync.mockReturnValue(false);
-        lib.fetch_sdk.mockReturnValue({url: 'https://example/sdk.zip', output: '/cache/sdk/1.2.3'});
+        lib.fetch_sdk.mockReturnValue({
+            url: 'https://example/sdk.zip',
+            output: '/cache/sdk/1.2.3',
+        });
 
         await u.download_sdk();
 
@@ -82,8 +85,8 @@ describe('BrightSdkUpdateBase.save_config', () => {
         fs.existsSync.mockReturnValue(false);
         fs.mkdirSync = jest.fn();
 
-        lib.write_json.mockImplementation(() => { });
-        lib.print.mockImplementation(() => { });
+        lib.write_json.mockImplementation(() => {});
+        lib.print.mockImplementation(() => {});
     });
 
     test('writes config file when opt.config is not provided', () => {
@@ -113,7 +116,7 @@ describe('BrightSdkUpdateBase.save_config', () => {
                 sdk_service_dir: 'service',
                 sdk_ver: '1.2.3',
                 sdk_url: 'https://example/sdk_SDK_VER.zip',
-            })
+            }),
         );
     });
 
@@ -140,7 +143,7 @@ describe('BrightSdkUpdateBase.save_config', () => {
 describe('BrightSdkUpdateBase.assign_sdk_url', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
         lib.resolve_sdk.mockReturnValue({});
     });
 
@@ -154,7 +157,9 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
             config: { workdir: '/test/project' },
         });
 
-        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
+        u.app_config = {
+            urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' },
+        };
         u.config = {};
         u.sdk_ver = '2.5.0';
         lib.resolve_sdk.mockReturnValue({
@@ -179,7 +184,9 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
             config: { workdir: '/test/project' },
         });
 
-        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
+        u.app_config = {
+            urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' },
+        };
         u.config = {};
         u.sdk_ver = '1.500.000';
         lib.resolve_sdk.mockReturnValue({
@@ -209,7 +216,7 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
         };
         u.config = { sdk_url: 'https://cdn/sdk_SDK_VER.zip' };
         u.sdk_ver = '1.2.3';
-        lib.resolve_sdk.mockReturnValue({platform: 'webos', version: '1.2.3'});
+        lib.resolve_sdk.mockReturnValue({ platform: 'webos', version: '1.2.3' });
 
         await u.assign_sdk_url();
 
@@ -232,7 +239,7 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
             defaults: {},
         };
         u.sdk_ver = '1.2.3';
-        lib.resolve_sdk.mockReturnValue({platform: 'webos', version: '1.2.3'});
+        lib.resolve_sdk.mockReturnValue({ platform: 'webos', version: '1.2.3' });
 
         await expect(u.assign_sdk_url()).rejects.toThrow(/SDK URL mask not configured/);
     });
@@ -241,8 +248,8 @@ describe('BrightSdkUpdateBase.assign_sdk_url', () => {
 describe('BrightSdkUpdateBase.get_value', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        navigation.clear_screen.mockImplementation(() => { });
-        lib.print.mockImplementation(() => { });
+        navigation.clear_screen.mockImplementation(() => {});
+        lib.print.mockImplementation(() => {});
     });
 
     test('non-interactive returns config_value as-is (even if undefined)', async () => {
@@ -266,7 +273,7 @@ describe('BrightSdkUpdateBase.assign_sdk_ver (latest)', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         lib.resolve_sdk.mockReturnValue({});
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('resolves "latest" ver from resolve_sdk', async () => {
@@ -280,12 +287,17 @@ describe('BrightSdkUpdateBase.assign_sdk_ver (latest)', () => {
         });
 
         u.sdk_dir_root = '/cache/.sdk/webos';
-        u.app_config = { urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' } };
+        u.app_config = {
+            urls: { sdk_releases: 'https://bright-sdk.com/sdk_api/sdk/integration/config' },
+        };
         u.config = {};
 
         jest.spyOn(u, 'get_value').mockResolvedValue('latest');
-        lib.resolve_sdk.mockReturnValue({platform: 'webos', version: '9.9.9',
-            url: 'https://cdn.example.com/brd_sdk_webos-9.9.9.zip'});
+        lib.resolve_sdk.mockReturnValue({
+            platform: 'webos',
+            version: '9.9.9',
+            url: 'https://cdn.example.com/brd_sdk_webos-9.9.9.zip',
+        });
 
         await u.assign_sdk_ver();
 
@@ -317,7 +329,7 @@ describe('BrightSdkUpdateBase.assign_sdk_ver (latest)', () => {
 describe('BrightSdkUpdateBase.assign_sdk_ver (explicit)', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('uses explicit version without downloading latest.json', async () => {
@@ -345,7 +357,7 @@ describe('BrightSdkUpdateBase.assign_sdk_ver (explicit)', () => {
 describe('BrightSdkUpdateBase.check_sdk_ver', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('does not print or prompt when sdk_ver_prev differs from sdk_ver', async () => {
@@ -366,8 +378,7 @@ describe('BrightSdkUpdateBase.check_sdk_ver', () => {
         await u.check_sdk_ver();
 
         expect(spy).not.toHaveBeenCalled();
-        expect(lib.print).not.toHaveBeenCalledWith(
-            expect.stringContaining('already'));
+        expect(lib.print).not.toHaveBeenCalledWith(expect.stringContaining('already'));
     });
 
     test('does not prompt in non-interactive mode when versions match', async () => {
@@ -441,7 +452,7 @@ describe('BrightSdkUpdateBase.search_workdir', () => {
                     '/test/project/.sdk',
                     '/test/project/node_modules',
                 ]),
-            })
+            }),
         );
     });
 });
@@ -477,7 +488,7 @@ describe('BrightSdkUpdateBase.build_config', () => {
 
         fs.existsSync.mockImplementation(p => p === cfgPath);
 
-        lib.read_json.mockImplementation((p) => {
+        lib.read_json.mockImplementation(p => {
             if (p === cfgPath) {
                 return { workdir: '/test/project', app_dir: 'app', libs_dir: 'libs' };
             }
@@ -504,7 +515,7 @@ describe('BrightSdkUpdateBase.build_config', () => {
 
         fs.existsSync.mockImplementation(p => p === cfgPath);
 
-        lib.read_json.mockImplementation((p) => {
+        lib.read_json.mockImplementation(p => {
             if (p === cfgPath) {
                 return { workdir: '/test/project', libs_dir: 'libs_from_file' };
             }
@@ -526,13 +537,12 @@ describe('BrightSdkUpdateBase.build_config', () => {
         expect(u.config.libs_dir).toBe('libs_from_env');
         expect(u.prev_config_fname).toBe(cfgPath);
     });
-
 });
 
 describe('BrightSdkUpdateBase.prepare', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('calls the main preparation steps', async () => {
@@ -545,28 +555,32 @@ describe('BrightSdkUpdateBase.prepare', () => {
             config: { workdir: '/test/project' },
         });
 
-        jest.spyOn(u, 'build_config').mockImplementation(() => { u.workdir = '/test/project'; });
-        jest.spyOn(u, 'print_greeting').mockImplementation(() => { });
+        jest.spyOn(u, 'build_config').mockImplementation(() => {
+            u.workdir = '/test/project';
+        });
+        jest.spyOn(u, 'print_greeting').mockImplementation(() => {});
         jest.spyOn(u, 'load_config').mockResolvedValue();
 
-        jest.spyOn(u, 'assign_sdk_dir_root').mockImplementation(() => { });
-        jest.spyOn(u, 'create_sdk_dir_root').mockImplementation(() => { });
+        jest.spyOn(u, 'assign_sdk_dir_root').mockImplementation(() => {});
+        jest.spyOn(u, 'create_sdk_dir_root').mockImplementation(() => {});
         jest.spyOn(u, 'assign_sdk_ver').mockResolvedValue();
         jest.spyOn(u, 'check_sdk_ver').mockResolvedValue();
         jest.spyOn(u, 'assign_sdk_url').mockResolvedValue();
-        jest.spyOn(u, 'assign_sdk_zip_names').mockImplementation(() => { });
-        jest.spyOn(u, 'assign_sdk_dir').mockImplementation(() => { });
-        jest.spyOn(u, 'assign_sdk_versions_filename').mockImplementation(() => { u.sdk_versions_fname = '/x'; });
+        jest.spyOn(u, 'assign_sdk_zip_names').mockImplementation(() => {});
+        jest.spyOn(u, 'assign_sdk_dir').mockImplementation(() => {});
+        jest.spyOn(u, 'assign_sdk_versions_filename').mockImplementation(() => {
+            u.sdk_versions_fname = '/x';
+        });
         jest.spyOn(u, 'assign_sdk_versions').mockResolvedValue();
 
         jest.spyOn(u, 'assign_appdir').mockResolvedValue();
         jest.spyOn(u, 'assign_libs_dir').mockResolvedValue();
-        jest.spyOn(u, 'create_libs_dir').mockImplementation(() => { });
-        jest.spyOn(u, 'assign_sdk_service_filename').mockImplementation(() => { });
+        jest.spyOn(u, 'create_libs_dir').mockImplementation(() => {});
+        jest.spyOn(u, 'assign_sdk_service_filename').mockImplementation(() => {});
         jest.spyOn(u, 'assign_sdk_service_dir').mockResolvedValue();
-        jest.spyOn(u, 'assign_brd_api_filename').mockImplementation(() => { });
-        jest.spyOn(u, 'assign_brd_api_dest_name').mockImplementation(() => { });
-        jest.spyOn(u, 'assign_brd_api_dest_filename').mockImplementation(() => { });
+        jest.spyOn(u, 'assign_brd_api_filename').mockImplementation(() => {});
+        jest.spyOn(u, 'assign_brd_api_dest_name').mockImplementation(() => {});
+        jest.spyOn(u, 'assign_brd_api_dest_filename').mockImplementation(() => {});
 
         await u.prepare();
 
@@ -603,8 +617,8 @@ describe('BrightSdkUpdateBase: constructor config loading', () => {
 describe('BrightSdkUpdateBase.get_value path stripping', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        navigation.clear_screen.mockImplementation(() => { });
-        lib.print.mockImplementation(() => { });
+        navigation.clear_screen.mockImplementation(() => {});
+        lib.print.mockImplementation(() => {});
     });
 
     test('strips workdir prefix from prompted path', async () => {
@@ -626,7 +640,7 @@ describe('BrightSdkUpdateBase.get_value path stripping', () => {
 describe('BrightSdkUpdateBase.load_config', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('loads brd_sdk.config.json when exists and no opt.config', async () => {
@@ -653,7 +667,7 @@ describe('BrightSdkUpdateBase.load_config', () => {
 describe('BrightSdkUpdateBase.run_body/run', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        lib.print.mockImplementation(() => { });
+        lib.print.mockImplementation(() => {});
     });
 
     test('run_body executes the main pipeline', async () => {
@@ -667,10 +681,10 @@ describe('BrightSdkUpdateBase.run_body/run', () => {
         });
 
         jest.spyOn(u, 'prepare').mockResolvedValue();
-        jest.spyOn(u, 'create_sdk_dir').mockImplementation(() => { });
+        jest.spyOn(u, 'create_sdk_dir').mockImplementation(() => {});
         jest.spyOn(u, 'download_sdk').mockResolvedValue();
         jest.spyOn(u, 'replace_sdk_files').mockResolvedValue();
-        jest.spyOn(u, 'update_sdk_files').mockImplementation(() => { });
+        jest.spyOn(u, 'update_sdk_files').mockImplementation(() => {});
 
         await u.run_body();
 
@@ -692,7 +706,7 @@ describe('BrightSdkUpdateBase.run_body/run', () => {
         });
 
         jest.spyOn(u, 'run_body').mockResolvedValue();
-        jest.spyOn(u, 'save_config').mockImplementation(() => { });
+        jest.spyOn(u, 'save_config').mockImplementation(() => {});
 
         await u.run();
 
@@ -743,9 +757,9 @@ describe('BrightSdkUpdateBase.prepare (real path, no stubs)', () => {
 
         lib.download_from_url.mockResolvedValue();
         lib.unzip.mockResolvedValue();
-        lib.write_json.mockImplementation(() => { });
-        lib.print.mockImplementation(() => { });
-        navigation.clear_screen.mockImplementation(() => { });
+        lib.write_json.mockImplementation(() => {});
+        lib.print.mockImplementation(() => {});
+        navigation.clear_screen.mockImplementation(() => {});
     });
 
     test('runs through prepare without interactive prompts', async () => {
@@ -764,7 +778,9 @@ describe('BrightSdkUpdateBase.prepare (real path, no stubs)', () => {
         });
 
         u.app_config = { defaults: { sdk_url_mask: 'https://cdn/sdk_SDK_VER.zip' } };
-        u.assign_appdir = jest.fn(async () => { u.appdir = 'app'; });
+        u.assign_appdir = jest.fn(async () => {
+            u.appdir = 'app';
+        });
         u.brd_api_name = 'artifact.bin';
         u.sdk_service_fname = null;
 

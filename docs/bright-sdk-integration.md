@@ -61,13 +61,13 @@ bright-sdk-integration --platform <platform> [config.json | app_path]
 
 Supported platform values:
 
-| Value | Description |
-|---|---|
-| `webos` | LG WebOS TV app |
-| `tizen` | Samsung Tizen TV app |
-| `ios` | iOS app (Xcode) |
-| `tvos` | tvOS app (Xcode) |
-| `macos` | macOS app (Xcode) |
+| Value     | Description              |
+| --------- | ------------------------ |
+| `webos`   | LG WebOS TV app          |
+| `tizen`   | Samsung Tizen TV app     |
+| `ios`     | iOS app (Xcode)          |
+| `tvos`    | tvOS app (Xcode)         |
+| `macos`   | macOS app (Xcode)        |
 | `windows` | Windows app (.NET / WPF) |
 
 ### Examples
@@ -107,13 +107,13 @@ The SDK download URL is resolved automatically from the integration config API u
 
 ```json
 {
-  "workdir": ".",
-  "app_dir": "app",
-  "js_dir": "app",
-  "index": "app/index.html",
-  "sdk_service_dir": "service",
-  "sdk_ver": "latest",
-  "use_helper": true
+    "workdir": ".",
+    "app_dir": "app",
+    "js_dir": "app",
+    "index": "app/index.html",
+    "sdk_service_dir": "service",
+    "sdk_ver": "latest",
+    "use_helper": true
 }
 ```
 
@@ -121,28 +121,28 @@ The SDK download URL is resolved automatically from the integration config API u
 
 ```json
 {
-  "workdir": ".",
-  "app_dir": "app",
-  "js_dir": "app/js",
-  "index": "app/index.html",
-  "sdk_service_dir": "app/service",
-  "sdk_ver": "latest",
-  "use_helper": true
+    "workdir": ".",
+    "app_dir": "app",
+    "js_dir": "app/js",
+    "index": "app/index.html",
+    "sdk_service_dir": "app/service",
+    "sdk_ver": "latest",
+    "use_helper": true
 }
 ```
 
 ### All config keys
 
-| Key | Type | Description |
-|---|---|---|
-| `workdir` | string | Absolute or relative working directory |
-| `app_dir` | string | App folder path relative to `workdir` |
-| `js_dir` | string | Directory containing `brd_api.js` |
-| `index` | string | Path to `index.html` relative to `workdir` |
-| `sdk_service_dir` | string | Directory for the SDK background service |
-| `sdk_ver` | string | SDK version string, or `"latest"` |
-| `use_helper` | boolean | Whether to include `brd_api.helper.min.js` |
-| `config_fname` | string | Path to the config file itself |
+| Key               | Type    | Description                                |
+| ----------------- | ------- | ------------------------------------------ |
+| `workdir`         | string  | Absolute or relative working directory     |
+| `app_dir`         | string  | App folder path relative to `workdir`      |
+| `js_dir`          | string  | Directory containing `brd_api.js`          |
+| `index`           | string  | Path to `index.html` relative to `workdir` |
+| `sdk_service_dir` | string  | Directory for the SDK background service   |
+| `sdk_ver`         | string  | SDK version string, or `"latest"`          |
+| `use_helper`      | boolean | Whether to include `brd_api.helper.min.js` |
+| `config_fname`    | string  | Path to the config file itself             |
 
 ---
 
@@ -162,10 +162,10 @@ Entry point for WebOS and Tizen.
 
 ```js
 await brd_sdk_gen.process_web({
-  platform: 'webos',        // 'webos' | 'tizen'
-  appdir: '/path/to/app',   // or use config_fname
-  config_fname: '/path/to/brd_sdk.config.json',
-  verbose: false,
+    platform: 'webos', // 'webos' | 'tizen'
+    appdir: '/path/to/app', // or use config_fname
+    config_fname: '/path/to/brd_sdk.config.json',
+    verbose: false,
 });
 ```
 
@@ -184,9 +184,9 @@ Entry point for iOS, tvOS, and macOS.
 
 ```js
 await brd_sdk_gen.process_apple({
-  platform: 'ios',          // 'ios' | 'tvos' | 'macos'
-  appdir: '/path/to/app',
-  verbose: false,
+    platform: 'ios', // 'ios' | 'tvos' | 'macos'
+    appdir: '/path/to/app',
+    verbose: false,
 });
 ```
 
@@ -205,23 +205,23 @@ Entry point for Windows (.NET / WPF).
 
 ```js
 await brd_sdk_gen.process_windows({
-  appdir: '/path/to/app',
-  verbose: true,
+    appdir: '/path/to/app',
+    verbose: true,
 });
 ```
 
 #### `opt` object fields
 
-| Field | Type | Description |
-|---|---|---|
-| `platform` | string | Target platform (see supported values above) |
-| `appdir` | string | Path to the app directory (required if no `config_fname`) |
-| `config_fname` | string | Path to `brd_sdk.config.json` (required if no `appdir`) |
-| `config_fnames` | string[] | Array of config file paths to merge |
-| `config` | object | Inline config object (overrides file-based config) |
-| `workdir` | string | Working directory |
-| `verbose` | boolean | Enable output when not in interactive mode |
-| `interactive` | boolean | Enable interactive prompts (default: true when run as CLI) |
+| Field           | Type     | Description                                                |
+| --------------- | -------- | ---------------------------------------------------------- |
+| `platform`      | string   | Target platform (see supported values above)               |
+| `appdir`        | string   | Path to the app directory (required if no `config_fname`)  |
+| `config_fname`  | string   | Path to `brd_sdk.config.json` (required if no `appdir`)    |
+| `config_fnames` | string[] | Array of config file paths to merge                        |
+| `config`        | object   | Inline config object (overrides file-based config)         |
+| `workdir`       | string   | Working directory                                          |
+| `verbose`       | boolean  | Enable output when not in interactive mode                 |
+| `interactive`   | boolean  | Enable interactive prompts (default: true when run as CLI) |
 
 ---
 
@@ -242,25 +242,25 @@ await brd_sdk_gen.process_windows({
 
 ## Internal source files
 
-| File | Purpose |
-|---|---|
-| `index.js` | CLI entry point, yargs argument parsing, module exports |
-| `src/platforms.js` | `BrightSdkUpdateWeb` class — orchestrates the full update flow for WebOS/Tizen |
-| `src/lib.js` | Low-level utilities: file I/O, download, unzip, JSON manipulation |
-| `src/navigation.js` | Terminal UI helpers: `prompt()`, `clear_screen()` for interactive mode |
-| `config.json` | Tool-level config: SDK CDN URLs, file naming conventions |
+| File                | Purpose                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `index.js`          | CLI entry point, yargs argument parsing, module exports                        |
+| `src/platforms.js`  | `BrightSdkUpdateWeb` class — orchestrates the full update flow for WebOS/Tizen |
+| `src/lib.js`        | Low-level utilities: file I/O, download, unzip, JSON manipulation              |
+| `src/navigation.js` | Terminal UI helpers: `prompt()`, `clear_screen()` for interactive mode         |
+| `config.json`       | Tool-level config: SDK CDN URLs, file naming conventions                       |
 
 ---
 
 ## Dependencies
 
-| Package | Purpose |
-|---|---|
+| Package            | Purpose                                   |
+| ------------------ | ----------------------------------------- |
 | `follow-redirects` | HTTP/HTTPS download with redirect support |
-| `fs-extra` | Extended filesystem operations |
-| `readline` | Terminal input for interactive prompts |
-| `unzipper` | Zip file extraction |
-| `yargs` | CLI argument parsing |
+| `fs-extra`         | Extended filesystem operations            |
+| `readline`         | Terminal input for interactive prompts    |
+| `unzipper`         | Zip file extraction                       |
+| `yargs`            | CLI argument parsing                      |
 
 ---
 

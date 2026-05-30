@@ -1,9 +1,9 @@
 {
-  "workdir": ".",
-  "app_dir": "app",
-  "libs_dir": "app",
-  "sdk_service_dir": "service",
-  "sdk_ver": "latest",
-  "index": "app/index.html",
-  "use_helper": true
+    "workdir": ".",
+    "app_dir": "app",
+    "libs_dir": "app",
+    "sdk_service_dir": "service",
+    "sdk_ver": "latest",
+    "index": "app/index.html",
+    "use_helper": true
 }

@@ -6,19 +6,7 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/BrightSDK/bright-sdk-integration/pulls)
 
-## ⚠️ Breaking change in v1.7.0 — API key now required
-
-Starting with **v1.7.0** the tool authenticates with the BrightSDK releases API.
-**Older versions will stop working once the unauthenticated endpoint is retired.**
-
-**What you need to do:**
-
-1. Upgrade to the latest version
-2. Obtain a BrightSDK API key — see [How to obtain an API key](https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md)
-3. Export the key before running the tool:
-   ```bash
-   export SDK_API_KEY=<your-api-key>
-   ```
+## Overview
 
 ## Overview
 
@@ -36,20 +24,19 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 - Node.js (tested on v18, v20, v22)
 - npm (tested on v11.6.2)
 - Git (tested on 2.50.1 (Apple Git-155))
-- [`bright-sdk-downloader`](https://github.com/BrightSDK/bright-sdk-downloader-rs/releases) binary in PATH (or set `BRIGHT_SDK_DOWNLOADER_BIN`)
 - A BrightSDK API key — see [How to obtain an API key](https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md)
 
 ## Supported platforms
 
-| Platform | Complete | Notes |
-|---|:---:|---|
-| WebOS | ✅ | Download/update SDK files, copy into app structure |
-| Tizen | ✅ | Download/update SDK files, copy into app structure |
-| iOS | ✅ | Download/update SDK files, patch Xcode project |
-| tvOS | ✅ | Download/update SDK files, patch Xcode project |
-| macOS | ✅ | Download/update SDK files, patch Xcode project |
-| Android | 🚧 | Not implemented |
-| Windows | ✅ | Download/update SDK files, patch .csproj reference |
+| Platform | Complete | Notes                                              |
+| -------- | :------: | -------------------------------------------------- |
+| WebOS    |    ✅    | Download/update SDK files, copy into app structure |
+| Tizen    |    ✅    | Download/update SDK files, copy into app structure |
+| iOS      |    ✅    | Download/update SDK files, patch Xcode project     |
+| tvOS     |    ✅    | Download/update SDK files, patch Xcode project     |
+| macOS    |    ✅    | Download/update SDK files, patch Xcode project     |
+| Android  |    🚧    | Not implemented                                    |
+| Windows  |    ✅    | Download/update SDK files, patch .csproj reference |
 
 ## Examples
 
@@ -129,17 +116,17 @@ Use BrightSDK Integration Helper? (y/n) (y): y
 
 The interactive prompts include:
 
-| Configuration            | Example                             |
-|--------------------------|-------------------------------------|
-| Path to the app directory | `/path/to/your/app`                 |
-| Path to config file       | `/path/to/your/config.json` (optional)|
-| SDK Version               | `1.438.821`                         |
-| Application JS directory  | `js`              |
-| index.html Location       | `index.html`                        |
-| SDK Service directory     | `service`         |
-| SDK URL mask              | `https://example.com/sdk_SDK_VER.zip` |
+| Configuration             | Example                                |
+| ------------------------- | -------------------------------------- |
+| Path to the app directory | `/path/to/your/app`                    |
+| Path to config file       | `/path/to/your/config.json` (optional) |
+| SDK Version               | `1.438.821`                            |
+| Application JS directory  | `js`                                   |
+| index.html Location       | `index.html`                           |
+| SDK Service directory     | `service`                              |
+| SDK URL mask              | `https://example.com/sdk_SDK_VER.zip`  |
 
-Follow the prompts to provide the required information, and the script will proceed with the integration based on your inputs. 
+Follow the prompts to provide the required information, and the script will proceed with the integration based on your inputs.
 
 **NOTE:** The tool will try to guess the parameter values based on your previous integration and your application structure.
 
@@ -162,6 +149,7 @@ Or, from a local checkout:
 export SDK_API_KEY=<your-api-key>
 node index.js /path/to/your/app/brd_sdk.config.json
 ```
+
 Once the file is readed successfully, the program will provide the respected output:
 
 ```bash
@@ -172,15 +160,15 @@ Reading configuration file /path/to/your/app/brd_sdk.config.json...
 
 ```json
 {
-  "workdir": ".",
-  "app_dir": "app",
-  "libs_dir": "app/js",
-  "sdk_service_dir": "service",
-  "sdk_ver": "1.614.148",
-  "sdk_ver_prev": "1.614.148",
-  "sdk_url": "https://example.com/sdk_SDK_VER.zip",
-  "index": "app/index.html",
-  "use_helper": true
+    "workdir": ".",
+    "app_dir": "app",
+    "libs_dir": "app/js",
+    "sdk_service_dir": "service",
+    "sdk_ver": "1.614.148",
+    "sdk_ver_prev": "1.614.148",
+    "sdk_url": "https://example.com/sdk_SDK_VER.zip",
+    "index": "app/index.html",
+    "use_helper": true
 }
 ```
 
@@ -199,8 +187,9 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
     ```js
     const brd_sdk_gen = require('bright-sdk-integration');
     ```
+
 1. Invoke `process_webos` method to update the Bright SDK distribution in the existing app.
-    
+
     ```js
     await brd_sdk_gen.process_webos(opt);
     ```
@@ -220,39 +209,40 @@ Follow the next steps to use the generator from your NodeJS script upon applicat
 ## The Flow:
 
 1. **Initialization:**
-When the tool is executed, it initializes and displays a welcome message along with important instructions, such as using CTRL+C to break execution and a reminder to save uncommitted changes.
+   When the tool is executed, it initializes and displays a welcome message along with important instructions, such as using CTRL+C to break execution and a reminder to save uncommitted changes.
 
 2. **Interactive Configuration:**
-The tool prompts the user for configuration parameters interactively. These parameters include the path to the application directory, the SDK version, paths to relevant directories, and a URL mask for SDK download.
+   The tool prompts the user for configuration parameters interactively. These parameters include the path to the application directory, the SDK version, paths to relevant directories, and a URL mask for SDK download.
 
 3. **Configuration File Check:**
-The tool checks for the presence of a configuration file. If a file is found, it reads the values from the file and uses them for configuration. This step allows users to reuse or predefine configurations.
+   The tool checks for the presence of a configuration file. If a file is found, it reads the values from the file and uses them for configuration. This step allows users to reuse or predefine configurations.
 
 4. **Guessing Parameters:**
-The tool attempts to guess certain parameter values based on the user's previous integrations and the structure of the application. This helps streamline the process for users who have a consistent project structure.
+   The tool attempts to guess certain parameter values based on the user's previous integrations and the structure of the application. This helps streamline the process for users who have a consistent project structure.
 
 5. **Downloading SDK:**
-Using the specified SDK version and URL mask, the tool downloads the SDK package from the provided URL. The package is typically a compressed file containing necessary resources.
+   Using the specified SDK version and URL mask, the tool downloads the SDK package from the provided URL. The package is typically a compressed file containing necessary resources.
 
 6. **SDK Extraction:**
-The downloaded SDK package is then extracted into a designated directory within the project, creating the necessary directory structure for integration.
+   The downloaded SDK package is then extracted into a designated directory within the project, creating the necessary directory structure for integration.
 
 7. **Configuration Update:**
-The tool may dynamically update the configuration file with guessed values for future reference, providing users with a preconfigured file for subsequent integrations.
+   The tool may dynamically update the configuration file with guessed values for future reference, providing users with a preconfigured file for subsequent integrations.
 
 8. **File Copy and Modification:**
-Relevant files, such as SDK service files and application-specific files, are copied and modified based on the provided configuration. This step ensures that the BrightSDK integration is appropriately set up within the project.
+   Relevant files, such as SDK service files and application-specific files, are copied and modified based on the provided configuration. This step ensures that the BrightSDK integration is appropriately set up within the project.
 
 9. **Completion Message:**
-Upon successful completion of the integration process, the tool displays a completion message, providing users with information on the next steps and actions they can take.
+   Upon successful completion of the integration process, the tool displays a completion message, providing users with information on the next steps and actions they can take.
 
 10. **Optional Commit Steps:**
-The tool may suggest optional steps for users to commit their changes to version control systems, making it easier to track and manage BrightSDK integrations.
+    The tool may suggest optional steps for users to commit their changes to version control systems, making it easier to track and manage BrightSDK integrations.
 
 11. **Closing Interaction:**
-The tool may prompt the user to acknowledge the completion and, if running interactively, closes the interaction.
+    The tool may prompt the user to acknowledge the completion and, if running interactively, closes the interaction.
 
 ### Notes:
+
 - The tool aims to streamline the integration process by providing an interactive and automated way to set up BrightSDK within a project, taking into account user input and project structure.
 
 - Users can customize the integration based on their specific project requirements, and the tool provides flexibility in both interactive and automated modes.

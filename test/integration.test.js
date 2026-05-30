@@ -15,16 +15,17 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
     const testConfig = {
         files: {
             api_name: 'brd_api.js',
-            helper_name: 'brd_api.helper.js'
+            helper_name: 'brd_api.helper.js',
         },
         urls: {
-            helper_latest: 'https://raw.githubusercontent.com/BrightSDK/bright-sdk-integration-helper/refs/heads/main/releases/brd_api.helper-latest.min.js',
-            sdk_versions: 'https://api.bright-sdk.com/versions.json'
+            helper_latest:
+                'https://raw.githubusercontent.com/BrightSDK/bright-sdk-integration-helper/refs/heads/main/releases/brd_api.helper-latest.min.js',
+            sdk_versions: 'https://api.bright-sdk.com/versions.json',
         },
         defaults: {
             use_helper: true,
-            sdk_version: 'latest'
-        }
+            sdk_version: 'latest',
+        },
     };
 
     beforeEach(() => {
@@ -43,7 +44,7 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
 
     function setupFileMocks() {
         // Mock file system operations
-        fs.existsSync.mockImplementation((filePath) => {
+        fs.existsSync.mockImplementation(filePath => {
             // Config files exist
             if (filePath.includes('config.json')) return true;
             if (filePath.includes('brd_sdk.config.json')) return true;
@@ -59,30 +60,39 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
         fs.writeFileSync.mockImplementation(() => {});
         fs.promises = {
             readdir: jest.fn().mockResolvedValue(['file1.js', 'file2.js']),
-            stat: jest.fn().mockResolvedValue({ isDirectory: () => false })
+            stat: jest.fn().mockResolvedValue({ isDirectory: () => false }),
         };
     }
 
     function setupLibMocks() {
         // Mock lib functions
-        lib.read_json.mockImplementation((filePath) => {
+        lib.read_json.mockImplementation(filePath => {
             if (filePath.includes('config.json')) return testConfig;
-            if (filePath.includes('brd_sdk.config.json')) return {
-                workdir: testWorkdir,
-                app_dir: 'src',
-                sdk_ver: 'latest',
-                use_helper: true
-            };
+            if (filePath.includes('brd_sdk.config.json')) {
+                return {
+                    workdir: testWorkdir,
+                    app_dir: 'src',
+                    sdk_ver: 'latest',
+                    use_helper: true,
+                };
+            }
             return {};
         });
 
         lib.write_json.mockImplementation(() => {});
         lib.download_from_url.mockResolvedValue();
-        lib.resolve_sdk.mockReturnValue({platform: 'webos', version: '2.5.0',
-            url: 'https://cdn.example.com/sdk.zip'});
-        lib.fetch_sdk.mockReturnValue({platform: 'webos', version: '2.5.0',
-            url: 'https://cdn.example.com/sdk.zip', output: '/cache/sdk/2.5.0'});
-        lib.list_platforms.mockReturnValue([{key: 'webos', last_version: '2.5.0'}]);
+        lib.resolve_sdk.mockReturnValue({
+            platform: 'webos',
+            version: '2.5.0',
+            url: 'https://cdn.example.com/sdk.zip',
+        });
+        lib.fetch_sdk.mockReturnValue({
+            platform: 'webos',
+            version: '2.5.0',
+            url: 'https://cdn.example.com/sdk.zip',
+            output: '/cache/sdk/2.5.0',
+        });
+        lib.list_platforms.mockReturnValue([{ key: 'webos', last_version: '2.5.0' }]);
         lib.search_directory.mockResolvedValue('/test/project/src/brd_api.js');
         lib.replace_file.mockResolvedValue(true);
         lib.unzip.mockResolvedValue();
@@ -113,8 +123,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                     workdir: testWorkdir,
                     app_dir: 'src',
                     sdk_ver: 'latest',
-                    use_helper: true
-                }
+                    use_helper: true,
+                },
             };
 
             // Test that all required functions exist
@@ -136,15 +146,16 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                     workdir: testWorkdir,
                     app_dir: 'src',
                     sdk_ver: 'latest',
-                    use_helper: true
-                }
+                    use_helper: true,
+                },
             };
 
             // Test that all required functions exist
             expect(typeof process_web).toBe('function');
             expect(typeof get_config_fname).toBe('function');
         });
-    });    describe('Configuration Management', () => {
+    });
+    describe('Configuration Management', () => {
         test('should handle complete configuration lifecycle', () => {
             // Test config file creation
             const configPath = get_config_fname(testWorkdir);
@@ -193,39 +204,41 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
 
             // The fallback logic would be tested in the context of the platform class
             expect(true).toBe(true); // Placeholder for actual fallback test
-            });
+        });
 
-            test('should use helper_name_local as fallback if remote download fails', async () => {
-                // Setup config with helper_name_local
-                const configWithLocal = {
-                    ...testConfig,
-                    files: {
-                        ...testConfig.files,
-                        helper_name_local: '../bright-sdk-integration-helper/releases/latest/brd_api.helper.js'
-                    }
-                };
-                lib.read_json.mockImplementation((filePath) => {
-                    if (filePath.includes('config.json')) return configWithLocal;
-                    return {};
-                });
-                lib.download_from_url.mockRejectedValue(new Error('Network error'));
-                fs.existsSync.mockImplementation((filePath) => {
-                    // Simulate local helper file exists for any path containing 'brd_api.helper.js'
-                    if (filePath && filePath.includes('brd_api.helper.js')) return true;
-                    return false;
-                });
-                const { BrightSdkUpdateWeb } = require('../src/platforms/BrightSdkUpdateWeb.js');
-                const instance = new BrightSdkUpdateWeb({ workdir: testWorkdir });
-                instance.print = jest.fn();
-                instance.workdir = testWorkdir;
-                instance.brd_api_helper_name = configWithLocal.files.helper_name;
-                // Should not throw if local fallback exists
-                await expect(instance.assign_brd_api_helper_filename()).resolves.not.toThrow();
-                expect(
-                    instance.brd_api_helper_fname.includes('bright-sdk-integration-helper/releases/latest/brd_api.helper.js') ||
-                    instance.brd_api_helper_fname.includes('assets/brd_api.helper.js')
-                ).toBe(true);
-                expect(instance.print).toHaveBeenCalledWith('Using local helper file as fallback');
+        test('should use helper_name_local as fallback if remote download fails', async () => {
+            // Setup config with helper_name_local
+            const configWithLocal = {
+                ...testConfig,
+                files: {
+                    ...testConfig.files,
+                    helper_name_local:
+                        '../bright-sdk-integration-helper/releases/latest/brd_api.helper.js',
+                },
+            };
+            lib.read_json.mockImplementation(filePath => {
+                if (filePath.includes('config.json')) return configWithLocal;
+                return {};
+            });
+            lib.download_from_url.mockRejectedValue(new Error('Network error'));
+            fs.existsSync.mockImplementation(filePath => {
+                // Simulate local helper file exists for any path containing 'brd_api.helper.js'
+                if (filePath && filePath.includes('brd_api.helper.js')) return true;
+                return false;
+            });
+            const { BrightSdkUpdateWeb } = require('../src/platforms/BrightSdkUpdateWeb.js');
+            const instance = new BrightSdkUpdateWeb({ workdir: testWorkdir });
+            instance.print = jest.fn();
+            instance.workdir = testWorkdir;
+            instance.brd_api_helper_name = configWithLocal.files.helper_name;
+            // Should not throw if local fallback exists
+            await expect(instance.assign_brd_api_helper_filename()).resolves.not.toThrow();
+            expect(
+                instance.brd_api_helper_fname.includes(
+                    'bright-sdk-integration-helper/releases/latest/brd_api.helper.js',
+                ) || instance.brd_api_helper_fname.includes('assets/brd_api.helper.js'),
+            ).toBe(true);
+            expect(instance.print).toHaveBeenCalledWith('Using local helper file as fallback');
         });
     });
 
@@ -234,10 +247,10 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             const testFiles = {
                 'brd_api.js': 'console.log("BrightSDK API");',
                 'brd_api.helper.js': 'console.log("BrightSDK Helper");',
-                'index.html': '<script src="brd_api.js"></script>'
+                'index.html': '<script src="brd_api.js"></script>',
             };
 
-            lib.read_json.mockImplementation((filePath) => {
+            lib.read_json.mockImplementation(filePath => {
                 if (filePath.includes('package.json')) return { name: 'test-app' };
                 return testConfig;
             });
@@ -257,9 +270,9 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                 platform_specific: {
                     webos: {
                         service_dir: 'service',
-                        package_name: 'com.bright.sdk.service'
-                    }
-                }
+                        package_name: 'com.bright.sdk.service',
+                    },
+                },
             };
 
             lib.read_json.mockReturnValue(webosConfig);
@@ -275,9 +288,9 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                 platform_specific: {
                     tizen: {
                         service_dir: 'service',
-                        config_file: 'ver_conf.js'
-                    }
-                }
+                        config_file: 'ver_conf.js',
+                    },
+                },
             };
 
             lib.read_json.mockReturnValue(tizenConfig);
@@ -330,7 +343,7 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             const options = {
                 platform: 'webos',
                 interactive: true,
-                workdir: testWorkdir
+                workdir: testWorkdir,
             };
 
             // Test that interactive mode is properly handled
@@ -345,8 +358,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                 build: {
                     output_dir: 'dist',
                     minify: true,
-                    source_map: false
-                }
+                    source_map: false,
+                },
             };
 
             lib.read_json.mockReturnValue(buildConfig);
@@ -361,8 +374,8 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
                 versions: {
                     current: '1.0.0',
                     latest: '1.2.0',
-                    supported: ['1.0.0', '1.1.0', '1.2.0']
-                }
+                    supported: ['1.0.0', '1.1.0', '1.2.0'],
+                },
             };
 
             lib.read_json.mockReturnValue(versionConfig);

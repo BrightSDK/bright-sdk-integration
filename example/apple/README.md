@@ -24,8 +24,8 @@ apple/
 
 - **Node.js ≥ 18** — to run the integration tool
 - **Xcode** — to open and build the example project
-- An internet connection — the SDK zip is downloaded from the CDN on first run
 - A **BrightSDK API key** exported as `SDK_API_KEY` — see [obtain-api-key.md](../../docs/obtain-api-key.md)
+- An internet connection — the SDK zip is downloaded from the CDN on first run
 
 ## Quick start — example app
 
@@ -51,12 +51,12 @@ The tool will:
 1. Download the latest BrightSDK zip from `cdn.bright-sdk.com/static/`
 2. Extract the framework into `apple/BrightSDK/`
 3. Open `app/example.xcodeproj` and patch `project.pbxproj`:
-   - Add `brdsdk.xcframework` (iOS/tvOS) or `brdsdk.framework` (macOS) with **Embed & Sign**
-   - Set `FRAMEWORK_SEARCH_PATHS` (iOS/tvOS) or `LD_RUNPATH_SEARCH_PATHS` + `FRAMEWORK_SEARCH_PATHS` (macOS)
+    - Add `brdsdk.xcframework` (iOS/tvOS) or `brdsdk.framework` (macOS) with **Embed & Sign**
+    - Set `FRAMEWORK_SEARCH_PATHS` (iOS/tvOS) or `LD_RUNPATH_SEARCH_PATHS` + `FRAMEWORK_SEARCH_PATHS` (macOS)
 4. macOS only — also adds:
-   - **Copy Files** build phase → places `net_updater.app` under `Contents/Library/LoginItems`
-   - **Resign** run-script phase (when `resign_net_updater.sh` ships in the SDK zip)
-   - Build settings: `NET_UPDATER_ENTITLEMENTS`, `ENABLE_USER_SCRIPT_SANDBOXING = NO`
+    - **Copy Files** build phase → places `net_updater.app` under `Contents/Library/LoginItems`
+    - **Resign** run-script phase (when `resign_net_updater.sh` ships in the SDK zip)
+    - Build settings: `NET_UPDATER_ENTITLEMENTS`, `ENABLE_USER_SCRIPT_SANDBOXING = NO`
 5. Save `brd_sdk.config.json` for future runs
 
 ### 2. Open the project in Xcode
@@ -82,20 +82,20 @@ Select a simulator or device and press **⌘R**. The example app shows:
 
 #### iOS
 
-| Main screen | Consent screen |
-|:-----------:|:--------------:|
+|           Main screen            |              Consent screen               |
+| :------------------------------: | :---------------------------------------: |
 | ![Main](assets/ios/app_main.png) | ![Consent](assets/ios/consent_screen.png) |
 
 #### tvOS
 
-| Main screen | Consent screen |
-|:-----------:|:--------------:|
+|            Main screen            |               Consent screen               |
+| :-------------------------------: | :----------------------------------------: |
 | ![Main](assets/tvos/app_main.png) | ![Consent](assets/tvos/consent_screen.png) |
 
 #### macOS
 
-| Main screen | Consent screen |
-|:-----------:|:--------------:|
+|            Main screen             |               Consent screen                |
+| :--------------------------------: | :-----------------------------------------: |
 | ![Main](assets/macos/app_main.png) | ![Consent](assets/macos/consent_screen.png) |
 
 ## Using the tool with your own project
@@ -104,20 +104,20 @@ Copy the platform subfolder (`ios/`, `tvos/`, or `macos/`) next to your own `.xc
 
 ```json
 {
-  "workdir": "..",
-  "libs_dir": "BrightSDK",
-  "sdk_ver": "latest",
-  "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_ios-SDK_VER.zip"
+    "workdir": "..",
+    "libs_dir": "BrightSDK",
+    "sdk_ver": "latest",
+    "sdk_url": "https://cdn.bright-sdk.com/static/brd_sdk_ios-SDK_VER.zip"
 }
 ```
 
-| Key | Description |
-|---|---|
-| `workdir` | Directory that contains (or is a parent of) your `.xcodeproj`. The tool searches up to 3 levels deep. |
-| `libs_dir` | Directory where the framework will be extracted, relative to `workdir`. |
-| `sdk_ver` | `"latest"` or a specific version string, e.g. `"1.500.0"`. |
-| `sdk_url` | CDN URL template — `SDK_VER` is replaced with the resolved version. |
-| `sdk_service_dir` | *macOS only* — directory for `net_updater.app`, relative to `workdir`. |
+| Key               | Description                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| `workdir`         | Directory that contains (or is a parent of) your `.xcodeproj`. The tool searches up to 3 levels deep. |
+| `libs_dir`        | Directory where the framework will be extracted, relative to `workdir`.                               |
+| `sdk_ver`         | `"latest"` or a specific version string, e.g. `"1.500.0"`.                                            |
+| `sdk_url`         | CDN URL template — `SDK_VER` is replaced with the resolved version.                                   |
+| `sdk_service_dir` | _macOS only_ — directory for `net_updater.app`, relative to `workdir`.                                |
 
 Then run:
 

@@ -36,7 +36,7 @@ describe('lib utilities', () => {
         beforeEach(() => {
             capturedOutput = '';
             originalStdoutWrite = process.stdout.write;
-            process.stdout.write = jest.fn((data) => {
+            process.stdout.write = jest.fn(data => {
                 capturedOutput += data;
                 return true;
             });
@@ -70,14 +70,14 @@ describe('lib utilities', () => {
 
             // Mock process.stdout.write
             const originalStdoutWrite = process.stdout.write;
-            process.stdout.write = jest.fn((data) => {
+            process.stdout.write = jest.fn(data => {
                 capturedOutput += data;
                 return true;
             });
 
             // Mock process.exit
             originalProcessExit = process.exit;
-            process.exit = jest.fn((code) => {
+            process.exit = jest.fn(code => {
                 exitCode = code;
             });
         });
@@ -118,7 +118,7 @@ describe('lib utilities', () => {
             expect(fs.writeFileSync).toHaveBeenCalledWith(
                 'test.json',
                 JSON.stringify(data, null, 2),
-                { encoding: 'utf-8' }
+                { encoding: 'utf-8' },
             );
         });
     });
@@ -166,7 +166,7 @@ describe('lib utilities', () => {
             fs.promises.readdir.mockResolvedValue(['test.js']);
 
             const result = await lib.search_directory('/test/dir', pattern, {
-                exclude: [excludePath]
+                exclude: [excludePath],
             });
 
             expect(result).toBeUndefined();
@@ -189,7 +189,8 @@ describe('lib utilities', () => {
                 pipe: jest.fn(),
             };
             https.get.mockImplementation((url, optionsOrCallback, maybeCallback) => {
-                const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
+                const callback =
+                    typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
                 callback(mockResponse);
                 return mockRequest;
             });
@@ -198,8 +199,9 @@ describe('lib utilities', () => {
         test('should download content using streams', async () => {
             const mockFileStream = {
                 on: jest.fn((event, callback) => {
-                    if (event === 'finish')
+                    if (event === 'finish') {
                         callback();
+                    }
                 }),
             };
             fs.createWriteStream.mockReturnValue(mockFileStream);
@@ -207,7 +209,11 @@ describe('lib utilities', () => {
 
             await lib.download_from_url('https://test.com/data.json', 'output.json');
 
-            expect(https.get).toHaveBeenCalledWith('https://test.com/data.json', expect.any(Object), expect.any(Function));
+            expect(https.get).toHaveBeenCalledWith(
+                'https://test.com/data.json',
+                expect.any(Object),
+                expect.any(Function),
+            );
             expect(fs.createWriteStream).toHaveBeenCalledWith('output.json');
             expect(mockResponse.pipe).toHaveBeenCalledWith(mockFileStream);
         });
@@ -249,20 +255,25 @@ describe('lib utilities', () => {
                 return mockRequest;
             });
 
-            await expect(lib.download_from_url('https://test.com/fail', {}, 'output')).rejects.toThrow('Network error');
+            await expect(
+                lib.download_from_url('https://test.com/fail', {}, 'output'),
+            ).rejects.toThrow('Network error');
         });
 
         test('should handle file write stream errors', async () => {
             const mockFileStream = {
                 on: jest.fn((event, callback) => {
-                    if (event === 'error')
+                    if (event === 'error') {
                         callback(new Error('Write error'));
+                    }
                 }),
             };
             fs.createWriteStream.mockReturnValue(mockFileStream);
             mockResponse.pipe.mockReturnValue(mockFileStream);
 
-            await expect(lib.download_from_url('https://test.com/data.json', 'output.json')).rejects.toThrow('Write error');
+            await expect(
+                lib.download_from_url('https://test.com/data.json', 'output.json'),
+            ).rejects.toThrow('Write error');
         });
     });
 
@@ -270,7 +281,7 @@ describe('lib utilities', () => {
         test('should update JSON file with new property values', () => {
             const mockJson = {
                 section1: { prop1: 'old1' },
-                section2: { prop2: 'old2' }
+                section2: { prop2: 'old2' },
             };
 
             fs.readFileSync.mockReturnValue(JSON.stringify(mockJson));
@@ -280,11 +291,15 @@ describe('lib utilities', () => {
             expect(fs.readFileSync).toHaveBeenCalledWith('config.json');
             expect(fs.writeFileSync).toHaveBeenCalledWith(
                 'config.json',
-                JSON.stringify({
-                    section1: { prop1: 'new_value' },
-                    section2: { prop2: 'new_value' }
-                }, null, 2),
-                { encoding: 'utf-8' }
+                JSON.stringify(
+                    {
+                        section1: { prop1: 'new_value' },
+                        section2: { prop2: 'new_value' },
+                    },
+                    null,
+                    2,
+                ),
+                { encoding: 'utf-8' },
             );
         });
     });
@@ -324,8 +339,12 @@ describe('resolve_sdk', () => {
 
     test('calls bright-sdk-downloader resolve with platform and version', () => {
         child_process.execFileSync.mockReturnValue(
-            JSON.stringify({platform: 'webos', version: '2.5.0',
-                url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip'}));
+            JSON.stringify({
+                platform: 'webos',
+                version: '2.5.0',
+                url: 'https://cdn.example.com/brd_sdk_webos-2.5.0.zip',
+            }),
+        );
 
         const result = lib.resolve_sdk('webos', '2.5.0');
 
@@ -344,8 +363,12 @@ describe('resolve_sdk', () => {
 
     test('omits -v flag when version is latest', () => {
         child_process.execFileSync.mockReturnValue(
-            JSON.stringify({platform: 'ios', version: '3.0.0',
-                url: 'https://cdn.example.com/sdk-ios-3.0.0.zip'}));
+            JSON.stringify({
+                platform: 'ios',
+                version: '3.0.0',
+                url: 'https://cdn.example.com/sdk-ios-3.0.0.zip',
+            }),
+        );
 
         lib.resolve_sdk('ios', 'latest');
 
@@ -364,8 +387,13 @@ describe('fetch_sdk', () => {
 
     test('calls bright-sdk-downloader fetch with platform, version, output', () => {
         child_process.execFileSync.mockReturnValue(
-            JSON.stringify({platform: 'tizen', version: '1.0.0',
-                url: 'https://cdn/sdk.zip', output: '/tmp/sdk'}));
+            JSON.stringify({
+                platform: 'tizen',
+                version: '1.0.0',
+                url: 'https://cdn/sdk.zip',
+                output: '/tmp/sdk',
+            }),
+        );
 
         const result = lib.fetch_sdk('tizen', '1.0.0', '/tmp/sdk');
 
@@ -387,10 +415,11 @@ describe('list_platforms', () => {
     });
 
     test('calls bright-sdk-downloader platforms and returns parsed JSON', () => {
-        const platforms = [{key: 'webos', last_version: '2.5.0'},
-            {key: 'tizen', last_version: '2.5.0'}];
-        child_process.execFileSync.mockReturnValue(
-            JSON.stringify(platforms));
+        const platforms = [
+            { key: 'webos', last_version: '2.5.0' },
+            { key: 'tizen', last_version: '2.5.0' },
+        ];
+        child_process.execFileSync.mockReturnValue(JSON.stringify(platforms));
 
         const result = lib.list_platforms();
 

@@ -137,7 +137,7 @@ describe('navigation module', () => {
 
             expect(readline.createInterface).toHaveBeenCalledWith({
                 input: process.stdin,
-                output: process.stdout
+                output: process.stdout,
             });
         });
     });

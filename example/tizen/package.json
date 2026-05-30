@@ -1,13 +1,13 @@
 {
-  "name": "brightsdk-tizen-example",
-  "version": "1.0.0",
-  "private": true,
-  "description": "BrightSDK Tizen integration example",
-  "scripts": {
-    "update": "npx github:BrightSDK/bright-sdk-integration --platform tizen brd_sdk.config.json",
-    "update:interactive": "npx github:BrightSDK/bright-sdk-integration --platform tizen",
-    "update:local": "node ../../index.js --platform tizen brd_sdk.config.json",
-    "update:local:interactive": "node ../../index.js --platform tizen",
-    "reset": "git clean -fdx && git checkout ."
-  }
+    "name": "brightsdk-tizen-example",
+    "version": "1.0.0",
+    "private": true,
+    "description": "BrightSDK Tizen integration example",
+    "scripts": {
+        "update": "npx github:BrightSDK/bright-sdk-integration --platform tizen brd_sdk.config.json",
+        "update:interactive": "npx github:BrightSDK/bright-sdk-integration --platform tizen",
+        "update:local": "node ../../index.js --platform tizen brd_sdk.config.json",
+        "update:local:interactive": "node ../../index.js --platform tizen",
+        "reset": "git clean -fdx && git checkout ."
+    }
 }

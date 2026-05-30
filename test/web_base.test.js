@@ -63,13 +63,14 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
 
         u.workdir = '/test/project';
 
-        jest.spyOn(u, 'get_sdk_files').mockReturnValue([
-            ['/abs/src/file', 'libs/file.js']
-        ]);
+        jest.spyOn(u, 'get_sdk_files').mockReturnValue([['/abs/src/file', 'libs/file.js']]);
 
         lib.replace_file.mockResolvedValue(false);
         await u.replace_sdk_files();
-        expect(lib.replace_file).toHaveBeenCalledWith('/abs/src/file', '/test/project/libs/file.js');
+        expect(lib.replace_file).toHaveBeenCalledWith(
+            '/abs/src/file',
+            '/test/project/libs/file.js',
+        );
     });
 
     test('build_config keeps appdir relative', () => {
@@ -175,7 +176,7 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         u.libs_dir = 'libs';
 
         fs.existsSync.mockImplementation(p => p !== '/test/project/libs');
-        fs.mkdirSync.mockImplementation(() => { });
+        fs.mkdirSync.mockImplementation(() => {});
 
         u.create_libs_dir();
 
@@ -198,7 +199,7 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
 
         fs.existsSync.mockImplementation(p => p === '/test/project/app/index.html');
         fs.readFileSync.mockReturnValue('<script src="brd_api.js"></script>');
-        fs.writeFileSync.mockImplementation(() => { });
+        fs.writeFileSync.mockImplementation(() => {});
 
         const prev = u.update_index_ref('app/index.html', 'brd_api_v1.js');
 
@@ -206,7 +207,7 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         expect(fs.readFileSync).toHaveBeenCalledWith('/test/project/app/index.html');
         expect(fs.writeFileSync).toHaveBeenCalledWith(
             '/test/project/app/index.html',
-            '<script src="brd_api_v1.js"></script>'
+            '<script src="brd_api_v1.js"></script>',
         );
     });
 
@@ -285,7 +286,7 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         u.libs_dir = 'app/js';
         u.is_web_hosted = false;
         u.config = { index: 'app/index.html' };
-        
+
         await u.assign_index_filename();
 
         expect(u.index_fname).toBe('app/index.html');
@@ -358,7 +359,7 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         await u.assign_brd_api_helper_filename();
         expect(lib.download_from_url).toHaveBeenCalledWith(
             'https://example.com/helper.js',
-            '/test/project/temp/brd_api.helper.js'
+            '/test/project/temp/brd_api.helper.js',
         );
         expect(u.brd_api_helper_fname).toBe('/test/project/temp/brd_api.helper.js');
     });
@@ -384,7 +385,9 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
         lib.download_from_url.mockRejectedValue(new Error('Network error'));
         fs.existsSync.mockImplementation(p => {
             if (p === '/test/project/temp') return true;
-            if (typeof p === 'string' && p.includes('assets') && p.endsWith('brd_api.helper.js')) return true;
+            if (typeof p === 'string' && p.includes('assets') && p.endsWith('brd_api.helper.js')) {
+                return true;
+            }
             return false;
         });
 
@@ -421,5 +424,4 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
             ['/test/project/temp/brd_api.helper.js', 'app/js/brd_api.helper.js'],
         ]);
     });
-
 });

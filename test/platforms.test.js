@@ -50,7 +50,7 @@ describe('platforms/index.js', () => {
             platform: 'webos',
             interactive: false,
             verbose: true,
-            workdir: '/test/project'
+            workdir: '/test/project',
         };
 
         beforeEach(() => {
@@ -58,19 +58,19 @@ describe('platforms/index.js', () => {
             const mockConfig = {
                 files: {
                     api_name: 'brd_api.js',
-                    helper_name: 'brd_api.helper.js'
+                    helper_name: 'brd_api.helper.js',
                 },
                 urls: {
-                    helper_latest: 'https://test.com/helper.js'
-                }
+                    helper_latest: 'https://test.com/helper.js',
+                },
             };
 
-            fs.existsSync.mockImplementation((filePath) => {
+            fs.existsSync.mockImplementation(filePath => {
                 if (filePath.includes('config.json')) return true;
                 return false;
             });
 
-            lib.read_json.mockImplementation((filePath) => {
+            lib.read_json.mockImplementation(filePath => {
                 if (filePath.includes('config.json')) return mockConfig;
                 return {};
             });
@@ -96,7 +96,7 @@ describe('platforms/index.js', () => {
             const opt = {
                 platform: 'webos',
                 interactive: false,
-                workdir: '/test/project'
+                workdir: '/test/project',
             };
 
             // Test that the function exists and can be called
@@ -108,17 +108,18 @@ describe('platforms/index.js', () => {
             const opt = {
                 platform: 'tizen',
                 interactive: false,
-                workdir: '/test/project'
+                workdir: '/test/project',
             };
 
             // Test that the function accepts tizen platform
             const { process_web } = require('../src/platforms/index.js');
             expect(typeof process_web).toBe('function');
-        });        test('should handle tizen platform', async () => {
+        });
+        test('should handle tizen platform', async () => {
             const opt = {
                 platform: 'tizen',
                 interactive: false,
-                workdir: '/test/project'
+                workdir: '/test/project',
             };
 
             // Test that the function accepts tizen platform
@@ -134,16 +135,16 @@ describe('platforms/index.js', () => {
             const mockConfig = {
                 files: {
                     api_name: 'custom_brd_api.js',
-                    helper_name: 'custom_helper.js'
+                    helper_name: 'custom_helper.js',
                 },
                 urls: {
                     helper_latest: 'https://custom.github.com/helper.js',
-                    sdk_versions: 'https://custom.api.com/versions.json'
+                    sdk_versions: 'https://custom.api.com/versions.json',
                 },
                 defaults: {
                     use_helper: true,
-                    sdk_version: 'latest'
-                }
+                    sdk_version: 'latest',
+                },
             };
 
             fs.existsSync.mockReturnValue(true);
@@ -231,22 +232,22 @@ describe('platforms/index.js', () => {
             const mockFiles = {
                 '/test/project/config.json': {
                     files: { api_name: 'brd_api.js' },
-                    urls: { helper_latest: 'https://github.com/test/helper.js' }
+                    urls: { helper_latest: 'https://github.com/test/helper.js' },
                 },
                 '/test/project/brd_sdk.config.json': {
                     workdir: '/test/project',
                     app_dir: 'src',
-                    sdk_ver: 'latest'
-                }
+                    sdk_ver: 'latest',
+                },
             };
 
-            fs.existsSync.mockImplementation((filePath) => {
+            fs.existsSync.mockImplementation(filePath => {
                 return Object.keys(mockFiles).some(path => filePath.includes(path));
             });
 
-            lib.read_json.mockImplementation((filePath) => {
+            lib.read_json.mockImplementation(filePath => {
                 const matchingFile = Object.keys(mockFiles).find(path =>
-                    filePath.includes(path.split('/').pop())
+                    filePath.includes(path.split('/').pop()),
                 );
                 return matchingFile ? mockFiles[matchingFile] : {};
             });
@@ -262,12 +263,12 @@ describe('platforms/index.js', () => {
             const mockConfig = {
                 files: {
                     api_name: 'tizen_brd_api.js',
-                    helper_name: 'tizen_helper.js'
+                    helper_name: 'tizen_helper.js',
                 },
                 defaults: {
                     use_helper: true,
-                    platform: 'tizen'
-                }
+                    platform: 'tizen',
+                },
             };
 
             fs.existsSync.mockReturnValue(true);
