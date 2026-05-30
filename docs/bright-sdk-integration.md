@@ -3,7 +3,7 @@
 **GitHub**: https://github.com/BrightSDK/bright-sdk-integration
 **npm package name**: `bright-sdk-integration`
 **Version**: 1.7.0
-**Author**: vladislavs@brightdata.com
+**Authors**: vladislavs@brightdata.com, dmitriis@brightdata.com, yaroslavt@brightdata.com
 
 ## What it is
 
@@ -24,7 +24,7 @@
 ## Requirements
 
 - Node.js 18+
-- A BrightSDK API key set as `SDK_API_KEY` environment variable — see [How to obtain an API key](https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md)
+- A BrightSDK API key set as `SDK_API_KEY` environment variable — see [How to obtain an API key](https://brightsdk.github.io/bright-sdk-downloader-rs/obtain-api-key.html)
 
 ```bash
 export SDK_API_KEY=<your-api-key>

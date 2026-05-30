@@ -24,7 +24,7 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 - Node.js (tested on v18, v20, v22)
 - npm (tested on v11.6.2)
 - Git (tested on 2.50.1 (Apple Git-155))
-- A BrightSDK API key — see [How to obtain an API key](https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md)
+- A BrightSDK API key — see [How to obtain an API key](https://brightsdk.github.io/bright-sdk-downloader-rs/obtain-api-key.html)
 
 ## Supported platforms
 
@@ -306,3 +306,4 @@ Notes:
 
 - vladislavs@brightdata.com
 - dmitriis@brightdata.com
+- yaroslavt@brightdata.com
