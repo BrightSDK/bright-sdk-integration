@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bright-sdk-integration — BrightSDK Integration Code Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0B0F1A;
+            --bg2: #111827;
+            --fg: #E2E8F0;
+            --fg-muted: #94A3B8;
+            --accent: #3ECF8E;
+            --accent-hover: #2BB77A;
+            --accent-glow: rgba(62, 207, 142, 0.15);
+            --border: #1E293B;
+            --card-bg: #1A2332;
+            --code-bg: #0F172A;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 5rem 1.5rem 3rem;
+            background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+        .hero .subtitle {
+            color: var(--fg-muted);
+            font-size: 1.15rem;
+            max-width: 640px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+        .badges {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .badges a { margin: 0 3px; }
+        .badges img { vertical-align: middle; height: 20px; }
+
+        /* CTA */
+        .cta-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .cta:hover { text-decoration: none; }
+        .cta-primary {
+            background: var(--accent);
+            color: #0B0F1A;
+            font-size: 1.1rem;
+            padding: 1rem 2.5rem;
+            box-shadow: 0 4px 24px rgba(62, 207, 142, 0.25);
+        }
+        .cta-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 32px rgba(62, 207, 142, 0.35);
+            transform: translateY(-1px);
+        }
+        .cta-secondary {
+            background: var(--border);
+            color: var(--fg);
+            border: 1px solid #334155;
+        }
+        .cta-secondary:hover {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        /* Container */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Section */
+        section { padding: 3rem 0; }
+        section + section { border-top: 1px solid var(--border); }
+
+        /* Install box */
+        .install-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+        }
+        .install-box code {
+            font-size: 1.1rem;
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--accent);
+        }
+        .install-box .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--fg-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Platform cards */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .platform-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .platform-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .platform-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .platform-card .name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .platform-card .status {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-top: 0.3rem;
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .feature-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .feature-item .icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-glow);
+            border-radius: 8px;
+        }
+        .feature-item .text {
+            font-size: 0.9rem;
+            color: var(--fg);
+        }
+        .feature-item .text strong {
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        /* Typography */
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 1.5rem 0 0.5rem;
+        }
+        p { margin: 0.5rem 0 1rem; }
+        ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+        li { margin: 0.3rem 0; color: var(--fg); }
+        strong { color: #fff; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Code */
+        code {
+            background: var(--code-bg);
+            padding: 0.15em 0.45em;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+            border: 1px solid var(--border);
+        }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 0.8rem 0;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.8rem 0;
+            font-size: 0.88rem;
+        }
+        th, td {
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        th {
+            background: var(--card-bg);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: var(--fg-muted);
+            font-size: 0.82rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        footer a { color: var(--fg-muted); }
+        footer a:hover { color: var(--accent); }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 2rem; }
+            .hero .subtitle { font-size: 1rem; }
+            .cta-primary { font-size: 1rem; padding: 0.85rem 2rem; }
+            .platform-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <img src="https://media.bright-sdk.com/2025/12/brightsdk_logo_light.svg" alt="BrightSDK" style="height:44px;margin-bottom:1rem;position:relative">
+    <h1><img src="favicon.svg" alt="" style="height:0.9em;vertical-align:-0.05em;margin-right:0.3em">Integration Code Generator</h1>
+    <p class="subtitle">Interactive CLI that downloads, configures, and integrates BrightSDK into your app — WebOS, Tizen, iOS, macOS, tvOS, and Windows.</p>
+    <div class="badges">
+        <a href="https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml"><img src="https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/test.yml/badge.svg" alt="Test"></a>
+        <a href="https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/lint.yml"><img src="https://github.com/BrightSDK/bright-sdk-integration/actions/workflows/lint.yml/badge.svg" alt="Lint"></a>
+        <a href="https://github.com/BrightSDK/bright-sdk-integration/releases/latest"><img src="https://img.shields.io/github/v/release/BrightSDK/bright-sdk-integration?color=3ECF8E" alt="Release"></a>
+        <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A518-brightgreen" alt="Node.js"></a>
+    </div>
+    <div class="cta-group">
+        <a class="cta cta-primary" href="#quickstart">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5zM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11zm1.958 1l-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916z"/></svg>
+            Get Started
+        </a>
+        <a class="cta cta-secondary" href="https://github.com/BrightSDK/bright-sdk-integration">
+            <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+        </a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Quick Start -->
+    <section id="quickstart">
+        <h2>Quick Start</h2>
+        <p>No installation required — run directly with <code>npx</code>:</p>
+        <div class="install-box">
+            <div class="label">one-liner</div>
+            <code>npx github:BrightSDK/bright-sdk-integration --platform &lt;platform&gt;</code>
+        </div>
+        <p>Or install globally for repeated use:</p>
+<pre><code>npm install -g github:BrightSDK/bright-sdk-integration
+
+# Then run anywhere:
+bright-sdk-integration --platform webos
+bright-sdk-integration --platform tizen
+bright-sdk-integration --platform ios</code></pre>
+
+        <h3>Prerequisites</h3>
+        <ul>
+            <li><strong>Node.js ≥ 18</strong> (tested on v18, v20, v22)</li>
+            <li><strong>SDK_API_KEY</strong> environment variable — <a href="https://github.com/BrightSDK/bright-sdk-integration/blob/main/docs/obtain-api-key.md">How to obtain an API key</a></li>
+        </ul>
+    </section>
+
+    <!-- Platforms -->
+    <section>
+        <h2>Supported Platforms</h2>
+        <div class="platform-grid">
+            <a class="platform-card" href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/webos" style="text-decoration:none">
+                <div class="icon">📺</div>
+                <div class="name">WebOS</div>
+                <div class="status">✓ Complete</div>
+            </a>
+            <a class="platform-card" href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/tizen" style="text-decoration:none">
+                <div class="icon">📱</div>
+                <div class="name">Tizen</div>
+                <div class="status">✓ Complete</div>
+            </a>
+            <a class="platform-card" href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/apple" style="text-decoration:none">
+                <div class="icon">🍎</div>
+                <div class="name">iOS / tvOS / macOS</div>
+                <div class="status">✓ Complete</div>
+            </a>
+            <a class="platform-card" href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/windows" style="text-decoration:none">
+                <div class="icon">🪟</div>
+                <div class="name">Windows</div>
+                <div class="status">✓ Complete</div>
+            </a>
+            <div class="platform-card" style="opacity:0.5">
+                <div class="icon">🤖</div>
+                <div class="name">Android</div>
+                <div class="status">Coming soon</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section>
+        <h2>Features</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="icon">⬇️</div>
+                <div class="text">
+                    <strong>Download &amp; Extract SDK</strong>
+                    Fetches the correct SDK version for your platform, verifies integrity, and extracts it.
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="icon">⚙️</div>
+                <div class="text">
+                    <strong>Auto-configure project</strong>
+                    Patches Xcode projects, .csproj files, or copies SDK assets into your app structure.
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🔄</div>
+                <div class="text">
+                    <strong>Update existing integration</strong>
+                    Bumps SDK version in-place without losing your config or consent flow settings.
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🧩</div>
+                <div class="text">
+                    <strong>Interactive mode</strong>
+                    Prompts for app ID, version, and paths — or pass them via CLI flags for CI/CD.
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🦀</div>
+                <div class="text">
+                    <strong>Rust-powered downloads</strong>
+                    Uses <a href="https://github.com/BrightSDK/bright-sdk-downloader-rs">bright-sdk-downloader-rs</a> for fast, safe SDK fetching with SHA-256 verification.
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="icon">📋</div>
+                <div class="text">
+                    <strong>Config generation</strong>
+                    Saves a <code>.brightsdk.json</code> config for repeatable builds and future updates.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLI Usage -->
+    <section>
+        <h2>CLI Usage</h2>
+<pre><code># Set your API key
+export SDK_API_KEY=&lt;your-api-key&gt;
+
+# New integration — interactive wizard
+bright-sdk-integration --platform webos
+
+# Update existing SDK version
+bright-sdk-integration --platform ios --update
+
+# Non-interactive (CI/CD)
+bright-sdk-integration --platform tizen \
+  --app-id com.example.myapp \
+  --version latest \
+  --dir ./my-tizen-app</code></pre>
+
+        <h3>Options</h3>
+        <table>
+            <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+            <tr><td><code>--platform, -p</code></td><td>Target platform (webos, tizen, ios, tvos, macos, windows)</td><td>—</td></tr>
+            <tr><td><code>--update, -u</code></td><td>Update existing integration to latest SDK version</td><td>false</td></tr>
+            <tr><td><code>--interactive, -i</code></td><td>Force interactive prompts</td><td>true (TTY)</td></tr>
+            <tr><td><code>--app-id</code></td><td>Application identifier</td><td>prompted</td></tr>
+            <tr><td><code>--version, -v</code></td><td>SDK version to use</td><td>latest</td></tr>
+            <tr><td><code>--dir, -d</code></td><td>Working directory</td><td>cwd</td></tr>
+        </table>
+    </section>
+
+    <!-- Examples -->
+    <section>
+        <h2>Examples</h2>
+        <p>Each platform includes a fully working example app with README and integration walkthrough:</p>
+        <ul>
+            <li><a href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/apple">Apple (iOS / tvOS / macOS)</a> — SwiftUI sample app with consent flow</li>
+            <li><a href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/webos">WebOS</a> — LG WebOS TV sample app</li>
+            <li><a href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/tizen">Tizen</a> — Samsung Tizen TV sample app</li>
+            <li><a href="https://github.com/BrightSDK/bright-sdk-integration/tree/main/example/windows">Windows</a> — WinUI 3 / .NET sample app with .csproj patching</li>
+        </ul>
+    </section>
+
+    <!-- API Key -->
+    <section>
+        <h2>API Key</h2>
+        <p>All operations require an <code>SDK_API_KEY</code> environment variable.</p>
+        <ol>
+            <li>Log in to the <a href="https://bright-sdk.com/cp/dashboard">BrightSDK Dashboard</a></li>
+            <li>Go to <strong>Settings → API Keys</strong></li>
+            <li>Create a new key and export it:
+<pre><code>export SDK_API_KEY=bsdk_abc123...</code></pre>
+            </li>
+        </ol>
+    </section>
+
+    <!-- Development -->
+    <section>
+        <h2>Development</h2>
+<pre><code># Clone
+git clone https://github.com/BrightSDK/bright-sdk-integration.git
+cd bright-sdk-integration
+npm install
+
+# Run tests
+npm test
+
+# Lint &amp; format
+npm run validate
+
+# Run locally against an example
+cd example/webos
+npm run update:local:interactive</code></pre>
+    </section>
+</div>
+
+<footer>
+    ISC License &middot; <a href="https://github.com/BrightSDK">BrightSDK</a> &middot; <a href="https://bright-sdk.com">bright-sdk.com</a>
+</footer>
+
+</body>
+</html>
