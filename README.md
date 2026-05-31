@@ -40,10 +40,10 @@ Welcome to the BrightSDK Integration Code Generator! This Node.js package is des
 
 ## Examples
 
-- [Apple (iOS / tvOS / macOS)](example/apple/README.md) — SwiftUI sample app with consent flow screenshots
-- [WebOS](example/webos/README.md) — LG WebOS TV sample app with consent flow screenshots
-- [Tizen](example/tizen/README.md) — Samsung Tizen TV sample app with consent flow
-- [Windows](example/windows/README.md) — WinUI 3 / .NET sample app with csproj patching
+- [Apple (iOS / tvOS / macOS)](https://github.com/BrightSDK/bright-sdk-integration-example-apple) — SwiftUI sample app with consent flow screenshots
+- [WebOS](https://github.com/BrightSDK/bright-sdk-integration-example-webos) — LG WebOS TV sample app with consent flow screenshots
+- [Tizen](https://github.com/BrightSDK/bright-sdk-integration-example-tizen) — Samsung Tizen TV sample app with consent flow
+- [Windows](https://github.com/BrightSDK/bright-sdk-integration-example-windows) — WinUI 3 / .NET sample app with csproj patching
 
 ## Installation
 
