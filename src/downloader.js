@@ -1,11 +1,106 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const https = require('follow-redirects').https;
 const fs = require('fs-extra');
 const path = require('path');
+const os = require('os');
 
 const BIN_NAME = 'bright-sdk-downloader';
+const DOWNLOADER_REPO = 'BrightSDK/bright-sdk-downloader-rs';
+const DOWNLOADER_VERSION = '1.0.0';
+
+const get_asset_name = () => {
+    const platform = process.platform;
+    const arch = process.arch;
+    if (platform == 'win32') {
+        return 'bright-sdk-downloader-win-x64.exe';
+    }
+    if (platform == 'darwin') {
+        return arch == 'arm64'
+            ? 'bright-sdk-downloader-macos-arm64'
+            : 'bright-sdk-downloader-macos-x64';
+    }
+    return 'bright-sdk-downloader-linux-x64';
+};
+
+const get_cache_dir = () => {
+    const dir = path.join(os.homedir(), '.bright-sdk', 'bin');
+    fs.ensureDirSync(dir);
+    return dir;
+};
+
+const get_cached_bin = () => {
+    const ext = process.platform == 'win32' ? '.exe' : '';
+    return path.join(get_cache_dir(), BIN_NAME + ext);
+};
+
+const is_in_path = name => {
+    const cmd = process.platform == 'win32' ? 'where' : 'which';
+    const r = spawnSync(cmd, [name], { stdio: 'pipe' });
+    return r.status === 0;
+};
+
+const download_bin = () => {
+    const asset = get_asset_name();
+    const url =
+        `https://github.com/${DOWNLOADER_REPO}/releases/download/` +
+        `${DOWNLOADER_VERSION}/${asset}`;
+    const dest = get_cached_bin();
+    process.stderr.write(`Downloading ${BIN_NAME} v${DOWNLOADER_VERSION}...\n`);
+    const tmp = dest + '.tmp';
+    const file = fs.createWriteStream(tmp);
+    return new Promise((resolve, reject) => {
+        https
+            .get(url, { headers: { 'User-Agent': 'bright-sdk-integration' } }, res => {
+                if (res.statusCode < 200 || res.statusCode >= 300) {
+                    res.resume();
+                    return void reject(
+                        new Error(`Failed to download ${BIN_NAME}: HTTP ${res.statusCode}`),
+                    );
+                }
+                res.pipe(file);
+                file.on('finish', () => {
+                    file.close();
+                    fs.renameSync(tmp, dest);
+                    if (process.platform != 'win32') {
+                        fs.chmodSync(dest, 0o755);
+                    }
+                    process.stderr.write(`Saved to ${dest}\n`);
+                    resolve(dest);
+                });
+            })
+            .on('error', reject);
+    });
+};
+
+const ensure_bin = () => {
+    const cached = get_cached_bin();
+    if (fs.existsSync(cached)) {
+        return cached;
+    }
+    if (is_in_path(BIN_NAME)) {
+        return BIN_NAME;
+    }
+    // Synchronous download via spawnSync calling node
+    const script = `
+        const d = require('${__filename.replace(/\\/g, '/')}');
+        d.download_bin().then(p => process.stdout.write(p))
+            .catch(e => { process.stderr.write(e.message+'\\n'); process.exit(1); });
+    `;
+    const r = spawnSync(process.execPath, ['-e', script], {
+        env: process.env,
+        stdio: ['pipe', 'pipe', 'inherit'],
+        timeout: 120000,
+    });
+    if (r.status !== 0) {
+        throw new Error(
+            `${BIN_NAME} not found and auto-download failed. ` +
+                'Install it manually or set BRIGHT_SDK_DOWNLOADER_BIN.',
+        );
+    }
+    return r.stdout.toString().trim();
+};
 
 const get_bin_path = () => {
     if (process.env.BRIGHT_SDK_DOWNLOADER_BIN) {
@@ -24,7 +119,7 @@ const get_bin_path = () => {
     if (fs.existsSync(dev_path)) {
         return dev_path;
     }
-    return BIN_NAME; // rely on PATH
+    return ensure_bin();
 };
 
 const exec_downloader = args => {
@@ -112,4 +207,5 @@ module.exports = {
     fetch_sdk,
     list_platforms,
     download_from_url,
+    download_bin,
 };
