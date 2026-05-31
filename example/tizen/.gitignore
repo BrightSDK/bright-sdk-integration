@@ -1,5 +1,0 @@
-app/service
-app/js/brd_api*
-*.wgt
-package-lock.json
-temp/

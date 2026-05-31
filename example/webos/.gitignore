@@ -1,5 +1,0 @@
-service
-app/brd_api*
-*.ipk
-package-lock.json
-temp/
