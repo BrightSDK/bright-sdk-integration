@@ -51,7 +51,7 @@ The generated key is shown **once only** — copy it immediately.
 
 ## Step 5 — Set the key as an environment variable
 
-Export the key in your shell so the tool can read it:
+**macOS / Linux** — export the key in your shell:
 
 ```bash
 export SDK_API_KEY=<your-api-key>
@@ -62,6 +62,30 @@ To persist it across sessions, add the line to your shell profile
 
 ```bash
 echo 'export SDK_API_KEY=<your-api-key>' >> ~/.zshrc
+```
+
+**Windows (PowerShell)** — set for the current session:
+
+```powershell
+$env:SDK_API_KEY = "<your-api-key>"
+```
+
+To persist for your user (survives reboots):
+
+```powershell
+[Environment]::SetEnvironmentVariable("SDK_API_KEY", "<your-api-key>", "User")
+```
+
+**Windows (CMD)** — set for the current session:
+
+```cmd
+set SDK_API_KEY=<your-api-key>
+```
+
+To persist for your user (survives reboots):
+
+```cmd
+setx SDK_API_KEY "<your-api-key>"
 ```
 
 The tool reads `SDK_API_KEY` automatically when calling the releases API.
