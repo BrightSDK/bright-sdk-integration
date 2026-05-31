@@ -3,6 +3,8 @@
 The BrightSDK integration tool authenticates with the BrightSDK releases API using
 an API key. Follow these steps to issue one from the BrightSDK Control Panel.
 
+> **Quick link:** [bright-sdk.com → API keys](https://bright-sdk.com/cp/settings/company_profile#api_keys)
+
 ---
 
 ## Step 1 — Open Company Profile
