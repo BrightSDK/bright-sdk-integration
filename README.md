@@ -5,6 +5,7 @@
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/BrightSDK/bright-sdk-integration/pulls)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://brightsdk.github.io/bright-sdk-integration/)
 
 ## Overview
 
