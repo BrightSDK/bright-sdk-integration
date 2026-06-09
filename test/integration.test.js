@@ -384,4 +384,50 @@ describe('BrightSDK Integration - End-to-End Tests', () => {
             expect(true).toBe(true); // Placeholder for version management tests
         });
     });
+
+    describe('Webos SDK files - path resolution from different CWD', () => {
+        test('update_sdk_files uses absolute paths regardless of CWD', () => {
+            const { BrightSdkUpdateWebos } = require('../src/platforms/BrightSdkUpdateWeb.js');
+
+            const workdir = '/opt/apps/webos-project';
+            const u = new BrightSdkUpdateWebos({
+                platform: 'webos',
+                name: 'WebOS',
+                interactive: false,
+                verbose: false,
+                workdir,
+                config: { workdir },
+            });
+
+            u.workdir = workdir;
+            u.appdir = 'app';
+            u.sdk_service_dir = 'bright_sdk_service';
+            u.appid = 'com.partner.app';
+
+            u.assign_sdk_package_filename();
+            u.assign_sdk_services_filename();
+
+            lib.read_json.mockReturnValue({ name: 'com.example.brd_sdk' });
+            lib.set_json_props.mockImplementation(() => {});
+
+            u.update_sdk_files();
+
+            // read_json must use absolute path
+            expect(lib.read_json).toHaveBeenCalledWith(
+                '/opt/apps/webos-project/bright_sdk_service/package.json',
+            );
+            // set_json_props for package.json must use absolute path
+            expect(lib.set_json_props).toHaveBeenCalledWith(
+                '/opt/apps/webos-project/bright_sdk_service/package.json',
+                ['name'],
+                'com.partner.app.brd_sdk',
+            );
+            // set_json_props for services.json must use absolute path
+            expect(lib.set_json_props).toHaveBeenCalledWith(
+                '/opt/apps/webos-project/bright_sdk_service/services.json',
+                ['id', 'services.0.id', 'services.0.name'],
+                'com.partner.app.brd_sdk',
+            );
+        });
+    });
 });

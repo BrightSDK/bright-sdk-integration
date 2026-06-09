@@ -261,16 +261,20 @@ class BrightSdkUpdateWebos extends BrightSdkUpdateWeb {
         this.sdk_services_fname = path.join(this.sdk_service_dir, 'services.json');
     }
     read_sdk_package() {
-        this.sdk_package = read_json(this.sdk_package_fname);
+        this.sdk_package = read_json(path.join(this.workdir, this.sdk_package_fname));
         this.sdk_service_id = this.sdk_package.name.replace(/.+(\.brd_sdk)$/, this.appid + '$1');
     }
     update_sdk_package() {
-        set_json_props(this.sdk_package_fname, ['name'], this.sdk_service_id);
+        set_json_props(
+            path.join(this.workdir, this.sdk_package_fname),
+            ['name'],
+            this.sdk_service_id,
+        );
         this.print(`✔ Processed ${this.sdk_package_fname}`);
     }
     update_sdk_services() {
         set_json_props(
-            this.sdk_services_fname,
+            path.join(this.workdir, this.sdk_services_fname),
             ['id', 'services.0.id', 'services.0.name'],
             this.sdk_service_id,
         );

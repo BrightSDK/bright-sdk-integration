@@ -1,4 +1,7 @@
-const { BrightSdkUpdateWeb } = require('../src/platforms/BrightSdkUpdateWeb.js');
+const {
+    BrightSdkUpdateWeb,
+    BrightSdkUpdateWebos,
+} = require('../src/platforms/BrightSdkUpdateWeb.js');
 const lib = require('../src/lib.js');
 const navigation = require('../src/navigation.js');
 const fs = require('fs');
@@ -423,5 +426,114 @@ describe('platforms/BrightSdkUpdateWeb.js', () => {
             ['/sdk/consent/brd_api.js', 'app/js/brd_api_v1.js'],
             ['/test/project/temp/brd_api.helper.js', 'app/js/brd_api.helper.js'],
         ]);
+    });
+});
+
+describe('platforms/BrightSdkUpdateWebos - path resolution', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        fs.existsSync.mockReturnValue(false);
+        fs.mkdirSync.mockImplementation(() => {});
+        fs.readFileSync.mockImplementation(() => '');
+        fs.writeFileSync.mockImplementation(() => {});
+        lib.read_json.mockReturnValue({});
+        lib.write_json.mockImplementation(() => {});
+        lib.set_json_props.mockImplementation(() => {});
+        lib.download_from_url.mockResolvedValue();
+        lib.unzip.mockResolvedValue();
+        lib.replace_file.mockResolvedValue(false);
+        lib.search_directory.mockResolvedValue(null);
+        navigation.clear_screen.mockImplementation(() => {});
+        navigation.prompt.mockImplementation(() => {});
+    });
+
+    function createWebosInstance(workdir = '/test/project') {
+        const u = new BrightSdkUpdateWebos({
+            platform: 'webos',
+            name: 'WebOS',
+            interactive: false,
+            verbose: false,
+            workdir,
+            config: { workdir },
+        });
+        u.workdir = workdir;
+        u.appdir = 'app';
+        u.sdk_service_dir = 'service';
+        u.appid = 'com.test.app';
+        return u;
+    }
+
+    test('assign_sdk_package_filename produces relative path', () => {
+        const u = createWebosInstance();
+        u.assign_sdk_package_filename();
+        expect(u.sdk_package_fname).toBe('service/package.json');
+    });
+
+    test('assign_sdk_services_filename produces relative path', () => {
+        const u = createWebosInstance();
+        u.assign_sdk_services_filename();
+        expect(u.sdk_services_fname).toBe('service/services.json');
+    });
+
+    test('read_sdk_package resolves against workdir', () => {
+        const u = createWebosInstance();
+        u.assign_sdk_package_filename();
+        lib.read_json.mockReturnValue({ name: 'com.old.brd_sdk' });
+
+        u.read_sdk_package();
+
+        expect(lib.read_json).toHaveBeenCalledWith('/test/project/service/package.json');
+        expect(u.sdk_service_id).toBe('com.test.app.brd_sdk');
+    });
+
+    test('update_sdk_package resolves against workdir', () => {
+        const u = createWebosInstance();
+        u.assign_sdk_package_filename();
+        u.sdk_service_id = 'com.test.app.brd_sdk';
+
+        u.update_sdk_package();
+
+        expect(lib.set_json_props).toHaveBeenCalledWith(
+            '/test/project/service/package.json',
+            ['name'],
+            'com.test.app.brd_sdk',
+        );
+    });
+
+    test('update_sdk_services resolves against workdir', () => {
+        const u = createWebosInstance();
+        u.assign_sdk_services_filename();
+        u.sdk_service_id = 'com.test.app.brd_sdk';
+
+        u.update_sdk_services();
+
+        expect(lib.set_json_props).toHaveBeenCalledWith(
+            '/test/project/service/services.json',
+            ['id', 'services.0.id', 'services.0.name'],
+            'com.test.app.brd_sdk',
+        );
+    });
+
+    test('update_sdk_files works when CWD differs from workdir', () => {
+        // Simulate running from a different directory (e.g. /home/user)
+        const u = createWebosInstance('/opt/apps/myapp');
+        u.appid = 'com.myapp';
+        u.assign_sdk_package_filename();
+        u.assign_sdk_services_filename();
+        lib.read_json.mockReturnValue({ name: 'com.old.brd_sdk' });
+
+        u.update_sdk_files();
+
+        expect(lib.read_json).toHaveBeenCalledWith('/opt/apps/myapp/service/package.json');
+        expect(lib.set_json_props).toHaveBeenCalledWith(
+            '/opt/apps/myapp/service/package.json',
+            ['name'],
+            'com.myapp.brd_sdk',
+        );
+        expect(lib.set_json_props).toHaveBeenCalledWith(
+            '/opt/apps/myapp/service/services.json',
+            ['id', 'services.0.id', 'services.0.name'],
+            'com.myapp.brd_sdk',
+        );
     });
 });
