@@ -13,11 +13,11 @@ const DOWNLOADER_VERSION = '1.0.0';
 const get_asset_name = () => {
     const platform = process.platform;
     const arch = process.arch;
-    if (platform == 'win32') {
+    if (platform === 'win32') {
         return 'bright-sdk-downloader-win-x64.exe';
     }
-    if (platform == 'darwin') {
-        return arch == 'arm64'
+    if (platform === 'darwin') {
+        return arch === 'arm64'
             ? 'bright-sdk-downloader-macos-arm64'
             : 'bright-sdk-downloader-macos-x64';
     }
@@ -31,12 +31,12 @@ const get_cache_dir = () => {
 };
 
 const get_cached_bin = () => {
-    const ext = process.platform == 'win32' ? '.exe' : '';
+    const ext = process.platform === 'win32' ? '.exe' : '';
     return path.join(get_cache_dir(), BIN_NAME + ext);
 };
 
 const is_in_path = name => {
-    const cmd = process.platform == 'win32' ? 'where' : 'which';
+    const cmd = process.platform === 'win32' ? 'where' : 'which';
     const r = spawnSync(cmd, [name], { stdio: 'pipe' });
     return r.status === 0;
 };
@@ -63,7 +63,7 @@ const download_bin = () => {
                 file.on('finish', () => {
                     file.close();
                     fs.renameSync(tmp, dest);
-                    if (process.platform != 'win32') {
+                    if (process.platform !== 'win32') {
                         fs.chmodSync(dest, 0o755);
                     }
                     process.stderr.write(`Saved to ${dest}\n`);
@@ -141,7 +141,7 @@ const exec_downloader = args => {
  */
 const resolve_sdk = (platform, version = 'latest') => {
     const args = ['resolve', '-p', platform];
-    if (version && version != 'latest') {
+    if (version && version !== 'latest') {
         args.push('-v', version);
     }
     return exec_downloader(args);
@@ -157,7 +157,7 @@ const resolve_sdk = (platform, version = 'latest') => {
  */
 const fetch_sdk = (platform, version = 'latest', output = '.') => {
     const args = ['fetch', '-p', platform, '-o', output];
-    if (version && version != 'latest') {
+    if (version && version !== 'latest') {
         args.push('-v', version);
     }
     return exec_downloader(args);
