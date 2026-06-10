@@ -7,11 +7,11 @@ const parse_args = args => {
     const result = { platform: null, version: 'latest', output: '.' };
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-        if ((arg == '--platform' || arg == '-p') && args[i + 1]) {
+        if ((arg === '--platform' || arg === '-p') && args[i + 1]) {
             result.platform = args[++i];
-        } else if ((arg == '--version' || arg == '-v') && args[i + 1]) {
+        } else if ((arg === '--version' || arg === '-v') && args[i + 1]) {
             result.version = args[++i];
-        } else if ((arg == '--output' || arg == '-o') && args[i + 1]) {
+        } else if ((arg === '--output' || arg === '-o') && args[i + 1]) {
             result.output = args[++i];
         } else if (!arg.startsWith('-') && !result.platform) {
             result.platform = arg;
