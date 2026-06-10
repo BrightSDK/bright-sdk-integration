@@ -46,7 +46,7 @@ const usage = `\x1b[1mUSAGE:\x1b[0m
 \x1b[2mRun without config file for interactive mode.\x1b[0m
 `;
 
-if (require.main == module) {
+if (require.main === module) {
     (async function () {
         const argv = yargs
             .option('platform', {
@@ -56,7 +56,7 @@ if (require.main == module) {
             })
             .help(false).argv;
 
-        if (!argv.platform && argv._.length == 0) {
+        if (!argv.platform && argv._.length === 0) {
             process.stdout.write(banner);
             process.stdout.write(usage);
             process.exit(0);
@@ -70,7 +70,7 @@ if (require.main == module) {
 
         const opt = { interactive: true, config_fnames: [], platform: argv.platform };
         for (const arg of argv._) {
-            if (arg == get_config_fname(path.dirname(arg))) {
+            if (arg === get_config_fname(path.dirname(arg))) {
                 opt.config_fnames.push(arg);
             } else {
                 opt.appdir = arg;
