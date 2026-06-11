@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.3] — 2026-06-11
+
+### Fixed
+
+- Release badge switched from shields.io to badgen.net (shields.io token pool exhaustion).
+- Windows platform icon replaced with inline SVG (Simple Icons removed the Windows slug).
+
+### Added
+
+- Documentation URL prominently displayed at top of README.
+
+### Dependencies
+
+- `follow-redirects` 1.15.9 → 1.16.0
+- `yargs` 17.7.2 → 18.0.0
+- `jest` 29.7.0 → 30.4.2
+- `jest-environment-node` 29.7.0 → 30.4.1
+- `lint-staged` 15.5.2 → 17.0.7
+- `actions/checkout` 4 → 6
+- `actions/setup-node` 4 → 6
+- `softprops/action-gh-release` 2 → 3
+- Migrated to ESLint v10 flat config
+
+## [1.7.2] — 2026-06-11
+
+### Fixed
+
+- Auto-download `bright-sdk-downloader` binary when not found in PATH (fixes ENOENT on first run).
+- Resolve relative paths against workdir in WebOS `sdk_package`/`services` updates.
+
+### Added
+
+- GitHub Pages docs badge in README.
+- Hosted API key guide (removed local copy, links to deployed page).
+
+### Changed
+
+- Bypass husky pre-commit hooks on consumer projects.
+
 ## [1.7.1] — 2026-05-30
 
 ### Changed
