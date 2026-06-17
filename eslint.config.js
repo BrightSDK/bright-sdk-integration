@@ -1,7 +1,7 @@
 // LICENSE_CODE ZON
 'use strict'; /*jslint node:true es9:true*/
 const js = require('@eslint/js');
-const pluginN = require('eslint-plugin-n').default;
+const pluginN = require('eslint-plugin-n');
 const pluginPromise = require('eslint-plugin-promise');
 const prettier = require('eslint-config-prettier');
 

@@ -48,7 +48,7 @@ const usage = `\x1b[1mUSAGE:\x1b[0m
 
 if (require.main === module) {
     (async function () {
-        const argv = yargs
+        const argv = yargs(process.argv.slice(2))
             .option('platform', {
                 alias: 'p',
                 type: 'string',

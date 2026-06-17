@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.4] — 2026-06-17
+
+### Fixed
+
+- Fixed `TypeError: yargs.option is not a function` on Node.js v22+ caused by the yargs v18 export change (v18 exports the constructor instead of a pre-built instance). Fixed by calling `yargs(process.argv.slice(2))` to obtain an instance before chaining options.
+- Fixed `TypeError: process.stdin.setRawMode is not a function` on Windows when stdin is not a TTY (e.g. via `npx`). Now guards with `process.stdin.isTTY` check.
+
 ## [1.7.3] — 2026-06-11
 
 ### Fixed

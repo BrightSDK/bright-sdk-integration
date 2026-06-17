@@ -22,9 +22,11 @@ const exit = (s, code = 1) => {
 };
 
 const process_init = () => {
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-    process.stdin.on('data', () => {});
+    if (process.stdin.isTTY) {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', () => {});
+    }
     process.on('SIGINT', () => {
         exit('\nUser aborted. Exiting...', 0);
     });
