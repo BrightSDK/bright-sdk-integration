@@ -73,7 +73,7 @@ describe('BrightSdkUpdateBase.download_sdk', () => {
 
         await u.download_sdk();
 
-        expect(lib.fetch_sdk).toHaveBeenCalledWith('webos', '1.2.3', '/cache/sdk/1.2.3');
+        expect(lib.fetch_sdk).toHaveBeenCalledWith('webos', '1.2.3', '/cache/sdk/1.2.3', false);
         expect(lib.write_json).toHaveBeenCalledWith('/cache/versions.json', expect.any(Object));
     });
 });
