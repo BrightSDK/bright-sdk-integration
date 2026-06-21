@@ -133,16 +133,16 @@ The SDK download URL is resolved automatically from the integration config API u
 
 ### All config keys
 
-| Key               | Type    | Description                                |
-| ----------------- | ------- | ------------------------------------------ |
-| `workdir`         | string  | Absolute or relative working directory     |
-| `app_dir`         | string  | App folder path relative to `workdir`      |
-| `js_dir`          | string  | Directory containing `brd_api.js`          |
-| `index`           | string  | Path to `index.html` relative to `workdir` |
-| `sdk_service_dir` | string  | Directory for the SDK background service   |
-| `sdk_ver`         | string  | SDK version string, or `"latest"`          |
-| `use_helper`      | boolean | Whether to include `brd_api.helper.min.js` |
-| `config_fname`    | string  | Path to the config file itself             |
+| Key               | Type    | Description                                                                           |
+| ----------------- | ------- | ------------------------------------------------------------------------------------- |
+| `workdir`         | string  | Absolute or relative working directory                                                |
+| `app_dir`         | string  | App folder path relative to `workdir`                                                 |
+| `js_dir`          | string  | Directory containing `brd_api.js`                                                     |
+| `index`           | string  | Path to the app's main HTML entry file, relative to `workdir` (e.g. `app/index.html`) |
+| `sdk_service_dir` | string  | Directory for the SDK background service                                              |
+| `sdk_ver`         | string  | SDK version string, or `"latest"`                                                     |
+| `use_helper`      | boolean | Whether to include `brd_api.helper.min.js`                                            |
+| `config_fname`    | string  | Path to the config file itself                                                        |
 
 ---
 

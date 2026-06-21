@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.5] — 2026-06-21
+
+### Added
+
+- `cert` parameter to `resolve_sdk()` and `fetch_sdk()` in `downloader.js` — passes `--cert` flag to `bright-sdk-downloader` when enabled
+- `BrightSdkUpdateBase` now reads `releases_data.resolved.certified` and passes it to `fetch_sdk()` for certified Windows SDK downloads
+
+### Fixed
+
+- Clarified interactive prompt for HTML entry file: `index.html location` → `Path to app's main HTML entry file (e.g. app/index.html)` to make it explicit that the full path including filename is required.
+- Updated README and docs config field description for `index` to show a realistic example (`app/index.html`) and clarify it must point to the file, not a directory.
+
 ## [1.7.4] — 2026-06-17
 
 ### Fixed

@@ -139,10 +139,13 @@ const exec_downloader = args => {
  * @param {string} [version='latest'] - Version or 'latest'
  * @returns {{platform: string, version: string, url: string, sha256?: string}}
  */
-const resolve_sdk = (platform, version = 'latest') => {
+const resolve_sdk = (platform, version = 'latest', cert = false) => {
     const args = ['resolve', '-p', platform];
     if (version && version !== 'latest') {
         args.push('-v', version);
+    }
+    if (cert) {
+        args.push('--cert');
     }
     return exec_downloader(args);
 };
@@ -152,13 +155,17 @@ const resolve_sdk = (platform, version = 'latest') => {
  * @param {string} platform - Platform key
  * @param {string} [version='latest'] - Version or 'latest'
  * @param {string} [output='.'] - Output directory
+ * @param {boolean} [cert=false] - Use certified build
  * @returns {{platform: string, version: string, url: string, output: string,
  *   sha256?: string, files?: string[]}}
  */
-const fetch_sdk = (platform, version = 'latest', output = '.') => {
+const fetch_sdk = (platform, version = 'latest', output = '.', cert = false) => {
     const args = ['fetch', '-p', platform, '-o', output];
     if (version && version !== 'latest') {
         args.push('-v', version);
+    }
+    if (cert) {
+        args.push('--cert');
     }
     return exec_downloader(args);
 };

@@ -237,7 +237,8 @@ class BrightSdkUpdateBase {
             );
         } else {
             const platform_key = this.get_platform_version_key();
-            const result = fetch_sdk(platform_key, this.sdk_ver, this.sdk_dir);
+            const cert = !!this.releases_data?.resolved?.certified;
+            const result = fetch_sdk(platform_key, this.sdk_ver, this.sdk_dir, cert);
             this.sdk_url = result.url;
             this.print(`✔ Downloaded and extracted SDK ${this.sdk_ver}`);
             this.sdk_versions[this.sdk_ver] = {

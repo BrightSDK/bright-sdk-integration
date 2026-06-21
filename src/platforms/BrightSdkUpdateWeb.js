@@ -117,12 +117,17 @@ class BrightSdkUpdateWeb extends BrightSdkUpdateBase {
             'index.html',
         );
         const index_fname_def = this.config.index;
-        this.index_fname = await this.get_value('index.html location', index_def, index_fname_def, {
-            selectable: true,
-            dir: index_fname_def
-                ? path.dirname(path.join(this.workdir, index_fname_def))
-                : path.join(this.workdir, this.appdir),
-        });
+        this.index_fname = await this.get_value(
+            "Path to app's main HTML entry file (e.g. app/index.html)",
+            index_def,
+            index_fname_def,
+            {
+                selectable: true,
+                dir: index_fname_def
+                    ? path.dirname(path.join(this.workdir, index_fname_def))
+                    : path.join(this.workdir, this.appdir),
+            },
+        );
     }
     async assign_use_helper() {
         const use_helper_yes_no = await this.get_value(

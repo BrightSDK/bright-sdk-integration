@@ -125,7 +125,7 @@ The interactive prompts include:
 | Path to config file       | `/path/to/your/config.json` (optional) |
 | SDK Version               | `1.438.821`                            |
 | Application JS directory  | `js`                                   |
-| index.html Location       | `index.html`                           |
+| index.html Location       | `app/index.html`                       |
 | SDK Service directory     | `service`                              |
 | SDK URL mask              | `https://example.com/sdk_SDK_VER.zip`  |
 
