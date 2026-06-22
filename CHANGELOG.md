@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.5] — 2026-06-22
+
+### Fixed
+
+- Fixed ESLint crashing with `Cannot read properties of undefined (reading 'flat/recommended')` on `eslint-plugin-n` v18 — use `.default` export
+- Fixed CI test assertion for `fetch_sdk` — updated expected call signature to include new `cert` parameter
+
 ## [1.7.4] — 2026-06-21
 
 ### Added
