@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.6] - 2026-10-12
+
+### Fixed
+- Verify SHA-256 checksum when downloading native downloader binary
+- Update downloader binary version to 1.1.1 with pinned platform checksums
+
 ## [1.7.5] — 2026-06-22
 
 ### Added

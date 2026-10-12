@@ -2,13 +2,27 @@
 'use strict'; /*jslint node:true es9:true*/
 const { execFileSync, spawnSync } = require('child_process');
 const https = require('follow-redirects').https;
+const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 
 const BIN_NAME = 'bright-sdk-downloader';
 const DOWNLOADER_REPO = 'BrightSDK/bright-sdk-downloader-rs';
-const DOWNLOADER_VERSION = '1.0.0';
+const DOWNLOADER_VERSION = '1.1.1';
+
+const CHECKSUMS = {
+    '1.1.1': {
+        'bright-sdk-downloader-linux-x64':
+            'bbe823fdc4dddb350d1965cf7cfbd31c024e375336e953aa7130277f1909bd9c',
+        'bright-sdk-downloader-macos-arm64':
+            'e4fffe0800322afd275b70ef3b6307ec57dba8aea37e616363389809cc535f3a',
+        'bright-sdk-downloader-macos-x64':
+            '7b49226186a2ca5e14cc87d84047de28a588ba06365fcb6e0a92048bf67b5b7d',
+        'bright-sdk-downloader-win-x64.exe':
+            '733e3d09ce5224ea46b4e977eb563f97efb56f91cf9e628be9e051e1eb355723',
+    },
+};
 
 const get_asset_name = () => {
     const platform = process.platform;
@@ -41,8 +55,28 @@ const is_in_path = name => {
     return r.status === 0;
 };
 
+const verify_sha256 = (file_path, expected_sha) =>
+    new Promise((resolve, reject) => {
+        const hash = crypto.createHash('sha256');
+        const stream = fs.createReadStream(file_path);
+        stream.on('data', chunk => hash.update(chunk));
+        stream.on('end', () => {
+            const actual = hash.digest('hex');
+            if (actual.toLowerCase() !== expected_sha.toLowerCase()) {
+                return void reject(
+                    new Error(
+                        `SHA-256 mismatch for ${file_path}: expected ${expected_sha}, got ${actual}`,
+                    ),
+                );
+            }
+            resolve(actual);
+        });
+        stream.on('error', reject);
+    });
+
 const download_bin = () => {
     const asset = get_asset_name();
+    const expected_sha = CHECKSUMS[DOWNLOADER_VERSION]?.[asset];
     const url =
         `https://github.com/${DOWNLOADER_REPO}/releases/download/` +
         `${DOWNLOADER_VERSION}/${asset}`;
@@ -60,24 +94,61 @@ const download_bin = () => {
                     );
                 }
                 res.pipe(file);
-                file.on('finish', () => {
+                file.on('finish', async () => {
                     file.close();
-                    fs.renameSync(tmp, dest);
-                    if (process.platform !== 'win32') {
-                        fs.chmodSync(dest, 0o755);
+                    try {
+                        if (expected_sha) {
+                            await verify_sha256(tmp, expected_sha);
+                        }
+                        fs.renameSync(tmp, dest);
+                        if (process.platform !== 'win32') {
+                            fs.chmodSync(dest, 0o755);
+                        }
+                        process.stderr.write(`Saved to ${dest}\n`);
+                        resolve(dest);
+                    } catch (err) {
+                        try {
+                            fs.removeSync(tmp);
+                        } catch {
+                            // ignore cleanup error
+                        }
+                        reject(err);
                     }
-                    process.stderr.write(`Saved to ${dest}\n`);
-                    resolve(dest);
                 });
             })
-            .on('error', reject);
+            .on('error', err => {
+                try {
+                    fs.removeSync(tmp);
+                } catch {
+                    // ignore cleanup error
+                }
+                reject(err);
+            });
     });
 };
 
 const ensure_bin = () => {
     const cached = get_cached_bin();
+    const asset = get_asset_name();
+    const expected_sha = CHECKSUMS[DOWNLOADER_VERSION]?.[asset];
     if (fs.existsSync(cached)) {
-        return cached;
+        if (!expected_sha) {
+            return cached;
+        }
+        try {
+            const hash = crypto.createHash('sha256');
+            hash.update(fs.readFileSync(cached));
+            if (hash.digest('hex').toLowerCase() === expected_sha.toLowerCase()) {
+                return cached;
+            }
+            fs.removeSync(cached);
+        } catch {
+            try {
+                fs.removeSync(cached);
+            } catch {
+                // ignore
+            }
+        }
     }
     if (is_in_path(BIN_NAME)) {
         return BIN_NAME;
@@ -209,10 +280,17 @@ const download_from_url = (url, fname) =>
     });
 
 module.exports = {
+    BIN_NAME,
+    DOWNLOADER_VERSION,
+    CHECKSUMS,
+    get_asset_name,
+    get_cached_bin,
     get_bin_path,
     resolve_sdk,
     fetch_sdk,
     list_platforms,
     download_from_url,
     download_bin,
+    verify_sha256,
+    ensure_bin,
 };

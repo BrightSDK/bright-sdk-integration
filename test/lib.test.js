@@ -428,3 +428,47 @@ describe('list_platforms', () => {
         expect(call_args).toContain('platforms');
     });
 });
+
+describe('downloader checksum verification', () => {
+    const EventEmitter = require('events');
+    const crypto = require('crypto');
+    const downloader = require('../src/downloader.js');
+
+    test('verify_sha256 passes when hash matches', async () => {
+        const mockStream = new EventEmitter();
+        fs.createReadStream.mockReturnValue(mockStream);
+
+        const testData = 'binary-integrity-test-payload';
+        const validSha = crypto.createHash('sha256').update(testData).digest('hex');
+
+        const promise = downloader.verify_sha256('dummy-path', validSha);
+        mockStream.emit('data', Buffer.from(testData));
+        mockStream.emit('end');
+
+        const result = await promise;
+        expect(result).toBe(validSha);
+    });
+
+    test('verify_sha256 rejects when hash does not match', async () => {
+        const mockStream = new EventEmitter();
+        fs.createReadStream.mockReturnValue(mockStream);
+
+        const promise = downloader.verify_sha256(
+            'dummy-path',
+            '0000000000000000000000000000000000000000000000000000000000000000',
+        );
+        mockStream.emit('data', Buffer.from('different-data'));
+        mockStream.emit('end');
+
+        await expect(promise).rejects.toThrow('SHA-256 mismatch');
+    });
+
+    test('CHECKSUMS contains pinned entries for downloader version', () => {
+        expect(downloader.CHECKSUMS[downloader.DOWNLOADER_VERSION]).toBeDefined();
+        const verChecksums = downloader.CHECKSUMS[downloader.DOWNLOADER_VERSION];
+        expect(verChecksums['bright-sdk-downloader-linux-x64']).toHaveLength(64);
+        expect(verChecksums['bright-sdk-downloader-macos-arm64']).toHaveLength(64);
+        expect(verChecksums['bright-sdk-downloader-macos-x64']).toHaveLength(64);
+        expect(verChecksums['bright-sdk-downloader-win-x64.exe']).toHaveLength(64);
+    });
+});
