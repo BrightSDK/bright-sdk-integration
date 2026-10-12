@@ -3,12 +3,14 @@
 const js = require('@eslint/js');
 const pluginN = require('eslint-plugin-n').default;
 const pluginPromise = require('eslint-plugin-promise');
+const pluginSecurity = require('eslint-plugin-security');
 const prettier = require('eslint-config-prettier');
 
 module.exports = [
     js.configs.recommended,
     pluginN.configs['flat/recommended'],
     pluginPromise.configs['flat/recommended'],
+    pluginSecurity.configs.recommended,
     prettier,
     {
         languageOptions: {

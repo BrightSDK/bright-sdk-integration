@@ -39,6 +39,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-n": "^18.1.0",
         "eslint-plugin-promise": "^7.3.0",
+        "eslint-plugin-security": "^4.2.0",
         "husky": "^9.1.7",
         "jest": "^30.4.2",
         "jest-environment-node": "^30.4.1",
