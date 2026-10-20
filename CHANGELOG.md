@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-10-20
+
+### Changed
+- Scope package under `@brightdata/bright-sdk-integration` to prevent npm dependency confusion attacks
+- Mark package as private to prevent accidental public registry publish
+
 ## [1.7.6] - 2026-10-12
 
 ### Fixed
