@@ -1,6 +1,7 @@
 {
-    "name": "bright-sdk-integration",
-    "version": "1.7.6",
+    "name": "@brightdata/bright-sdk-integration",
+    "version": "1.8.0",
+    "private": true,
     "description": "BrightSDK Integration Tools",
     "main": "index.js",
     "bin": {
